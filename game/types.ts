@@ -1,0 +1,97 @@
+export type Position = "GOL" | "ZAG" | "LD" | "LE" | "ALA" | "VOL" | "MC" | "MEI" | "PD" | "PE" | "SA" | "CA";
+export type AttributeKey =
+  | "velocidade" | "aceleracao" | "resistencia" | "forca" | "potenciaChute"
+  | "impulsao" | "agilidade" | "dominio" | "drible" | "passe" | "cruzamento"
+  | "finalizacao" | "chuteLonge" | "marcacao" | "dividida" | "posicionamento"
+  | "visao" | "reflexos" | "saidaGol" | "lideranca";
+
+export type Attributes = Record<AttributeKey, number>;
+export type Rarity = "raro" | "epico" | "lendario";
+
+export interface Club {
+  id: string;
+  name: string;
+  country: string;
+  leagueId: string;
+  crest: string;
+  strength: number;
+  reputation: number;
+  budget: number;
+  style: "posse" | "vertical" | "defensivo" | "pressao";
+  rivals: string[];
+}
+
+export interface Competition {
+  id: string;
+  name: string;
+  country: string;
+  tier: number;
+  kind: "league" | "cup" | "continental" | "international" | "state";
+  season: "calendar" | "european";
+  prestige: number;
+}
+
+export interface Player {
+  id: string;
+  name: string;
+  nationality: string;
+  position: Position;
+  secondaryPosition?: Position;
+  preferredFoot: "Direito" | "Esquerdo" | "Ambidestro";
+  heightCm: number;
+  shirtNumber: number;
+  age: number;
+  clubId: string;
+  attributes: Attributes;
+  form: number;
+  fame: number;
+  salary: number;
+  marketValue: number;
+  games: number;
+  goals: number;
+  assists: number;
+  cleanSheets: number;
+  saves: number;
+  titles: string[];
+  awards: string[];
+  clubIdolatry: Record<string, number>;
+  judasAt: string[];
+  injuries: number;
+}
+
+export interface UpgradeCard {
+  id: string;
+  rarity: Rarity;
+  name: string;
+  changes: Partial<Attributes>;
+  eligible: Position[];
+}
+
+export interface CareerEvent {
+  id: string;
+  title: string;
+  copy: string;
+  choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; money?: number }>;
+}
+
+export interface SeasonResult {
+  season: number;
+  games: number;
+  goals: number;
+  assists: number;
+  cleanSheets: number;
+  title?: string;
+  award?: string;
+  injuryWeeks: number;
+  event?: CareerEvent;
+  events: CareerEvent[];
+  finalOpportunity: boolean;
+}
+
+export interface CareerState {
+  seed: number;
+  season: number;
+  player: Player;
+  history: SeasonResult[];
+  currentCompetition: string;
+}

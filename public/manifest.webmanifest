@@ -1,0 +1,13 @@
+{
+  "name": "O REI — Carreira no Futebol",
+  "short_name": "O REI",
+  "description": "Uma carreira rápida de futebol, do primeiro jogo ao legado.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101312",
+  "theme_color": "#101312",
+  "icons": [
+    { "src": "/o-rei-logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
