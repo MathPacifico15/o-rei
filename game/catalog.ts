@@ -272,5 +272,15 @@ export function validateCatalog(input: { clubs: Club[]; competitions: Competitio
     }
     if (!actual) errors.push(`${competition.name}: participantes reais ainda não importados`);
   });
+  Object.entries(stateMemberships).forEach(([competitionId, names]) => {
+    if (!input.competitions.some((competition) => competition.id === competitionId)) {
+      errors.push(`Estadual inexistente no vínculo de clubes: ${competitionId}`);
+    }
+    names.forEach((name) => {
+      if (!input.clubs.some((club) => club.name === name)) {
+        errors.push(`${competitionId}: clube nacional não localizado: ${name}`);
+      }
+    });
+  });
   return errors;
 }
