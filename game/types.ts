@@ -25,10 +25,16 @@ export interface Competition {
   id: string;
   name: string;
   country: string;
+  /** Unicode flag shown wherever the player chooses this competition. */
+  flag: string;
   tier: number;
   kind: "league" | "cup" | "continental" | "international" | "state";
   season: "calendar" | "european";
   prestige: number;
+  /** A club can be chosen here when starting a career. Cups are calendar-only. */
+  selectable: boolean;
+  /** Fixed club total for the catalogue edition; makes missing clubs a release error. */
+  expectedClubCount?: number;
 }
 
 export interface Player {

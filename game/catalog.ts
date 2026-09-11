@@ -2,35 +2,105 @@ import type { Club, Competition } from "./types";
 
 // This is the versioned starter catalog. A licensed import can replace crest/name fields
 // without touching simulation code. Crest strings are stable asset keys, not remote URLs.
-export const competitions: Competition[] = [
-  { id: "bra-a", name: "Brasileirão Série A", country: "Brasil", tier: 1, kind: "league", season: "calendar", prestige: 82 },
-  { id: "bra-b", name: "Brasileirão Série B", country: "Brasil", tier: 2, kind: "league", season: "calendar", prestige: 58 },
-  { id: "bra-c", name: "Brasileirão Série C", country: "Brasil", tier: 3, kind: "league", season: "calendar", prestige: 42 },
-  { id: "bra-d", name: "Brasileirão Série D", country: "Brasil", tier: 4, kind: "league", season: "calendar", prestige: 28 },
+export const stateLeagueNames = ["Paulista", "Carioca", "Mineiro", "Gaúcho", "Baiano", "Pernambucano", "Cearense", "Paranaense", "Catarinense", "Goiano", "Paraense", "Amazonense", "Brasiliense", "Alagoano", "Sergipano", "Potiguar", "Paraibano", "Maranhense", "Piauiense", "Mato-grossense", "Sul-mato-grossense", "Capixaba", "Acreano", "Rondoniense", "Roraimense", "Amapaense", "Tocantinense"];
+
+type CompetitionRow = Omit<Competition, "flag" | "selectable">;
+function competitionRows(country: string, season: Competition["season"], kind: Competition["kind"], entries: Array<[string, string, number, number]>) {
+  return entries.map(([id, name, tier, prestige]): CompetitionRow => ({ id, name, country, tier, kind, season, prestige }));
+}
+
+const baseCompetitions: CompetitionRow[] = [
+  { id: "bra-a", name: "Brasileirão Série A", country: "Brasil", tier: 1, kind: "league", season: "calendar", prestige: 82, expectedClubCount: 20 },
+  { id: "bra-b", name: "Brasileirão Série B", country: "Brasil", tier: 2, kind: "league", season: "calendar", prestige: 58, expectedClubCount: 20 },
+  { id: "bra-c", name: "Brasileirão Série C", country: "Brasil", tier: 3, kind: "league", season: "calendar", prestige: 42, expectedClubCount: 20 },
+  { id: "bra-d", name: "Brasileirão Série D", country: "Brasil", tier: 4, kind: "league", season: "calendar", prestige: 28, expectedClubCount: 64 },
   { id: "copa-br", name: "Copa do Brasil", country: "Brasil", tier: 1, kind: "cup", season: "calendar", prestige: 72 },
   { id: "copa-verde", name: "Copa Verde", country: "Brasil", tier: 1, kind: "cup", season: "calendar", prestige: 33 },
   { id: "lib", name: "CONMEBOL Libertadores", country: "América do Sul", tier: 1, kind: "continental", season: "calendar", prestige: 94 },
   { id: "sula", name: "CONMEBOL Sul-Americana", country: "América do Sul", tier: 1, kind: "continental", season: "calendar", prestige: 72 },
-  { id: "arg-lp", name: "Liga Profesional", country: "Argentina", tier: 1, kind: "league", season: "calendar", prestige: 77 },
-  { id: "eng-pl", name: "Premier League", country: "Inglaterra", tier: 1, kind: "league", season: "european", prestige: 96 },
-  { id: "esp-ll", name: "LaLiga", country: "Espanha", tier: 1, kind: "league", season: "european", prestige: 94 },
-  { id: "ita-sa", name: "Serie A", country: "Itália", tier: 1, kind: "league", season: "european", prestige: 91 },
-  { id: "ger-bl", name: "Bundesliga", country: "Alemanha", tier: 1, kind: "league", season: "european", prestige: 91 },
-  { id: "fra-l1", name: "Ligue 1", country: "França", tier: 1, kind: "league", season: "european", prestige: 84 },
-  { id: "por-pl", name: "Primeira Liga", country: "Portugal", tier: 1, kind: "league", season: "european", prestige: 79 },
+  { id: "arg-lp", name: "Liga Profesional", country: "Argentina", tier: 1, kind: "league", season: "calendar", prestige: 77, expectedClubCount: 30 },
+  { id: "eng-pl", name: "Premier League", country: "Inglaterra", tier: 1, kind: "league", season: "european", prestige: 96, expectedClubCount: 20 },
+  { id: "esp-ll", name: "LaLiga", country: "Espanha", tier: 1, kind: "league", season: "european", prestige: 94, expectedClubCount: 20 },
+  { id: "ita-sa", name: "Serie A", country: "Itália", tier: 1, kind: "league", season: "european", prestige: 91, expectedClubCount: 20 },
+  { id: "ger-bl", name: "Bundesliga", country: "Alemanha", tier: 1, kind: "league", season: "european", prestige: 91, expectedClubCount: 18 },
+  { id: "fra-l1", name: "Ligue 1", country: "França", tier: 1, kind: "league", season: "european", prestige: 84, expectedClubCount: 18 },
+  { id: "por-pl", name: "Primeira Liga", country: "Portugal", tier: 1, kind: "league", season: "european", prestige: 79, expectedClubCount: 18 },
   { id: "ucl", name: "Champions League", country: "Europa", tier: 1, kind: "continental", season: "european", prestige: 100 },
   { id: "uel", name: "Europa League", country: "Europa", tier: 1, kind: "continental", season: "european", prestige: 76 },
   { id: "uecl", name: "Conference League", country: "Europa", tier: 1, kind: "continental", season: "european", prestige: 59 },
-  { id: "mex-liga", name: "Liga MX", country: "México", tier: 1, kind: "league", season: "calendar", prestige: 74 },
-  { id: "usa-mls", name: "MLS", country: "Estados Unidos", tier: 1, kind: "league", season: "calendar", prestige: 72 },
-  { id: "sau-pro", name: "Saudi Pro League", country: "Arábia Saudita", tier: 1, kind: "league", season: "calendar", prestige: 75 },
-  { id: "jpn-j1", name: "J1 League", country: "Japão", tier: 1, kind: "league", season: "calendar", prestige: 71 },
-  { id: "aus-al", name: "A-League", country: "Austrália", tier: 1, kind: "league", season: "calendar", prestige: 63 },
+  { id: "mex-liga", name: "Liga MX", country: "México", tier: 1, kind: "league", season: "calendar", prestige: 74, expectedClubCount: 18 },
+  { id: "usa-mls", name: "MLS", country: "Estados Unidos", tier: 1, kind: "league", season: "calendar", prestige: 72, expectedClubCount: 30 },
+  { id: "sau-pro", name: "Saudi Pro League", country: "Arábia Saudita", tier: 1, kind: "league", season: "calendar", prestige: 75, expectedClubCount: 18 },
+  { id: "jpn-j1", name: "J1 League", country: "Japão", tier: 1, kind: "league", season: "calendar", prestige: 71, expectedClubCount: 20 },
+  { id: "aus-al", name: "A-League", country: "Austrália", tier: 1, kind: "league", season: "calendar", prestige: 63, expectedClubCount: 13 },
   { id: "wc", name: "Copa do Mundo", country: "Internacional", tier: 1, kind: "international", season: "calendar", prestige: 100 },
   { id: "cwc", name: "Super Mundial de Clubes", country: "Internacional", tier: 1, kind: "international", season: "calendar", prestige: 91 },
 ];
 
-export const clubs: Club[] = [
+const expandedCompetitions: CompetitionRow[] = [
+  ...competitionRows("Brasil", "calendar", "state", stateLeagueNames.map((name, index) => [`bra-state-${index + 1}`, `Campeonato ${name}`, 1, 28] as [string, string, number, number])),
+  ...competitionRows("Brasil", "calendar", "cup", [["bra-super", "Supercopa do Brasil", 1, 58]]),
+  ...competitionRows("Argentina", "calendar", "league", [["arg-pn", "Primera Nacional", 2, 57], ["arg-pb", "Primera B", 3, 42], ["arg-pc", "Primera C", 4, 31], ["arg-fa", "Federal A", 3, 38], ["arg-pa", "Promocional Amateur", 5, 20]]),
+  ...competitionRows("Argentina", "calendar", "cup", [["arg-cup", "Copa Argentina", 1, 62], ["arg-super", "Supercopa Argentina", 1, 54], ["arg-tc", "Trofeo de Campeones", 1, 49], ["arg-res", "Liga de Reserva", 1, 26]]),
+  ...competitionRows("Chile", "calendar", "league", [["chi-a", "Liga de Primera", 1, 68], ["chi-b", "Primera B Chile", 2, 44], ["chi-c", "Segunda División Chile", 3, 30]]),
+  ...competitionRows("Chile", "calendar", "cup", [["chi-cup", "Copa Chile", 1, 50], ["chi-lcup", "Copa de la Liga Chile", 1, 39], ["chi-super", "Supercopa Chile", 1, 45]]),
+  ...competitionRows("Colômbia", "calendar", "league", [["col-a", "Primera A Colômbia", 1, 66]]),
+  ...competitionRows("Uruguai", "calendar", "league", [["uru-a", "Liga AUF Uruguaya", 1, 64]]),
+  ...competitionRows("Paraguai", "calendar", "league", [["par-a", "Copa de Primera", 1, 63]]),
+  ...competitionRows("Peru", "calendar", "league", [["per-a", "Liga 1 Peruana", 1, 58], ["per-b", "Liga 2 Peruana", 2, 38]]),
+  ...competitionRows("Peru", "calendar", "cup", [["per-cup", "Copa de la Liga Peruana", 1, 34]]),
+  ...competitionRows("Bolívia", "calendar", "league", [["bol-a", "División Profesional Bolívia", 1, 57]]),
+  ...competitionRows("Equador", "calendar", "league", [["ecu-a", "LigaPro Equador", 1, 60]]),
+  ...competitionRows("Venezuela", "calendar", "league", [["ven-a", "Liga FUTVE", 1, 53], ["ven-b", "Liga FUTVE 2", 2, 34]]),
+  ...competitionRows("Venezuela", "calendar", "cup", [["ven-cup", "Copa Venezuela", 1, 35]]),
+  ...competitionRows("Europa", "european", "continental", [["uefa-super", "Supercopa da UEFA", 1, 76], ["nations", "Nations League", 1, 73]]),
+  ...competitionRows("Inglaterra", "european", "league", [["eng-c", "Championship", 2, 67], ["eng-l1", "League One", 3, 49], ["eng-l2", "League Two", 4, 37]]),
+  ...competitionRows("Inglaterra", "european", "cup", [["eng-fa", "FA Cup", 1, 73], ["eng-lcup", "League Cup", 1, 58], ["eng-cs", "Community Shield", 1, 47]]),
+  ...competitionRows("Espanha", "european", "cup", [["esp-cup", "Copa del Rey", 1, 72], ["esp-super", "Supercopa da Espanha", 1, 57]]),
+  ...competitionRows("Itália", "european", "cup", [["ita-cup", "Coppa Italia", 1, 70], ["ita-super", "Supercoppa Italiana", 1, 56]]),
+  ...competitionRows("Alemanha", "european", "cup", [["ger-cup", "DFB Pokal", 1, 70], ["ger-super", "DFL-Supercup", 1, 54]]),
+  ...competitionRows("França", "european", "cup", [["fra-cup", "Coupe de France", 1, 66], ["fra-super", "Trophée des Champions", 1, 48]]),
+  ...competitionRows("Portugal", "european", "cup", [["por-cup", "Taça de Portugal", 1, 65]]),
+  ...competitionRows("Holanda", "european", "league", [["ned-a", "Eredivisie", 1, 76]]),
+  ...competitionRows("Bélgica", "european", "league", [["bel-a", "Jupiler Pro League", 1, 70]]),
+  ...competitionRows("Turquia", "european", "league", [["tur-a", "Süper Lig", 1, 73]]),
+  ...competitionRows("Grécia", "european", "league", [["gre-a", "Super League Grécia", 1, 59]]),
+  ...competitionRows("Suíça", "european", "league", [["sui-a", "Super League Suíça", 1, 61]]),
+  ...competitionRows("Áustria", "european", "league", [["aut-a", "Bundesliga Áustria", 1, 60]]),
+  ...competitionRows("Dinamarca", "european", "league", [["den-a", "Superliga Dinamarca", 1, 63]]),
+  ...competitionRows("Noruega", "calendar", "league", [["nor-a", "Eliteserien", 1, 60]]),
+  ...competitionRows("Polônia", "european", "league", [["pol-a", "Ekstraklasa", 1, 59]]),
+  ...competitionRows("Croácia", "european", "league", [["cro-a", "HNL Croácia", 1, 55]]),
+  ...competitionRows("Escócia", "european", "league", [["sco-a", "Premiership Escócia", 1, 62]]),
+  ...competitionRows("Irlanda", "calendar", "league", [["irl-a", "Premier Division Irlanda", 1, 48]]),
+  ...competitionRows("América do Norte", "calendar", "continental", [["concacaf", "CONCACAF Champions Cup", 1, 70]]),
+  ...competitionRows("América do Norte", "calendar", "cup", [["leagues-cup", "Leagues Cup", 1, 55]]),
+  ...competitionRows("Ásia", "calendar", "continental", [["afc-cl", "AFC Champions League Elite", 1, 75]]),
+];
+
+/** Country flag belongs to the competition, never to an individual club card. */
+const countryFlags: Record<string, string> = {
+  "Brasil": "🇧🇷", "Argentina": "🇦🇷", "América do Sul": "🌎", "Europa": "🇪🇺",
+  "Inglaterra": "🏴", "Espanha": "🇪🇸", "Itália": "🇮🇹", "Alemanha": "🇩🇪", "França": "🇫🇷", "Portugal": "🇵🇹",
+  "México": "🇲🇽", "Estados Unidos": "🇺🇸", "Arábia Saudita": "🇸🇦", "Japão": "🇯🇵", "Austrália": "🇦🇺", "Internacional": "🌐",
+  "Chile": "🇨🇱", "Colômbia": "🇨🇴", "Uruguai": "🇺🇾", "Paraguai": "🇵🇾", "Peru": "🇵🇪", "Bolívia": "🇧🇴", "Equador": "🇪🇨", "Venezuela": "🇻🇪",
+  "Holanda": "🇳🇱", "Bélgica": "🇧🇪", "Turquia": "🇹🇷", "Grécia": "🇬🇷", "Suíça": "🇨🇭", "Áustria": "🇦🇹", "Dinamarca": "🇩🇰", "Noruega": "🇳🇴", "Polônia": "🇵🇱", "Croácia": "🇭🇷", "Escócia": "🏴", "Irlanda": "🇮🇪",
+  "América do Norte": "🌎", "Ásia": "🌏",
+};
+
+export const competitions: Competition[] = [...baseCompetitions, ...expandedCompetitions].map((competition) => ({
+  ...competition,
+  flag: countryFlags[competition.country] ?? "🏳️",
+  selectable: competition.kind === "league" || competition.kind === "state",
+}));
+
+export const catalogEdition = {
+  id: "2025.1",
+  label: "Temporada 2025 (Brasil) / 2025–26 (Europa)",
+  scope: "clubes participantes; sem elencos individuais",
+} as const;
+
+const featuredClubs: Club[] = [
   { id: "santos", name: "Santos", country: "Brasil", leagueId: "bra-a", crest: "santos", strength: 74, reputation: 89, budget: 67, style: "posse", rivals: ["corinthians", "palmeiras", "sao-paulo"] },
   { id: "palmeiras", name: "Palmeiras", country: "Brasil", leagueId: "bra-a", crest: "palmeiras", strength: 86, reputation: 92, budget: 91, style: "pressao", rivals: ["corinthians", "sao-paulo", "santos"] },
   { id: "corinthians", name: "Corinthians", country: "Brasil", leagueId: "bra-a", crest: "corinthians", strength: 80, reputation: 93, budget: 83, style: "vertical", rivals: ["palmeiras", "sao-paulo", "santos"] },
@@ -44,11 +114,11 @@ export const clubs: Club[] = [
   { id: "real-madrid", name: "Real Madrid", country: "Espanha", leagueId: "esp-ll", crest: "real-madrid", strength: 94, reputation: 100, budget: 100, style: "vertical", rivals: ["barcelona", "atletico"] },
   { id: "barcelona", name: "Barcelona", country: "Espanha", leagueId: "esp-ll", crest: "barcelona", strength: 91, reputation: 99, budget: 96, style: "posse", rivals: ["real-madrid"] },
   { id: "goias", name: "Goiás", country: "Brasil", leagueId: "bra-b", crest: "goias", strength: 66, reputation: 72, budget: 48, style: "vertical", rivals: ["vila-nova"] },
-  { id: "sport", name: "Sport", country: "Brasil", leagueId: "bra-b", crest: "sport", strength: 68, reputation: 77, budget: 54, style: "pressao", rivals: ["nautico", "santa-cruz"] },
+  { id: "sport", name: "Sport", country: "Brasil", leagueId: "bra-a", crest: "sport", strength: 68, reputation: 77, budget: 54, style: "pressao", rivals: ["nautico", "santa-cruz"] },
   { id: "coritiba", name: "Coritiba", country: "Brasil", leagueId: "bra-b", crest: "coritiba", strength: 66, reputation: 78, budget: 52, style: "posse", rivals: ["athletico"] },
   { id: "america-mg", name: "América-MG", country: "Brasil", leagueId: "bra-b", crest: "america-mg", strength: 65, reputation: 70, budget: 45, style: "vertical", rivals: ["atletico-mg", "cruzeiro"] },
   { id: "ponte-preta", name: "Ponte Preta", country: "Brasil", leagueId: "bra-c", crest: "ponte-preta", strength: 57, reputation: 72, budget: 31, style: "defensivo", rivals: ["guarani"] },
-  { id: "remo", name: "Remo", country: "Brasil", leagueId: "bra-c", crest: "remo", strength: 58, reputation: 70, budget: 32, style: "pressao", rivals: ["paysandu"] },
+  { id: "remo", name: "Remo", country: "Brasil", leagueId: "bra-b", crest: "remo", strength: 58, reputation: 70, budget: 32, style: "pressao", rivals: ["paysandu"] },
   { id: "figueirense", name: "Figueirense", country: "Brasil", leagueId: "bra-c", crest: "figueirense", strength: 56, reputation: 68, budget: 29, style: "vertical", rivals: ["avai"] },
   { id: "nautico", name: "Náutico", country: "Brasil", leagueId: "bra-c", crest: "nautico", strength: 56, reputation: 71, budget: 30, style: "posse", rivals: ["sport", "santa-cruz"] },
   { id: "portuguesa", name: "Portuguesa", country: "Brasil", leagueId: "bra-d", crest: "portuguesa", strength: 48, reputation: 69, budget: 20, style: "posse", rivals: [] },
@@ -77,7 +147,51 @@ export const clubs: Club[] = [
   { id: "sydney-fc", name: "Sydney FC", country: "Austrália", leagueId: "aus-al", crest: "sydney-fc", strength: 66, reputation: 75, budget: 50, style: "posse", rivals: ["melbourne-victory"] },
 ];
 
-export const stateLeagueNames = ["Paulista", "Carioca", "Mineiro", "Gaúcho", "Baiano", "Pernambucano", "Cearense", "Paranaense", "Catarinense", "Goiano", "Paraense", "Amazonense", "Brasiliense", "Alagoano", "Sergipano", "Potiguar", "Paraibano", "Maranhense", "Piauiense", "Mato-grossense", "Sul-mato-grossense", "Capixaba", "Acreano", "Rondoniense", "Roraimense", "Amapaense", "Tocantinense"];
+function slug(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+/**
+ * Minimal club metadata for the catalogue. This deliberately contains no player roster.
+ * Exact strength, rivalries and licensed crest assets can be overlaid by an import pack.
+ */
+function roster(leagueId: string, country: string, names: string[]): Club[] {
+  return names.map((name, index) => ({
+    id: `${leagueId}-${slug(name)}`,
+    name,
+    country,
+    leagueId,
+    crest: `club-${leagueId}-${slug(name)}`,
+    strength: Math.max(42, 72 - index),
+    reputation: Math.max(40, 70 - index),
+    budget: Math.max(15, 55 - index),
+    style: index % 4 === 0 ? "posse" : index % 4 === 1 ? "vertical" : index % 4 === 2 ? "pressao" : "defensivo",
+    rivals: [],
+  }));
+}
+
+const rosterClubs: Club[] = [
+  // Brasil 2025 — todos os participantes das quatro séries nacionais.
+  ...roster("bra-a", "Brasil", ["Atlético-MG", "Bahia", "Botafogo", "Ceará", "Corinthians", "Cruzeiro", "Flamengo", "Fluminense", "Fortaleza", "Grêmio", "Internacional", "Juventude", "Mirassol", "Palmeiras", "Bragantino", "Santos", "São Paulo", "Sport", "Vasco da Gama", "Vitória"]),
+  ...roster("bra-b", "Brasil", ["América-MG", "Amazonas", "Athletic", "Athletico-PR", "Atlético-GO", "Avaí", "Botafogo-SP", "Chapecoense", "CRB", "Criciúma", "Coritiba", "Cuiabá", "Ferroviária", "Goiás", "Novorizontino", "Operário-PR", "Paysandu", "Remo", "Vila Nova", "Volta Redonda"]),
+  ...roster("bra-c", "Brasil", ["ABC", "Anápolis", "Botafogo-PB", "Brusque", "Caxias", "Confiança", "CSA", "Figueirense", "Floresta", "Guarani", "Itabaiana", "Ituano", "Londrina", "Maringá", "Náutico", "Ponte Preta", "Retrô", "São Bernardo", "Tombense", "Ypiranga-RS"]),
+  ...roster("bra-d", "Brasil", ["Águia de Marabá", "GAS", "Humaitá", "Independência-AC", "Manauara", "Manaus", "Trem", "Tuna Luso", "Altos", "Iguatu", "Imperatriz", "Maracanã", "Maranhão", "Parnahyba", "Sampaio Corrêa", "Tocantinópolis", "América-RN", "Central", "Ferroviário", "Horizonte", "Santa Cruz", "Santa Cruz de Natal", "Sousa", "Treze", "ASA", "Barcelona de Ilhéus", "Jequié", "Juazeirense", "Lagarto", "Penedense", "Sergipe", "União-TO", "Aparecidense", "Capital-DF", "Ceilândia", "Goianésia", "Goiânia", "Luverdense", "Mixto-MT", "Porto Velho", "Boavista", "Maricá", "Nova Iguaçu", "Porto Vitória", "Portuguesa", "Pouso Alegre", "Rio Branco-ES", "Água Santa", "Cianorte", "FC Cascavel", "Goiatuba", "Inter de Limeira", "Itabirito", "Monte Azul", "Operário-MS", "Uberlândia", "Azuriz", "Barra-SC", "Brasil de Pelotas", "Guarany de Bagé", "Joinville", "Marcílio Dias", "São José-RS", "São Luiz"]),
+  ...roster("arg-lp", "Argentina", ["Aldosivi", "Argentinos Juniors", "Atlético Tucumán", "Banfield", "Barracas Central", "Belgrano", "Boca Juniors", "Central Córdoba", "Defensa y Justicia", "Deportivo Riestra", "Estudiantes", "Gimnasia La Plata", "Godoy Cruz", "Huracán", "Independiente", "Independiente Rivadavia", "Instituto", "Lanús", "Newell's Old Boys", "Platense", "Racing Club", "River Plate", "Rosario Central", "San Lorenzo", "San Martín de San Juan", "Sarmiento", "Talleres", "Tigre", "Unión", "Vélez Sarsfield"]),
+  ...roster("eng-pl", "Inglaterra", ["Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton & Hove Albion", "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham Hotspur", "West Ham United", "Wolverhampton Wanderers"]),
+  ...roster("esp-ll", "Espanha", ["Alavés", "Athletic Club", "Atlético de Madrid", "Barcelona", "Celta de Vigo", "Elche", "Espanyol", "Getafe", "Girona", "Levante", "Mallorca", "Osasuna", "Rayo Vallecano", "Real Betis", "Real Madrid", "Real Oviedo", "Real Sociedad", "Sevilla", "Valencia", "Villarreal"]),
+  ...roster("ita-sa", "Itália", ["Atalanta", "Bologna", "Cagliari", "Como", "Cremonese", "Fiorentina", "Genoa", "Hellas Verona", "Internazionale", "Juventus", "Lazio", "Lecce", "Milan", "Napoli", "Parma", "Pisa", "Roma", "Sassuolo", "Torino", "Udinese"]),
+  ...roster("ger-bl", "Alemanha", ["Augsburg", "Bayern München", "Bayer Leverkusen", "Borussia Dortmund", "Borussia Mönchengladbach", "Eintracht Frankfurt", "FC Köln", "Freiburg", "Hamburgo", "Heidenheim", "Hoffenheim", "Mainz 05", "RB Leipzig", "St. Pauli", "Stuttgart", "Union Berlin", "Werder Bremen", "Wolfsburg"]),
+  ...roster("fra-l1", "França", ["Angers", "Auxerre", "Brest", "Le Havre", "Lens", "Lille", "Lorient", "Lyon", "Olympique de Marseille", "Metz", "Monaco", "Nantes", "Nice", "Paris FC", "Paris Saint-Germain", "Rennes", "Strasbourg", "Toulouse"]),
+  ...roster("por-pl", "Portugal", ["Alverca", "Arouca", "AVS", "Benfica", "Braga", "Casa Pia", "Estoril", "Estrela da Amadora", "Famalicão", "Gil Vicente", "Moreirense", "Nacional", "Porto", "Rio Ave", "Santa Clara", "Sporting", "Tondela", "Vitória SC"]),
+  ...roster("mex-liga", "México", ["Club América", "Atlas", "Atlético San Luis", "Cruz Azul", "Guadalajara", "Juárez", "León", "Mazatlán", "Monterrey", "Necaxa", "Pachuca", "Puebla", "Pumas UNAM", "Querétaro", "Santos Laguna", "Tijuana", "Toluca", "Tigres UANL"]),
+  ...roster("usa-mls", "Estados Unidos", ["Atlanta United", "Austin FC", "Charlotte FC", "Chicago Fire", "FC Cincinnati", "Colorado Rapids", "Columbus Crew", "FC Dallas", "D.C. United", "Houston Dynamo", "Inter Miami", "LA Galaxy", "Los Angeles FC", "Minnesota United", "CF Montréal", "Nashville SC", "New England Revolution", "New York City FC", "New York Red Bulls", "Orlando City", "Philadelphia Union", "Portland Timbers", "Real Salt Lake", "San Diego FC", "San Jose Earthquakes", "Seattle Sounders", "Sporting Kansas City", "St. Louis City", "Toronto FC", "Vancouver Whitecaps"]),
+  ...roster("sau-pro", "Arábia Saudita", ["Al-Ahli", "Al-Ettifaq", "Al-Fateh", "Al-Fayha", "Al-Hazem", "Al-Hilal", "Al-Ittihad", "Al-Khaleej", "Al-Najma", "Al-Nassr", "Al-Okhdood", "Al-Qadsiah", "Al-Riyadh", "Al-Shabab", "Al-Taawoun", "Al-Wehda", "Damac", "NEOM"]),
+  ...roster("jpn-j1", "Japão", ["Albirex Niigata", "Avispa Fukuoka", "Cerezo Osaka", "FC Machida Zelvia", "FC Tokyo", "Gamba Osaka", "Kashima Antlers", "Kashiwa Reysol", "Kawasaki Frontale", "Kyoto Sanga", "Nagoya Grampus", "Fagiano Okayama", "Sanfrecce Hiroshima", "Shimizu S-Pulse", "Shonan Bellmare", "Tokyo Verdy", "Urawa Reds", "Vissel Kobe", "Yokohama F. Marinos", "Yokohama FC"]),
+  ...roster("aus-al", "Austrália", ["Adelaide United", "Auckland FC", "Brisbane Roar", "Central Coast Mariners", "Macarthur FC", "Melbourne City", "Melbourne Victory", "Newcastle Jets", "Perth Glory", "Sydney FC", "Wellington Phoenix", "Western Sydney Wanderers", "Western United"]),
+];
+
+/** Keep featured metadata (rivalries/strength) while completing the fixed roster list. */
+export const clubs: Club[] = [...new Map([...rosterClubs, ...featuredClubs].map((club) => [`${club.leagueId}:${club.name}`, club])).values()];
 
 // Target coverage imported by the licensed/public data pack. Keeping this explicit lets the
 // importer flag a release that silently drops a league from the promised catalogue.
@@ -91,9 +205,19 @@ export const requiredCompetitionNames = [
 
 export function validateCatalog(input: { clubs: Club[]; competitions: Competition[] }) {
   const errors: string[] = [];
+  const ids = new Set<string>();
   input.clubs.forEach((club) => {
+    if (ids.has(club.id)) errors.push(`ID de clube duplicado: ${club.id}`);
+    ids.add(club.id);
     if (!club.name || !club.crest) errors.push(`Clube sem nome ou escudo: ${club.id}`);
     if (!input.competitions.some((competition) => competition.id === club.leagueId)) errors.push(`Liga ausente para ${club.name}`);
+  });
+  input.competitions.filter((competition) => competition.selectable).forEach((competition) => {
+    if (!competition.flag) errors.push(`Bandeira ausente para ${competition.name}`);
+    const actual = input.clubs.filter((club) => club.leagueId === competition.id).length;
+    if (competition.expectedClubCount !== undefined && actual !== competition.expectedClubCount) {
+      errors.push(`${competition.name}: esperado ${competition.expectedClubCount} clubes, encontrados ${actual}`);
+    }
   });
   return errors;
 }

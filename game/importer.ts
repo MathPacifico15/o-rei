@@ -25,8 +25,8 @@ export function validateImport(pack: LicensedCatalogPack): ImportReport {
   const missingRequiredCompetitions = requiredCompetitionNames.filter((name) => !competitionNames.has(name));
   const missingCrests = pack.clubs.filter((club) => !club.crest.trim()).map((club) => club.name);
   return {
-    valid: errors.length === 0 && missingCrests.length === 0,
-    errors,
+    valid: errors.length === 0 && missingCrests.length === 0 && missingRequiredCompetitions.length === 0,
+    errors: missingRequiredCompetitions.length ? [...errors, `Competições obrigatórias ausentes: ${missingRequiredCompetitions.join(", ")}`] : errors,
     missingRequiredCompetitions,
     missingCrests,
   };
