@@ -1,5 +1,8 @@
 import type { Club, Competition } from "./types";
 import { clubSnapshots } from "./data/club-snapshots";
+import { verifiedClubSnapshots } from "./data/verified-club-snapshots";
+
+const allClubSnapshots = [...clubSnapshots, ...verifiedClubSnapshots];
 
 // This is the versioned starter catalog. A licensed import can replace crest/name fields
 // without touching simulation code. Crest strings are stable asset keys, not remote URLs.
@@ -93,7 +96,7 @@ export const competitions: Competition[] = [...baseCompetitions, ...expandedComp
   ...competition,
   // A participant snapshot is authoritative for its imported edition. This keeps
   // rule changes (such as Brazil's 96-club Série D) from silently using old totals.
-  expectedClubCount: clubSnapshots.find((snapshot) => snapshot.competitionId === competition.id)?.clubs.length ?? competition.expectedClubCount,
+  expectedClubCount: allClubSnapshots.find((snapshot) => snapshot.competitionId === competition.id)?.clubs.length ?? competition.expectedClubCount,
   flag: countryFlags[competition.country] ?? "🏳️",
   selectable: competition.kind === "league" || competition.kind === "state",
 }));
@@ -178,7 +181,8 @@ const manuallyMaintainedRosterClubs: Club[] = [
   // Brasil 2025 — todos os participantes das quatro séries nacionais.
   ...roster("bra-a", "Brasil", ["Atlético-MG", "Bahia", "Botafogo", "Ceará", "Corinthians", "Cruzeiro", "Flamengo", "Fluminense", "Fortaleza", "Grêmio", "Internacional", "Juventude", "Mirassol", "Palmeiras", "Bragantino", "Santos", "São Paulo", "Sport", "Vasco da Gama", "Vitória"]),
   ...roster("bra-b", "Brasil", ["América-MG", "Amazonas", "Athletic", "Athletico-PR", "Atlético-GO", "Avaí", "Botafogo-SP", "Chapecoense", "CRB", "Criciúma", "Coritiba", "Cuiabá", "Ferroviária", "Goiás", "Novorizontino", "Operário-PR", "Paysandu", "Remo", "Vila Nova", "Volta Redonda"]),
-  ...roster("bra-c", "Brasil", ["ABC", "Anápolis", "Botafogo-PB", "Brusque", "Caxias", "Confiança", "CSA", "Figueirense", "Floresta", "Guarani", "Itabaiana", "Ituano", "Londrina", "Maringá", "Náutico", "Ponte Preta", "Retrô", "São Bernardo", "Tombense", "Ypiranga-RS"]),
+  // Série C 2026: a lista anterior, da edição de 2025, foi substituída.
+  ...roster("bra-c", "Brasil", ["Amazonas", "Anápolis", "Barra-SC", "Botafogo-PB", "Brusque", "Caxias", "Confiança", "Ferroviária", "Figueirense", "Floresta", "Guarani", "Inter de Limeira", "Itabaiana", "Ituano", "Maranhão", "Maringá", "Paysandu", "Santa Cruz", "Volta Redonda", "Ypiranga-RS"]),
   // Série D 2026: os 96 participantes divulgados pela CBF, nos 16 grupos de seis.
   ...roster("bra-d", "Brasil", ["Nacional-AM", "Manaus", "Manauara", "GAS", "Monte Roraima", "São Raimundo-RR", "Independência-AC", "Galvez", "Humaitá", "Porto Velho", "Guaporé", "Araguaína", "Gama", "Brasiliense", "Luverdense", "Primavera-MT", "Inhumas", "Aparecidense", "Capital-DF", "Ceilândia", "Mixto-MT", "Operário-MT", "União-MT", "Goiatuba", "Trem", "Oratório", "Tuna Luso", "Águia de Marabá", "Tocantinópolis", "Imperatriz", "Sampaio Corrêa-MA", "Moto Club", "IAPE", "Maracanã", "Iguatu", "Parnahyba", "Ferroviário", "Tirol", "Atlético-CE", "Altos", "Piauí", "Fluminense-PI", "ABC", "América-RN", "Laguna", "Sousa", "Maguary", "Central", "Retrô", "Decisão", "Serra Branca", "Treze", "Lagarto", "Sergipe", "ASA", "CSA", "CSE", "Jacuipense", "Atlético-BA", "Juazeirense", "Uberlândia", "Betim", "CRAC", "ABECAT", "Operário-MS", "Ivinhema", "Porto-BA", "Rio Branco-ES", "Vitória-ES", "Real Noroeste", "Tombense", "Democrata-GV", "Madureira", "Portuguesa-RJ", "America-RJ", "Portuguesa-SP", "Água Santa", "Pouso Alegre", "Nova Iguaçu", "Sampaio Corrêa-RJ", "Maricá", "XV de Piracicaba", "Noroeste", "Velo Clube", "Cianorte", "FC Cascavel", "Santa Catarina", "Joinville", "Guarany de Bagé", "São Luiz", "Blumenau", "Marcílio Dias", "São Joseense", "Azuriz", "São José-RS", "Brasil de Pelotas"]),
   ...roster("arg-lp", "Argentina", ["Aldosivi", "Argentinos Juniors", "Atlético Tucumán", "Banfield", "Barracas Central", "Belgrano", "Boca Juniors", "Central Córdoba", "Defensa y Justicia", "Deportivo Riestra", "Estudiantes", "Gimnasia La Plata", "Godoy Cruz", "Huracán", "Independiente", "Independiente Rivadavia", "Instituto", "Lanús", "Newell's Old Boys", "Platense", "Racing Club", "River Plate", "Rosario Central", "San Lorenzo", "San Martín de San Juan", "Sarmiento", "Talleres", "Tigre", "Unión", "Vélez Sarsfield"]),
@@ -195,8 +199,8 @@ const manuallyMaintainedRosterClubs: Club[] = [
   ...roster("aus-al", "Austrália", ["Adelaide United", "Auckland FC", "Brisbane Roar", "Central Coast Mariners", "Macarthur FC", "Melbourne City", "Melbourne Victory", "Newcastle Jets", "Perth Glory", "Sydney FC", "Wellington Phoenix", "Western Sydney Wanderers", "Western United"]),
 ];
 
-const sourcedCompetitionIds = new Set<string>(clubSnapshots.map((snapshot) => snapshot.competitionId));
-const sourcedRosterClubs = clubSnapshots.flatMap((snapshot) => roster(snapshot.competitionId, snapshot.country, [...snapshot.clubs]));
+const sourcedCompetitionIds = new Set<string>(allClubSnapshots.map((snapshot) => snapshot.competitionId));
+const sourcedRosterClubs = allClubSnapshots.flatMap((snapshot) => roster(snapshot.competitionId, snapshot.country, [...snapshot.clubs]));
 // Never merge an older hand list into a competition with a current snapshot.
 // This avoids leaving a relegated club selectable beside the real participants.
 const rosterClubs = [
@@ -206,7 +210,40 @@ const rosterClubs = [
 
 /** Keep featured metadata (rivalries/strength) while completing the fixed roster list. */
 const currentFeaturedClubs = featuredClubs.filter((club) => !sourcedCompetitionIds.has(club.leagueId) || rosterClubs.some((candidate) => candidate.leagueId === club.leagueId && candidate.name === club.name));
-export const clubs: Club[] = [...new Map([...rosterClubs, ...currentFeaturedClubs].map((club) => [`${club.leagueId}:${club.name}`, club])).values()];
+
+// Nos estaduais entram apenas clubes que também jogam uma Série nacional A–D
+// em 2026. Isso evita inventar participantes locais sem divisão nacional.
+const stateMemberships: Record<string, string[]> = {
+  "bra-state-1": ["Corinthians", "Mirassol", "Palmeiras", "Red Bull Bragantino", "Santos", "São Paulo", "Botafogo-SP", "Novorizontino", "Ponte Preta", "São Bernardo", "Ferroviária", "Guarani", "Inter de Limeira", "Ituano", "Portuguesa-SP", "Água Santa", "XV de Piracicaba", "Noroeste", "Velo Clube"],
+  "bra-state-2": ["Botafogo", "Flamengo", "Fluminense", "Vasco da Gama", "Volta Redonda", "Madureira", "Portuguesa-RJ", "America-RJ", "Nova Iguaçu", "Sampaio Corrêa-RJ", "Maricá"],
+  "bra-state-3": ["Atlético-MG", "Cruzeiro", "América Mineiro", "Athletic", "Uberlândia", "Betim", "Pouso Alegre", "Tombense", "Democrata-GV"],
+  "bra-state-4": ["Grêmio", "Internacional", "Juventude", "Caxias", "Ypiranga-RS", "Brasil de Pelotas", "Guarany de Bagé", "São José-RS", "São Luiz"],
+  "bra-state-5": ["Bahia", "Vitória", "Atlético-BA", "Juazeirense", "Porto-BA", "Jacuipense"],
+  "bra-state-6": ["Sport", "Náutico", "Retrô", "Santa Cruz", "Central", "Maguary", "Decisão"],
+  "bra-state-7": ["Ceará", "Fortaleza", "Ferroviário", "Floresta", "Maracanã", "Iguatu", "Tirol", "Atlético-CE"],
+  "bra-state-8": ["Athletico-PR", "Coritiba", "Operário PR", "Londrina", "Maringá", "Cianorte", "FC Cascavel", "São Joseense", "Azuriz"],
+  "bra-state-9": ["Chapecoense", "Criciúma", "Avaí", "Barra-SC", "Brusque", "Figueirense", "Santa Catarina", "Joinville", "Blumenau", "Marcílio Dias"],
+  "bra-state-10": ["Atlético Goianiense", "Goiás", "Vila Nova", "Anápolis", "Aparecidense", "Goiatuba", "CRAC", "ABECAT", "Inhumas"],
+  "bra-state-11": ["Remo", "Paysandu", "Águia de Marabá", "Tuna Luso"], "bra-state-12": ["Amazonas", "Nacional-AM", "Manaus", "Manauara"],
+  "bra-state-13": ["Gama", "Brasiliense", "Capital-DF", "Ceilândia"], "bra-state-14": ["CRB", "CSA", "ASA", "CSE"],
+  "bra-state-15": ["Confiança", "Itabaiana", "Lagarto", "Sergipe"], "bra-state-16": ["ABC", "América-RN", "Laguna"],
+  "bra-state-17": ["Botafogo-PB", "Sousa", "Treze", "Serra Branca"], "bra-state-18": ["Maranhão", "Sampaio Corrêa-MA", "Moto Club", "IAPE", "Imperatriz"],
+  "bra-state-19": ["Altos", "Parnahyba", "Piauí", "Fluminense-PI"], "bra-state-20": ["Cuiabá", "Luverdense", "Primavera-MT", "Mixto-MT", "Operário-MT", "União-MT"],
+  "bra-state-21": ["Operário-MS", "Ivinhema"], "bra-state-22": ["Rio Branco-ES", "Vitória-ES", "Real Noroeste"],
+  "bra-state-23": ["Independência-AC", "Galvez", "Humaitá"], "bra-state-24": ["Porto Velho", "Guaporé"],
+  "bra-state-25": ["GAS", "Monte Roraima", "São Raimundo-RR"], "bra-state-26": ["Trem", "Oratório"], "bra-state-27": ["Araguaína", "Tocantinópolis"],
+};
+
+function clubCompetitions(club: Club) {
+  return [club.leagueId, ...Object.entries(stateMemberships).filter(([, names]) => names.includes(club.name)).map(([competitionId]) => competitionId)];
+}
+
+export const clubs: Club[] = [...new Map([...rosterClubs, ...currentFeaturedClubs].map((club) => [`${club.leagueId}:${club.name}`, club])).values()]
+  .map((club) => ({ ...club, competitionIds: clubCompetitions(club) }));
+
+export function clubCompetesIn(club: Club, competitionId: string) {
+  return club.leagueId === competitionId || club.competitionIds?.includes(competitionId) === true;
+}
 
 // Target coverage imported by the licensed/public data pack. Keeping this explicit lets the
 // importer flag a release that silently drops a league from the promised catalogue.
@@ -229,7 +266,7 @@ export function validateCatalog(input: { clubs: Club[]; competitions: Competitio
   });
   input.competitions.filter((competition) => competition.selectable).forEach((competition) => {
     if (!competition.flag) errors.push(`Bandeira ausente para ${competition.name}`);
-    const actual = input.clubs.filter((club) => club.leagueId === competition.id).length;
+    const actual = input.clubs.filter((club) => clubCompetesIn(club, competition.id)).length;
     if (competition.expectedClubCount !== undefined && actual !== competition.expectedClubCount) {
       errors.push(`${competition.name}: esperado ${competition.expectedClubCount} clubes, encontrados ${actual}`);
     }

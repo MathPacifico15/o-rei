@@ -38,7 +38,12 @@ async function fetchParticipants([competitionId, country, espnId, calendar]) {
   const response = await fetch(url, { headers: { "user-agent": "O-REI-catalog-sync/1.0" } });
   if (!response.ok) throw new Error(`${competitionId}: HTTP ${response.status}`);
   const payload = await response.json();
-  const clubs = [...new Set((payload.events ?? []).flatMap((event) => event.competitions?.[0]?.competitors?.map((competitor) => competitor.team.displayName) ?? []))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const clubs = [...new Set((payload.events ?? [])
+    .flatMap((event) => event.competitions?.[0]?.competitors?.map((competitor) => competitor.team.displayName) ?? [])
+    // Schedule providers sometimes add future-playoff placeholders. They are
+    // explicitly rejected: a placeholder is not a football club.
+    .filter((name) => name && !/^(TBD|TBA|To Be Determined)/i.test(name)))]
+    .sort((a, b) => a.localeCompare(b, "pt-BR"));
   if (!clubs.length) throw new Error(`${competitionId}: a fonte não retornou participantes`);
   return { competitionId, country, clubs, source: url };
 }

@@ -51,8 +51,6 @@ export const clubSnapshots = [
       "Ponte Preta",
       "São Bernardo",
       "Sport",
-      "TBD Away",
-      "TBD Home",
       "Vila Nova"
     ],
     "source": "https://site.api.espn.com/apis/site/v2/sports/soccer/bra.2/scoreboard?dates=20260101-20261231&limit=1000"

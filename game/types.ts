@@ -13,6 +13,8 @@ export interface Club {
   name: string;
   country: string;
   leagueId: string;
+  /** Competitions entered by this real club in the frozen catalogue edition. */
+  competitionIds?: string[];
   crest: string;
   strength: number;
   reputation: number;
