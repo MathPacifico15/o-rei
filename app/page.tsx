@@ -10,7 +10,10 @@ const positions: Array<{ id: Position; label: string }> = [
 const attributeLabels: Record<string, string> = { velocidade: "Velocidade", aceleracao: "Aceleração", resistencia: "Resistência", forca: "Força", potenciaChute: "Potência", impulsao: "Impulsão", agilidade: "Agilidade", dominio: "Domínio", drible: "Drible", passe: "Passe", cruzamento: "Cruzamento", finalizacao: "Finalização", chuteLonge: "Chute de longe", marcacao: "Marcação", dividida: "Dividida", posicionamento: "Posicionamento", visao: "Visão", reflexos: "Reflexos", saidaGol: "Saída do gol", lideranca: "Liderança" };
 
 function crestLetters(name: string) { return name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(); }
-function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) { return <span title={`Símbolo de ${club.name}`} className={`crest crest-${club.id} ${small ? "crest-small" : ""}`}>{crestLetters(club.name)}</span>; }
+function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
+  const [missing, setMissing] = useState(false);
+  return <span title={`Símbolo de ${club.name}`} className={`crest crest-${club.id} ${small ? "crest-small" : ""}`}>{missing ? crestLetters(club.name) : <img src={`/crests/${club.crest}.png`} alt={`Escudo do ${club.name}`} onError={() => setMissing(true)} />}</span>;
+}
 function Brand({ compact = false }: { compact?: boolean }) { return <div className={`brand ${compact ? "brand-compact" : ""}`}><img src="/o-rei-logo.png" alt="O REI — bola de couro e coroa" /></div>; }
 
 function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string }): CareerState {
