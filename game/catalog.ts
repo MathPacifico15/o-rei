@@ -98,7 +98,9 @@ export const competitions: Competition[] = [...baseCompetitions, ...expandedComp
   // rule changes (such as Brazil's 96-club Série D) from silently using old totals.
   expectedClubCount: allClubSnapshots.find((snapshot) => snapshot.competitionId === competition.id)?.clubs.length ?? competition.expectedClubCount,
   flag: countryFlags[competition.country] ?? "🏳️",
-  selectable: competition.kind === "league" || competition.kind === "state",
+  // Estaduais fazem parte da temporada, como uma copa. Eles não são uma
+  // "liga de início": o atleta sempre assina por uma divisão nacional.
+  selectable: competition.kind === "league",
 }));
 
 export const catalogEdition = {

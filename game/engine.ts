@@ -99,6 +99,9 @@ const ASIAN_LEAGUES = ["sau-pro", "jpn-j1", "aus-al"];
 function cupEligible(club: Club, competitionId: string) {
   const domestic = competitions.find((entry) => entry.id === competitionId);
   if (!domestic) return false;
+  // Each Brazilian club has at most one state championship in its catalogue
+  // membership. The state title is seasonal, never a separate starting league.
+  if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
   if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
   if (["ucl", "uel", "uecl", "uefa-super"].includes(competitionId)) return EUROPEAN_COUNTRIES.includes(club.country);
   if (competitionId === "concacaf" || competitionId === "leagues-cup") return NORTH_AMERICAN_LEAGUES.includes(club.leagueId);
@@ -114,7 +117,7 @@ function cupEligible(club: Club, competitionId: string) {
 
 function pickCupFinal(club: Club, ovr: number, form: number, random: () => number): CupFinal | undefined {
   const available = competitions.filter((competition) =>
-    ["cup", "continental", "international"].includes(competition.kind)
+    ["cup", "continental", "international", "state"].includes(competition.kind)
     && competition.id !== "wc"
     && cupEligible(club, competition.id),
   );
