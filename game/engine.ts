@@ -1,5 +1,5 @@
 import { clubs, competitions } from "./catalog";
-import type { AttributeKey, Attributes, CareerEvent, CareerState, Player, Position, SeasonResult, UpgradeCard } from "./types";
+import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, CupFinal, Player, Position, SeasonResult, UpgradeCard } from "./types";
 
 const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
   GOL: { reflexos: 0.28, saidaGol: 0.2, posicionamento: 0.2, agilidade: 0.16, impulsao: 0.1, lideranca: 0.06 },
@@ -86,6 +86,51 @@ const events: CareerEvent[] = [
   { id: "faixa", title: "A braçadeira fica vaga", copy: "O capitão não joga a próxima partida e seu nome surge na conversa.", choices: [{ label: "Assumir a responsabilidade", fame: 1, idolatry: 3 }, { label: "Indicar um veterano", idolatry: 1, form: 1 }, { label: "Dizer que ainda não é a hora", form: 1 }] },
 ];
 
+/**
+ * Cups are not tied to a frozen bracket. A club only enters competitions it
+ * could plausibly play in; the season simulation then creates a credible
+ * opponent from that same eligible pool when it reaches a final.
+ */
+const SOUTH_AMERICAN_COUNTRIES = ["Brasil", "Argentina", "Chile", "Colômbia", "Uruguai", "Paraguai", "Peru", "Bolívia", "Equador", "Venezuela"];
+const EUROPEAN_COUNTRIES = ["Inglaterra", "Espanha", "Itália", "Alemanha", "França", "Portugal", "Holanda", "Bélgica", "Turquia", "Grécia", "Suíça", "Áustria", "Dinamarca", "Noruega", "Polônia", "Croácia", "Escócia", "Irlanda"];
+const NORTH_AMERICAN_LEAGUES = ["mex-liga", "usa-mls"];
+const ASIAN_LEAGUES = ["sau-pro", "jpn-j1", "aus-al"];
+
+function cupEligible(club: Club, competitionId: string) {
+  const domestic = competitions.find((entry) => entry.id === competitionId);
+  if (!domestic) return false;
+  if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
+  if (["ucl", "uel", "uecl", "uefa-super"].includes(competitionId)) return EUROPEAN_COUNTRIES.includes(club.country);
+  if (competitionId === "concacaf" || competitionId === "leagues-cup") return NORTH_AMERICAN_LEAGUES.includes(club.leagueId);
+  if (competitionId === "afc-cl") return ASIAN_LEAGUES.includes(club.leagueId);
+  if (competitionId === "cwc") return club.strength >= 64;
+  // National cups accept clubs from the same country. Supercups are restricted
+  // to stronger clubs, which keeps their finalists credible without a bracket.
+  if (domestic.country !== club.country) return false;
+  return !competitionId.includes("super") && !competitionId.endsWith("-cs") && !competitionId.endsWith("-tc")
+    ? true
+    : club.strength >= 67;
+}
+
+function pickCupFinal(club: Club, ovr: number, form: number, random: () => number): CupFinal | undefined {
+  const available = competitions.filter((competition) =>
+    ["cup", "continental", "international"].includes(competition.kind)
+    && competition.id !== "wc"
+    && cupEligible(club, competition.id),
+  );
+  if (!available.length) return undefined;
+  const chance = Math.min(0.29, 0.035 + Math.max(0, club.strength + ovr * 0.2 - 78) / 210);
+  if (random() > chance) return undefined;
+  const competition = available[Math.floor(random() * available.length)];
+  const opponents = clubs.filter((candidate) => candidate.id !== club.id && cupEligible(candidate, competition.id));
+  if (!opponents.length) return undefined;
+  // Bias toward opponents with enough strength to make a final feel important.
+  const credible = opponents.filter((candidate) => candidate.strength >= Math.max(50, club.strength - 16));
+  const pool = credible.length ? credible : opponents;
+  const opponent = pool[Math.floor(random() * pool.length)];
+  return { competitionId: competition.id, competitionName: competition.name, opponentClubId: opponent.id, opponentClubName: opponent.name };
+}
+
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
   const random = mulberry32(state.seed + state.season * 7919);
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
@@ -104,8 +149,8 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const league = competitions.find((entry) => entry.id === club.leagueId);
   const winsTitle = club.strength + ovr * 0.24 + random() * 19 > 104;
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
-  const continentalTitle = random() > 0.965 && ovr + club.strength > 153 ? (club.country === "Brasil" || club.country === "Argentina" ? "CONMEBOL Libertadores" : "Champions League") : undefined;
-  const title = continentalTitle ?? (winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined);
+  const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
+  const cupFinal = pickCupFinal(club, ovr, player.form, random);
   const eventCount = Math.floor(random() * 6);
   const seasonEvents = Array.from({ length: eventCount }, (_, index) => events[Math.floor(random() * events.length + index) % events.length]);
   const event = seasonEvents[0];
@@ -114,7 +159,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   player.injuries = injuryWeeks; player.age += 1; player.form = clamp(52 + random() * 42 - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (ovr - 62) / 380 - agePenalty / 300)));
   player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
   if (title) player.titles = [...player.titles, title]; if (award) player.awards = [...player.awards, award];
-  const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, finalOpportunity: Boolean(title) || random() > 0.84 };
+  const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
   return { state: { ...state, season: state.season + 1, player, history: [...state.history, result] }, result };
 }
 

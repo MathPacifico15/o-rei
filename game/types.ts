@@ -82,6 +82,16 @@ export interface CareerEvent {
   choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; money?: number }>;
 }
 
+/** A final generated from clubs that can plausibly take part in that cup. */
+export interface CupFinal {
+  competitionId: string;
+  competitionName: string;
+  opponentClubId: string;
+  opponentClubName: string;
+  /** Undefined while the minigame has not decided the final yet. */
+  won?: boolean;
+}
+
 export interface SeasonResult {
   season: number;
   games: number;
@@ -94,6 +104,7 @@ export interface SeasonResult {
   event?: CareerEvent;
   events: CareerEvent[];
   finalOpportunity: boolean;
+  cupFinal?: CupFinal;
 }
 
 export interface CareerState {
