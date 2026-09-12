@@ -95,6 +95,14 @@ const SOUTH_AMERICAN_COUNTRIES = ["Brasil", "Argentina", "Chile", "Colômbia", "
 const EUROPEAN_COUNTRIES = ["Inglaterra", "Espanha", "Itália", "Alemanha", "França", "Portugal", "Holanda", "Bélgica", "Turquia", "Grécia", "Suíça", "Áustria", "Dinamarca", "Noruega", "Polônia", "Croácia", "Escócia", "Irlanda"];
 const NORTH_AMERICAN_LEAGUES = ["mex-liga", "usa-mls"];
 const ASIAN_LEAGUES = ["sau-pro", "jpn-j1", "aus-al"];
+// Norte, Centro-Oeste e Espírito Santo. A divisão nacional não limita a vaga:
+// se o clube atua em um destes estaduais, ele pode sonhar com a Copa Verde.
+const COPA_VERDE_STATE_IDS = [
+  "bra-state-10", // Goiás
+  "bra-state-11", "bra-state-12", "bra-state-13", // Pará, Amazonas, DF
+  "bra-state-20", "bra-state-21", "bra-state-22", // MT, MS, ES
+  "bra-state-23", "bra-state-24", "bra-state-25", "bra-state-26", "bra-state-27", // AC, RO, RR, AP, TO
+];
 
 function cupEligible(club: Club, competitionId: string) {
   const domestic = competitions.find((entry) => entry.id === competitionId);
@@ -102,6 +110,7 @@ function cupEligible(club: Club, competitionId: string) {
   // Each Brazilian club has at most one state championship in its catalogue
   // membership. The state title is seasonal, never a separate starting league.
   if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
+  if (competitionId === "copa-verde") return club.competitionIds?.some((id) => COPA_VERDE_STATE_IDS.includes(id)) === true;
   if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
   if (["ucl", "uel", "uecl", "uefa-super"].includes(competitionId)) return EUROPEAN_COUNTRIES.includes(club.country);
   if (competitionId === "concacaf" || competitionId === "leagues-cup") return NORTH_AMERICAN_LEAGUES.includes(club.leagueId);
