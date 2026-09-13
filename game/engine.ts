@@ -296,6 +296,39 @@ const SOUTH_AMERICAN_COUNTRIES = ["Brasil", "Argentina", "Chile", "Colômbia", "
 const EUROPEAN_COUNTRIES = ["Inglaterra", "Espanha", "Itália", "Alemanha", "França", "Portugal", "Holanda", "Bélgica", "Turquia", "Grécia", "Suíça", "Áustria", "Dinamarca", "Noruega", "Polônia", "Croácia", "Escócia", "Irlanda"];
 const NORTH_AMERICAN_LEAGUES = ["mex-liga", "usa-mls"];
 const ASIAN_LEAGUES = ["sau-pro", "jpn-j1", "aus-al"];
+const NATIONAL_TEAM_COMPETITION_IDS = ["wc", "copa-america", "euro", "gold-cup", "afcon", "asian-cup", "ofc-nations"] as const;
+const EUROPEAN_COUNTRY_CODES = "AL AD AM AT AZ BY BE BA BG HR CY CZ DK EE FI FR GE DE GR HU IS IE IT KZ LV LI LT LU MT MD MC ME NL MK NO PL PT RO RU SM RS SK SI ES SE CH TR UA GB VA".split(" ");
+const SOUTH_AMERICAN_COUNTRY_CODES = "AR BO BR CL CO EC GY PY PE SR UY VE".split(" ");
+const NORTH_AND_CENTRAL_AMERICAN_COUNTRY_CODES = "AG BS BB BZ CA CR CU DM DO SV GD GT GY HT HN JM MX NI PA KN LC VC TT US".split(" ");
+const AFRICAN_COUNTRY_CODES = "DZ AO BJ BW BF BI CV CM CF TD KM CG CD CI DJ EG GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU MA MZ NA NE NG RW ST SN SC SL SO ZA SS SD TZ TG TN UG ZM ZW".split(" ");
+const ASIAN_COUNTRY_CODES = "AF BH BD BT BN KH CN IN ID IR IQ IL JP JO KP KR KW KG LA LB MY MV MN MM NP OM PK PH QA SA SG LK SY TJ TH TL TM AE UZ VN YE PS".split(" ");
+const OCEANIAN_COUNTRY_CODES = "AU FJ KI MH FM NR NZ PW PG WS SB TO TV VU".split(" ");
+
+function hasCountryCode(nationality: string, codes: string[]) {
+  return countries.some((country) => country.name === nationality && codes.includes(country.code));
+}
+
+function selectionTournamentFor(nationality: string, season: number) {
+  // Copa do Mundo de quatro em quatro anos; continentais no ciclo intermediário.
+  if (season % 4 === 2) return "Copa do Mundo";
+  if (season % 4 !== 0) return undefined;
+  if (hasCountryCode(nationality, EUROPEAN_COUNTRY_CODES)) return "Eurocopa";
+  if (hasCountryCode(nationality, SOUTH_AMERICAN_COUNTRY_CODES)) return "Copa América";
+  if (hasCountryCode(nationality, NORTH_AND_CENTRAL_AMERICAN_COUNTRY_CODES)) return "Copa Ouro da CONCACAF";
+  if (hasCountryCode(nationality, AFRICAN_COUNTRY_CODES)) return "Copa Africana de Nações";
+  if (hasCountryCode(nationality, ASIAN_COUNTRY_CODES)) return "Copa da Ásia";
+  if (hasCountryCode(nationality, OCEANIAN_COUNTRY_CODES)) return "Copa das Nações da OFC";
+  return undefined;
+}
+
+function simulateNationalTeamCampaign(player: Player, season: number, ovr: number, random: () => number) {
+  if (ovr < 82) return {};
+  const competition = selectionTournamentFor(player.nationality, season);
+  if (!competition) return {};
+  const titleChance = Math.min(0.42, 0.1 + (ovr - 82) * 0.018 + Math.max(0, player.form - 65) / 500);
+  return { competition, title: random() < titleChance ? competition : undefined };
+}
+
 // Norte, Centro-Oeste e Espírito Santo. A divisão nacional não limita a vaga:
 // se o clube atua em um destes estaduais, ele pode sonhar com a Copa Verde.
 const COPA_VERDE_STATE_IDS = [
@@ -328,7 +361,7 @@ function cupEligible(club: Club, competitionId: string) {
 function pickCupFinal(club: Club, ovr: number, form: number, random: () => number): CupFinal | undefined {
   const available = competitions.filter((competition) =>
     ["cup", "continental", "international", "state"].includes(competition.kind)
-    && competition.id !== "wc"
+    && !NATIONAL_TEAM_COMPETITION_IDS.includes(competition.id as typeof NATIONAL_TEAM_COMPETITION_IDS[number])
     && cupEligible(club, competition.id),
   );
   if (!available.length) return undefined;
@@ -365,14 +398,17 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
   const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
   const cupFinal = pickCupFinal(club, seasonOvr, player.form, random);
+  const nationalTeam = simulateNationalTeamCampaign(player, state.season, ovr, random);
   const seasonEvents = pickSeasonEvents(random, player.fame, player.position, cupFinal);
   const event = seasonEvents[0];
   const award = goals >= 24 ? "Chuteira de Ouro" : player.position === "GOL" && cleanSheets >= 16 ? "Melhor Goleiro da Liga" : goals >= 18 ? "Artilheiro da temporada" : (ovr > 88 && random() > 0.78 ? "Bola de Ouro" : (ovr > 84 && random() > 0.62 ? "Melhor jogador da liga" : undefined));
   player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
   player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 33) / (240 * (0.55 + player.attributes.fisico / 100)))));
   player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
-  if (title) player.titles = [...player.titles, title]; if (award) player.awards = [...player.awards, award];
-  const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
+  if (title) player.titles = [...player.titles, title];
+  if (nationalTeam.title) player.titles = [...player.titles, nationalTeam.title];
+  if (award) player.awards = [...player.awards, award];
+  const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, nationalTeamCompetition: nationalTeam.competition, nationalTeamTitle: nationalTeam.title, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
   return { state: { ...state, season: state.season + 1, player, history: [...state.history, result] }, result };
 }
 
