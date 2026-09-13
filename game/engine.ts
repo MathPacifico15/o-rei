@@ -70,9 +70,9 @@ const goalkeeperFinalEvents: CareerEvent[] = [
     title: "Pênalti no último lance",
     copy: "A final está empatada. O adversário coloca a bola na marca da cal e o estádio inteiro prende a respiração.",
     choices: [
-      { label: "Pular no canto esquerdo", finalOutcome: "win" },
-      { label: "Pular no canto direito", finalOutcome: "win" },
-      { label: "Ficar parado no meio", finalOutcome: "lose" }
+      { label: "Pular no canto esquerdo", finalWinChance: 68 },
+      { label: "Pular no canto direito", finalWinChance: 64 },
+      { label: "Ficar parado no meio", finalWinChance: 28 }
     ]
   },
   {
@@ -80,9 +80,9 @@ const goalkeeperFinalEvents: CareerEvent[] = [
     title: "Cruzamento na área",
     copy: "Nos acréscimos da final, um cruzamento fechado viaja em direção ao gol. Uma decisão define a taça.",
     choices: [
-      { label: "Sair socando a bola", finalOutcome: "win" },
-      { label: "Espalmar no reflexo", finalOutcome: "win" },
-      { label: "Esperar a bola quicar", finalOutcome: "lose" }
+      { label: "Sair socando a bola", finalWinChance: 70 },
+      { label: "Espalmar no reflexo", finalWinChance: 61 },
+      { label: "Esperar a bola quicar", finalWinChance: 24 }
     ]
   },
   {
@@ -90,9 +90,9 @@ const goalkeeperFinalEvents: CareerEvent[] = [
     title: "Rebote na pequena área",
     copy: "A bola sobra viva na pequena área no último ataque da final. O atacante vem sozinho para finalizar.",
     choices: [
-      { label: "Abafar o atacante", finalOutcome: "win" },
-      { label: "Fechar o ângulo rapidamente", finalOutcome: "win" },
-      { label: "Recuar para a linha", finalOutcome: "lose" }
+      { label: "Abafar o atacante", finalWinChance: 67 },
+      { label: "Fechar o ângulo rapidamente", finalWinChance: 59 },
+      { label: "Recuar para a linha", finalWinChance: 31 }
     ]
   }
 ];
