@@ -159,51 +159,6 @@ const midfieldFinalEvents: CareerEvent[] = [
   }
 ];
 
-const defenseFinalEvents: CareerEvent[] = [
-  {
-    id: "defesa-final-linha",
-    title: "Corte em cima da linha",
-    copy: "No último ataque da final, a bola passa pelo goleiro e segue em direção ao gol. Você chega para decidir.",
-    choices: [
-      { label: "Dar um carrinho para cortar" },
-      { label: "Afastar de bico" },
-      { label: "Tentar dominar a bola" }
-    ]
-  },
-  {
-    id: "defesa-final-cruzamento",
-    title: "Cruzamento do último lance",
-    copy: "Um cruzamento perigoso atravessa a área no fim da final. O atacante adversário aparece livre.",
-    choices: [
-      { label: "Antecipar de cabeça" },
-      { label: "Cortar para escanteio" },
-      { label: "Deixar a bola passar" }
-    ]
-  },
-  {
-    id: "defesa-final-dividida",
-    title: "Última dividida",
-    copy: "O atacante dispara em direção à área no último minuto. Você tem uma chance de impedir o gol da final.",
-    choices: [
-      { label: "Fechar o espaço e desarmar" },
-      { label: "Acompanhar até a linha de fundo" },
-      { label: "Tentar o bote de longe" }
-    ]
-  }
-];
-
-function createMidfieldFinalEvent(random: () => number): CareerEvent {
-  const scenario = midfieldFinalEvents[Math.floor(random() * midfieldFinalEvents.length)];
-  const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
-  return { ...scenario, choices: scenario.choices.map((choice, index) => ({ ...choice, finalOutcome: index === losingChoiceIndex ? "lose" : "win" })) };
-}
-
-function createDefenseFinalEvent(random: () => number): CareerEvent {
-  const scenario = defenseFinalEvents[Math.floor(random() * defenseFinalEvents.length)];
-  const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
-  return { ...scenario, choices: scenario.choices.map((choice, index) => ({ ...choice, finalOutcome: index === losingChoiceIndex ? "lose" : "win" })) };
-}
-
 function createGoalkeeperFinalEvent(random: () => number): CareerEvent {
   const scenario = goalkeeperFinalEvents[Math.floor(random() * goalkeeperFinalEvents.length)];
   const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
