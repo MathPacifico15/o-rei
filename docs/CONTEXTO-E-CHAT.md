@@ -40,8 +40,8 @@ Nunca trabalhar direto na `main`. Cada um usa sua branch.
 git pull
 
 # Trabalhar na sua branch
-git checkout feature/ui      # Matheus (interface)
-git checkout feature/game    # Parceiro (jogo/regras)
+git checkout feature/ui      # Maggio (interface)
+git checkout feature/game    # Pacifico (jogo/regras)
 
 # Salvar e enviar
 git add .
@@ -195,8 +195,8 @@ Economia / login     ░░░░░░░░░░░░░░░░░░░�
 
 | Branch | Responsável sugerido | Foco |
 |--------|---------------------|------|
-| `feature/ui` | Matheus | Telas, dashboard, UX, ranking visual |
-| `feature/game` | Parceiro | Eventos, engine, balanceamento, minigames |
+| `feature/ui` | Maggio | Telas, dashboard, UX, ranking visual |
+| `feature/game` | Pacifico | Eventos, engine, balanceamento, minigames |
 
 ---
 
