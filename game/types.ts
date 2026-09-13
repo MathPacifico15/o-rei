@@ -1,11 +1,10 @@
-export type Position = "GOL" | "ZAG" | "LD" | "LE" | "ALA" | "VOL" | "MC" | "MEI" | "PD" | "PE" | "SA" | "CA";
+export type Position = "GOL" | "MEI" | "ATA";
 export type AttributeKey =
-  | "velocidade" | "aceleracao" | "resistencia" | "forca" | "potenciaChute"
-  | "impulsao" | "agilidade" | "dominio" | "drible" | "passe" | "cruzamento"
-  | "finalizacao" | "chuteLonge" | "marcacao" | "dividida" | "posicionamento"
-  | "visao" | "reflexos" | "saidaGol" | "lideranca";
+  | "reflexo" | "elasticidade" | "posicionamento" | "saida" | "lideranca" | "fisico"
+  | "velocidade" | "passe" | "finalizacao" | "drible" | "cabecada" | "forca";
 
 export type Attributes = Record<AttributeKey, number>;
+
 export type Rarity = "raro" | "epico" | "lendario";
 
 export interface Club {
@@ -67,6 +66,17 @@ export interface Player {
   injuries: number;
 }
 
+export interface RandomCareerStart {
+  seed: number;
+  position: Position;
+  club: Club;
+  league: Competition;
+  nationality: string;
+  preferredFoot: Player["preferredFoot"];
+  heightCm: number;
+  shirtNumber: number;
+}
+
 export interface UpgradeCard {
   id: string;
   rarity: Rarity;
@@ -79,7 +89,8 @@ export interface CareerEvent {
   id: string;
   title: string;
   copy: string;
-  choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; money?: number }>;
+  sponsor?: { name: string; logo: string };
+  choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; salary?: number; injuryWeeks?: number; finalOutcome?: "win" | "lose" }>;
 }
 
 /** A final generated from clubs that can plausibly take part in that cup. */
@@ -105,6 +116,10 @@ export interface SeasonResult {
   events: CareerEvent[];
   finalOpportunity: boolean;
   cupFinal?: CupFinal;
+  /** Torneio de seleções disputado automaticamente ao atingir OVR 82. */
+  nationalTeamCompetition?: string;
+  /** Preenchido apenas quando o jogador conquista o torneio de seleções. */
+  nationalTeamTitle?: string;
 }
 
 export interface CareerState {

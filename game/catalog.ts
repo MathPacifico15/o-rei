@@ -38,6 +38,12 @@ const baseCompetitions: CompetitionRow[] = [
   { id: "jpn-j1", name: "J1 League", country: "Japão", tier: 1, kind: "league", season: "calendar", prestige: 71, expectedClubCount: 20 },
   { id: "aus-al", name: "A-League", country: "Austrália", tier: 1, kind: "league", season: "calendar", prestige: 63, expectedClubCount: 13 },
   { id: "wc", name: "Copa do Mundo", country: "Internacional", tier: 1, kind: "international", season: "calendar", prestige: 100 },
+  { id: "copa-america", name: "Copa América", country: "América do Sul", tier: 1, kind: "international", season: "calendar", prestige: 91 },
+  { id: "euro", name: "Eurocopa", country: "Europa", tier: 1, kind: "international", season: "calendar", prestige: 94 },
+  { id: "gold-cup", name: "Copa Ouro da CONCACAF", country: "América do Norte", tier: 1, kind: "international", season: "calendar", prestige: 77 },
+  { id: "afcon", name: "Copa Africana de Nações", country: "África", tier: 1, kind: "international", season: "calendar", prestige: 82 },
+  { id: "asian-cup", name: "Copa da Ásia", country: "Ásia", tier: 1, kind: "international", season: "calendar", prestige: 80 },
+  { id: "ofc-nations", name: "Copa das Nações da OFC", country: "Oceania", tier: 1, kind: "international", season: "calendar", prestige: 63 },
   { id: "cwc", name: "Super Mundial de Clubes", country: "Internacional", tier: 1, kind: "international", season: "calendar", prestige: 91 },
 ];
 

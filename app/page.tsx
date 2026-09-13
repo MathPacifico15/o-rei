@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, legacy, miniGameForSeed, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "minigame" | "legacy";
 const positions: Array<{ id: Position; label: string }> = [
-  { id: "GOL", label: "Goleiro" }, { id: "ZAG", label: "Zagueiro" }, { id: "LD", label: "Lateral-direito" }, { id: "LE", label: "Lateral-esquerdo" }, { id: "ALA", label: "Ala" }, { id: "VOL", label: "Volante" }, { id: "MC", label: "Meio-campista" }, { id: "MEI", label: "Meia" }, { id: "PD", label: "Ponta-direita" }, { id: "PE", label: "Ponta-esquerda" }, { id: "SA", label: "Segundo atacante" }, { id: "CA", label: "Centroavante" },
+  { id: "GOL", label: "Goleiro" },
+  { id: "MEI", label: "Meia · Camisa 10" },
+  { id: "ATA", label: "Atacante · Camisa 9" },
 ];
-const attributeLabels: Record<string, string> = { velocidade: "Velocidade", aceleracao: "Aceleração", resistencia: "Resistência", forca: "Força", potenciaChute: "Potência", impulsao: "Impulsão", agilidade: "Agilidade", dominio: "Domínio", drible: "Drible", passe: "Passe", cruzamento: "Cruzamento", finalizacao: "Finalização", chuteLonge: "Chute de longe", marcacao: "Marcação", dividida: "Dividida", posicionamento: "Posicionamento", visao: "Visão", reflexos: "Reflexos", saidaGol: "Saída do gol", lideranca: "Liderança" };
+const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
 
 function crestLetters(name: string) { return name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(); }
 function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
@@ -17,7 +19,7 @@ function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
 function Brand({ compact = false }: { compact?: boolean }) { return <div className={`brand ${compact ? "brand-compact" : ""}`}><img src="/o-rei-logo.png" alt="O REI — bola de couro e coroa" /></div>; }
 
 function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string }): CareerState {
-  const player: Player = { id: `jogador-${Date.now()}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.shirt, age: 16, clubId: data.club.id, attributes: baseAttributes(), form: 68, fame: 3, salary: 8000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0 };
+  const player: Player = { id: `jogador-${Date.now()}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: baseAttributes(), form: 68, fame: 3, salary: 8000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0 };
   return { seed: 24061940, season: 2026, player, history: [], currentCompetition: "Brasileirão Série A" };
 }
 
@@ -33,7 +35,15 @@ export default function Home() {
   const [activeGame, setActiveGame] = useState<MiniGameDefinition | null>(null);
   useEffect(() => {
     const saved = localStorage.getItem("o-rei-career");
-    if (saved) { try { setCareer(JSON.parse(saved)); } catch { localStorage.removeItem("o-rei-career"); } }
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as CareerState;
+        const validPosition = ["GOL", "MEI", "ATA"].includes(parsed.player?.position);
+        const validAttributes = positionAttributeKeys[parsed.player?.position as Position]?.every((key) => typeof parsed.player.attributes?.[key] === "number");
+        if (validPosition && validAttributes) setCareer(parsed);
+        else { localStorage.removeItem("o-rei-career"); setToast("A atualização de posições exige uma nova carreira."); }
+      } catch { localStorage.removeItem("o-rei-career"); }
+    }
     if ("serviceWorker" in navigator) {
       if (import.meta.env.DEV) navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister())).catch(() => undefined);
       else navigator.serviceWorker.register("/sw.js").catch(() => undefined);
@@ -55,7 +65,43 @@ export default function Home() {
     const history = [...career.history]; history[history.length - 1] = resolved;
     setCareer({ ...career, player, history }); setLastResult(resolved);
   }
-  function chooseEvent(index: number) { if (!career || !event) return; const choice = event.choices[index]; const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry } }; player.fame = Math.max(0, player.fame + (choice.fame ?? 0)); player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0))); player.salary += choice.money ?? 0; player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0))); setCareer({ ...career, player }); if (eventQueue.length) { setEvent(eventQueue[0]); setEventQueue(eventQueue.slice(1)); return; } setToast("Decisões registradas. A arquibancada sentiu o impacto."); setScreen(lastResult?.finalOpportunity ? "minigame" : "evolution"); }
+  function chooseEvent(index: number) {
+    if (!career || !event) return;
+    const choice = event.choices[index];
+    const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry }, titles: [...career.player.titles] };
+    player.fame = Math.max(0, player.fame + (choice.fame ?? 0));
+    player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0)));
+    player.salary += choice.salary ?? 0;
+    player.injuries += choice.injuryWeeks ?? 0;
+    player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0)));
+
+    if (choice.finalOutcome && lastResult?.cupFinal) {
+      const won = choice.finalOutcome === "win";
+      const cupFinal = { ...lastResult.cupFinal, won };
+      const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
+      if (won) {
+        if (!player.titles.includes(cupFinal.competitionName)) player.titles.push(cupFinal.competitionName);
+        player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
+      }
+      const history = [...career.history];
+      history[history.length - 1] = resolved;
+      setCareer({ ...career, player, history });
+      setLastResult(resolved);
+      setEventQueue([]);
+      setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
+      setScreen("evolution");
+      return;
+    }
+
+    setCareer({ ...career, player });
+    if (eventQueue.length) {
+      setEvent(eventQueue[0]);
+      setEventQueue(eventQueue.slice(1));
+      return;
+    }
+    setToast("Decisões registradas. A arquibancada sentiu o impacto.");
+    setScreen(lastResult?.finalOpportunity ? "minigame" : "evolution");
+  }
   function takeCard(card: UpgradeCard) { if (!career) return; setCareer({ ...career, player: applyCard(career.player, card) }); setToast(`${card.name} aplicada. OVR recalculado.`); setScreen("career"); }
   function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); setCareer({ ...career, player }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato assinado com ${club.name}.`); setScreen("career"); }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
@@ -149,7 +195,7 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
             )}
           </div>
           <label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label>
-          <div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => setPosition(item.id)} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div>
+          <div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => { setPosition(item.id); if (item.id === "MEI") setShirt(10); if (item.id === "ATA") setShirt(9); }} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div>
           <label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label>
           <label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label>
           <div className="field field-wide">
@@ -185,7 +231,7 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
 
 function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLegacy }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void }) {
   const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
-  const top = Object.entries(player.attributes).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const seasonGames = result?.games ?? player.games, seasonGoals = result?.goals ?? player.goals, seasonAssists = result?.assists ?? player.assists;
   const seasonRating = (5.4 + (player.form / 100) * 2.3 + Math.min(1.2, (seasonGoals + seasonAssists) / Math.max(1, seasonGames) * .8)).toFixed(1);
   return <main className="app-shell career-shell dashboard-shell">
@@ -202,15 +248,15 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLe
           <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
           <div className="finance-strip"><div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div><div><b>R$ {(player.salary / 1000).toFixed(0)}K</b><span>SALÁRIO</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
           <div className="loyalty"><span>IDOLATRIA</span><div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div><div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div></div>
-          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {player.fame >= 60 ? "CONVOCADO" : "EM OBSERVAÇÃO"}<span>{career.history.length} TEMPORADAS</span></div>
+          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>{career.history.length} TEMPORADAS</span></div>
           <button className="career-history" onClick={onLegacy}>☷ VER CARREIRA</button>
         </section>
         <section className="season-panel">
           <div className="season-titleline"><span>O REI ESPORTIVO</span><small>{career.season}/{String(career.season + 1).slice(-2)} · TEMPORADA {career.history.length + 1}</small></div>
-          <h2>{result?.title ? "A TEMPORADA FOI SUA" : seasonGames ? "A HISTÓRIA CONTINUA" : "PRONTO PARA ESTREAR?"}</h2>
-          <p>{result ? `${player.name} fechou o ano com números que a torcida vai lembrar.` : `Seu caminho no ${club.name} começa agora. Toda temporada deixa uma marca.`}</p>
+          <h2>{result?.nationalTeamTitle ? "CAMPEÃO PELA SELEÇÃO" : result?.title ? "A TEMPORADA FOI SUA" : seasonGames ? "A HISTÓRIA CONTINUA" : "PRONTO PARA ESTREAR?"}</h2>
+          <p>{result?.nationalTeamTitle ? `${player.name} conquistou a ${result.nationalTeamTitle} representando ${player.nationality}.` : result ? `${player.name} fechou o ano com números que a torcida vai lembrar.` : `Seu caminho no ${club.name} começa agora. Toda temporada deixa uma marca.`}</p>
           <div className="club-season"><ClubCrest club={club} /><div><b>{club.name}</b><span>{career.currentCompetition}</span></div></div>
-          <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI" || player.position === "MC"} /><StatTile value={seasonGames ? seasonRating : "—"} label="NOTA" /><StatTile value={`R$ ${(player.salary / 1000).toFixed(0)}K`} label="GANHOS" gold /></div>
+          <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI"} /><StatTile value={seasonGames ? seasonRating : "—"} label="NOTA" /><StatTile value={`R$ ${(player.salary / 1000).toFixed(0)}K`} label="GANHOS" gold /></div>
           <button className="play-button" onClick={onPlay}>CONTINUAR</button>
           {career.season % 2 === 0 && <button className="market-action" onClick={onMarket}>VER PROPOSTAS DE MERCADO</button>}
         </section>
@@ -223,7 +269,7 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLe
 function StatTile({ value, label, accent = false, gold = false }: { value: string | number; label: string; accent?: boolean; gold?: boolean }) { return <div className={`stat-tile ${accent ? "accent" : ""} ${gold ? "gold" : ""}`}><b>{value}</b><span>{label}</span></div>; }
 function Meter({ label, value, gold = false }: { label: string; value: number; gold?: boolean }) { return <div className="form-meter"><span>{label}</span><b>{value}</b><i><em className={gold ? "gold" : ""} style={{ width: `${value}%` }} /></i></div>; }
 
-function Event({ event, onChoose }: { event: CareerEvent; onChoose: (index: number) => void }) { return <main className="app-shell decision-shell"><div className="decision-card"><div className="eyebrow">FORA DAS QUATRO LINHAS</div><span className="decision-mark">◆</span><h1>{event.title}</h1><p>{event.copy}</p><div className="choice-list">{event.choices.map((choice, index) => <button key={choice.label} onClick={() => onChoose(index)}><span>0{index + 1}</span>{choice.label}<i>→</i></button>)}</div><small>Suas escolhas também viram parte da sua história.</small></div></main>; }
+function Event({ event, onChoose }: { event: CareerEvent; onChoose: (index: number) => void }) { return <main className="app-shell decision-shell"><div className="decision-card"><div className="eyebrow">FORA DAS QUATRO LINHAS</div><span className="decision-mark">◆</span><h1>{event.title}</h1><p>{event.copy}</p>{event.sponsor && <img className="sponsor-mark" src={event.sponsor.logo} alt={`Logo da ${event.sponsor.name}`} />}<div className="choice-list">{event.choices.map((choice, index) => <button key={choice.label} onClick={() => onChoose(index)}><span>0{index + 1}</span>{choice.label}<i>→</i></button>)}</div><small>Suas escolhas também viram parte da sua história.</small></div></main>; }
 function Evolution({ player, seed, onSelect, onSkip }: { player: Player; seed: number; onSelect: (card: UpgradeCard) => void; onSkip: () => void }) { const cards = chooseUpgradeCards(player.position, seed); return <main className="app-shell evolution-shell"><nav className="topbar"><Brand compact /><span className="save-chip">EVOLUÇÃO DE TEMPORADA</span></nav><section className="evolution-wrap"><div className="eyebrow">MOMENTO DE TREINO</div><h1>Escolha o próximo salto.</h1><p>Uma carta por temporada. Ganhos reais, feitos para a posição que você escolheu.</p><div className="card-grid">{cards.map((card) => <button key={card.id} className={`training-card ${card.rarity}`} onClick={() => onSelect(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkip}>Pular evolução desta temporada</button></section></main>; }
 function Market({ currentClub, player, onBack, onSelect }: { currentClub: Club; player: Player; onBack: () => void; onSelect: (club: Club) => void }) { const offers = clubs.filter((club) => club.id !== currentClub.id).sort((a, b) => Number(currentClub.rivals.includes(b.id)) - Number(currentClub.rivals.includes(a.id))).slice(0, 4); return <main className="app-shell market-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Carreira</button><Brand compact /><span className="step">JANELA DE MERCADO</span></nav><section className="market-wrap"><div className="eyebrow">CONTRATOS E CONSEQUÊNCIAS</div><h1>O mercado está de olho.</h1><p>Trocar de clube não é apenas mudar de camisa. Em clássico, a arquibancada não esquece.</p><div className="offer-list"><article className="offer current"><ClubCrest club={currentClub} /><div><small>CLUBE ATUAL</small><h2>{currentClub.name}</h2><p>Idolatria: {player.clubIdolatry[currentClub.id] ?? 0}/100</p></div><b>FICAR</b></article>{offers.map((club) => { const rival = currentClub.rivals.includes(club.id); return <article className={`offer ${rival ? "rival" : ""}`} key={club.id}><ClubCrest club={club} /><div><small>{rival ? "RIVAL DIRETO · RISCO DE JUDAS" : "PROPOSTA FORMAL"}</small><h2>{club.name}</h2><p>Força {club.strength} · reputação {club.reputation}</p></div><button className="button button-ghost" onClick={() => onSelect(club)}>ANALISAR</button></article>; })}</div></section></main>; }
 function MiniGame({ game, result, score, onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
