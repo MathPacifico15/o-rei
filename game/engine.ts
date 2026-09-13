@@ -103,9 +103,9 @@ const attackerFinalEvents: CareerEvent[] = [
     title: "Pênalti da taça",
     copy: "A final está empatada e você assume a última cobrança. Um gol coloca a taça nas suas mãos.",
     choices: [
-      { label: "Bater no canto esquerdo", finalOutcome: "win" },
-      { label: "Bater no canto direito", finalOutcome: "win" },
-      { label: "Tentar uma cavadinha", finalOutcome: "lose" }
+      { label: "Bater no canto esquerdo" },
+      { label: "Bater no canto direito" },
+      { label: "Tentar uma cavadinha" }
     ]
   },
   {
@@ -113,9 +113,9 @@ const attackerFinalEvents: CareerEvent[] = [
     title: "Último contra-ataque",
     copy: "O cronômetro está acabando. Você recebe livre na entrada da área e só o goleiro está à frente.",
     choices: [
-      { label: "Finalizar cruzado", finalOutcome: "win" },
-      { label: "Driblar o goleiro", finalOutcome: "win" },
-      { label: "Tentar um chute de longe", finalOutcome: "lose" }
+      { label: "Finalizar cruzado" },
+      { label: "Driblar o goleiro" },
+      { label: "Tentar um chute de longe" }
     ]
   }
 ];
