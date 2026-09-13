@@ -298,11 +298,11 @@ const NORTH_AMERICAN_LEAGUES = ["mex-liga", "usa-mls"];
 const ASIAN_LEAGUES = ["sau-pro", "jpn-j1", "aus-al"];
 const NATIONAL_TEAM_COMPETITION_IDS = ["wc", "copa-america", "euro", "gold-cup", "afcon", "asian-cup", "ofc-nations"] as const;
 const EUROPEAN_COUNTRY_CODES = "AL AD AM AT AZ BY BE BA BG HR CY CZ DK EE FI FR GE DE GR HU IS IE IT KZ LV LI LT LU MT MD MC ME NL MK NO PL PT RO RU SM RS SK SI ES SE CH TR UA GB VA".split(" ");
-const SOUTH_AMERICAN_COUNTRY_CODES = "AR BO BR CL CO EC GY PY PE SR UY VE".split(" ");
-const NORTH_AND_CENTRAL_AMERICAN_COUNTRY_CODES = "AG BS BB BZ CA CR CU DM DO SV GD GT GY HT HN JM MX NI PA KN LC VC TT US".split(" ");
+const SOUTH_AMERICAN_COUNTRY_CODES = "AR BO BR CL CO EC PY PE UY VE".split(" ");
+const NORTH_AND_CENTRAL_AMERICAN_COUNTRY_CODES = "AG BS BB BZ CA CR CU DM DO SV GD GT GY HT HN JM MX NI PA KN LC SR VC TT US".split(" ");
 const AFRICAN_COUNTRY_CODES = "DZ AO BJ BW BF BI CV CM CF TD KM CG CD CI DJ EG GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU MA MZ NA NE NG RW ST SN SC SL SO ZA SS SD TZ TG TN UG ZM ZW".split(" ");
-const ASIAN_COUNTRY_CODES = "AF BH BD BT BN KH CN IN ID IR IQ IL JP JO KP KR KW KG LA LB MY MV MN MM NP OM PK PH QA SA SG LK SY TJ TH TL TM AE UZ VN YE PS".split(" ");
-const OCEANIAN_COUNTRY_CODES = "AU FJ KI MH FM NR NZ PW PG WS SB TO TV VU".split(" ");
+const ASIAN_COUNTRY_CODES = "AF AU BH BD BT BN KH CN IN ID IR IQ IL JP JO KP KR KW KG LA LB MY MV MN MM NP OM PK PH QA SA SG LK SY TJ TH TL TM AE UZ VN YE PS".split(" ");
+const OCEANIAN_COUNTRY_CODES = "FJ KI MH FM NR NZ PW PG WS SB TO TV VU".split(" ");
 
 function hasCountryCode(nationality: string, codes: string[]) {
   return countries.some((country) => country.name === nationality && codes.includes(country.code));
