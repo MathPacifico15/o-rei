@@ -50,7 +50,43 @@ export default function Home() {
     const history = [...career.history]; history[history.length - 1] = resolved;
     setCareer({ ...career, player, history }); setLastResult(resolved);
   }
-  function chooseEvent(index: number) { if (!career || !event) return; const choice = event.choices[index]; const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry } }; player.fame = Math.max(0, player.fame + (choice.fame ?? 0)); player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0))); player.salary += choice.salary ?? 0; player.injuries += choice.injuryWeeks ?? 0; player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0))); setCareer({ ...career, player }); if (eventQueue.length) { setEvent(eventQueue[0]); setEventQueue(eventQueue.slice(1)); return; } setToast("Decisões registradas. A arquibancada sentiu o impacto."); setScreen(lastResult?.finalOpportunity ? "minigame" : "evolution"); }
+  function chooseEvent(index: number) {
+    if (!career || !event) return;
+    const choice = event.choices[index];
+    const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry }, titles: [...career.player.titles] };
+    player.fame = Math.max(0, player.fame + (choice.fame ?? 0));
+    player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0)));
+    player.salary += choice.salary ?? 0;
+    player.injuries += choice.injuryWeeks ?? 0;
+    player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0)));
+
+    if (choice.finalOutcome && lastResult?.cupFinal) {
+      const won = choice.finalOutcome === "win";
+      const cupFinal = { ...lastResult.cupFinal, won };
+      const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
+      if (won) {
+        if (!player.titles.includes(cupFinal.competitionName)) player.titles.push(cupFinal.competitionName);
+        player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
+      }
+      const history = [...career.history];
+      history[history.length - 1] = resolved;
+      setCareer({ ...career, player, history });
+      setLastResult(resolved);
+      setEventQueue([]);
+      setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
+      setScreen("evolution");
+      return;
+    }
+
+    setCareer({ ...career, player });
+    if (eventQueue.length) {
+      setEvent(eventQueue[0]);
+      setEventQueue(eventQueue.slice(1));
+      return;
+    }
+    setToast("Decisões registradas. A arquibancada sentiu o impacto.");
+    setScreen(lastResult?.finalOpportunity ? "minigame" : "evolution");
+  }
   function takeCard(card: UpgradeCard) { if (!career) return; setCareer({ ...career, player: applyCard(career.player, card) }); setToast(`${card.name} aplicada. OVR recalculado.`); setScreen("career"); }
   function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); setCareer({ ...career, player }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato assinado com ${club.name}.`); setScreen("career"); }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
