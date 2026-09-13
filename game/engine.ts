@@ -64,7 +64,40 @@ function createSponsorEvent(random: () => number): CareerEvent {
   };
 }
 
-function pickSeasonEvents(random: () => number, fame: number) {
+const goalkeeperFinalEvents: CareerEvent[] = [
+  {
+    id: "gol-final-penalti",
+    title: "Pênalti no último lance",
+    copy: "A final está empatada. O adversário coloca a bola na marca da cal e o estádio inteiro prende a respiração.",
+    choices: [
+      { label: "Pular no canto esquerdo", finalOutcome: "win" },
+      { label: "Pular no canto direito", finalOutcome: "win" },
+      { label: "Ficar parado no meio", finalOutcome: "lose" }
+    ]
+  },
+  {
+    id: "gol-final-cruzamento",
+    title: "Cruzamento na área",
+    copy: "Nos acréscimos da final, um cruzamento fechado viaja em direção ao gol. Uma decisão define a taça.",
+    choices: [
+      { label: "Sair socando a bola", finalOutcome: "win" },
+      { label: "Espalmar no reflexo", finalOutcome: "win" },
+      { label: "Esperar a bola quicar", finalOutcome: "lose" }
+    ]
+  },
+  {
+    id: "gol-final-rebote",
+    title: "Rebote na pequena área",
+    copy: "A bola sobra viva na pequena área no último ataque da final. O atacante vem sozinho para finalizar.",
+    choices: [
+      { label: "Abafar o atacante", finalOutcome: "win" },
+      { label: "Fechar o ângulo rapidamente", finalOutcome: "win" },
+      { label: "Recuar para a linha", finalOutcome: "lose" }
+    ]
+  }
+];
+
+function pickSeasonEvents(random: () => number, fame: number, position: Position, cupFinal?: CupFinal) {
   const available = [...events];
   if (fame >= 50) available.push(createSponsorEvent(random));
   const count = Math.max(1, Math.floor(random() * 6));
@@ -73,6 +106,7 @@ function pickSeasonEvents(random: () => number, fame: number) {
     const index = Math.floor(random() * available.length);
     selected.push(available.splice(index, 1)[0]);
   }
+  if (position === "GOL" && cupFinal) selected.push(goalkeeperFinalEvents[Math.floor(random() * goalkeeperFinalEvents.length)]);
   return selected;
 }
 
@@ -118,7 +152,7 @@ const events: CareerEvent[] = [
   { id: "selecao", title: "Pré-lista da seleção", copy: "Seu nome aparece entre os observados para a próxima convocação.", choices: [{ label: "Treinar finalização extra", form: 2, fame: 2 }, { label: "Concentrar no clube", idolatry: 2, form: 1 }, { label: "Falar sobre o sonho", fame: 2, idolatry: -1 }] },
   { id: "comunidade", title: "Ação no bairro", copy: "Uma iniciativa local convida o elenco para um dia com a comunidade.", choices: [{ label: "Participar com discrição", fame: 1, idolatry: 3 }, { label: "Levar doações", fame: 2, idolatry: 2, salary: -2000 }, { label: "Não conseguir comparecer", form: 1 }] },
   { id: "recuperacao", title: "Dia extra de recuperação", copy: "Seu corpo acusa a sequência de viagens e decisões.", choices: [{ label: "Fazer recuperação completa", form: 3, fame: -1 }, { label: "Treino leve com bola", form: 1 }, { label: "Ignorar os sinais", fame: 1, form: -3 }] },
-  { id: "faixa", title: "A braçadeira fica vaga", copy: "O capitão não joga a próxima partida e seu nome surge na conversa.", choices: [{ label: "Assumir a responsabilidade", fame: 1, idolatry: 3 }, { label: "Indicar um veterano", idolatry: 1, form: 1 }, { label: "Dizer que ainda não é a hora", form: 1 }] },,
+  { id: "faixa", title: "A braçadeira fica vaga", copy: "O capitão não joga a próxima partida e seu nome surge na conversa.", choices: [{ label: "Assumir a responsabilidade", fame: 1, idolatry: 3 }, { label: "Indicar um veterano", idolatry: 1, form: 1 }, { label: "Dizer que ainda não é a hora", form: 1 }] },
 
   { id: "imprensa", title: "Coletiva polêmica", copy: "Uma pergunta maldosa tenta colocar você contra o técnico.", choices: [{ label: "Defender o grupo", fame: 2, idolatry: 2, form: 1 }, { label: "Responder com provocação", fame: 5, idolatry: -2, form: -1 }] },
   { id: "lesao-leve", title: "Desconforto muscular", copy: "Você sentiu um incômodo no treino. O departamento médico recomenda cuidado.", choices: [{ label: "Seguir o tratamento", form: -1, injuryWeeks: 1 }, { label: "Forçar presença no próximo jogo", fame: 2, form: -4, injuryWeeks: 3 }] },
@@ -220,7 +254,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
   const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
   const cupFinal = pickCupFinal(club, ovr, player.form, random);
-  const seasonEvents = pickSeasonEvents(random, player.fame);
+  const seasonEvents = pickSeasonEvents(random, player.fame, player.position, cupFinal);
   const event = seasonEvents[0];
   const award = goals >= 24 ? "Chuteira de Ouro" : player.position === "GOL" && cleanSheets >= 16 ? "Melhor Goleiro da Liga" : goals >= 18 ? "Artilheiro da temporada" : (ovr > 88 && random() > 0.78 ? "Bola de Ouro" : (ovr > 84 && random() > 0.62 ? "Melhor jogador da liga" : undefined));
   player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
