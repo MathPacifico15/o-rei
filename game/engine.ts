@@ -6,7 +6,6 @@ const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
   ZAG: { marcacao: 0.24, dividida: 0.2, posicionamento: 0.2, forca: 0.16, impulsao: 0.1, velocidade: 0.1 },
   LD: { velocidade: 0.19, aceleracao: 0.18, resistencia: 0.16, cruzamento: 0.16, marcacao: 0.16, dividida: 0.15 },
   LE: { velocidade: 0.19, aceleracao: 0.18, resistencia: 0.16, cruzamento: 0.16, marcacao: 0.16, dividida: 0.15 },
-  ALA: { velocidade: 0.2, aceleracao: 0.2, resistencia: 0.16, drible: 0.16, cruzamento: 0.16, finalizacao: 0.12 },
   VOL: { marcacao: 0.22, dividida: 0.17, passe: 0.16, posicionamento: 0.16, resistencia: 0.15, forca: 0.14 },
   MC: { passe: 0.22, visao: 0.18, dominio: 0.16, resistencia: 0.15, posicionamento: 0.14, chuteLonge: 0.15 },
   MEI: { passe: 0.22, visao: 0.22, dominio: 0.18, drible: 0.16, finalizacao: 0.12, chuteLonge: 0.1 },
@@ -24,9 +23,9 @@ export const upgradeCards: UpgradeCard[] = [
   { id: "def-dividida", rarity: "raro", name: "Tempo de Bote", changes: { dividida: 2, marcacao: 1 }, eligible: ["ZAG", "VOL"] },
   { id: "def-corpo", rarity: "epico", name: "Corpo a Corpo", changes: { forca: 2, impulsao: 2, dividida: 1 }, eligible: ["ZAG", "VOL"] },
   { id: "def-regular", rarity: "lendario", name: "Regularidade Defensiva", changes: { marcacao: 3, posicionamento: 2, resistencia: 2, lideranca: 1 }, eligible: ["ZAG", "VOL"] },
-  { id: "lat-arranque", rarity: "raro", name: "Arranque", changes: { aceleracao: 2, velocidade: 1 }, eligible: ["LD", "LE", "ALA"] },
-  { id: "lat-fundo", rarity: "epico", name: "Fôlego de Linha", changes: { resistencia: 2, velocidade: 2, cruzamento: 1 }, eligible: ["LD", "LE", "ALA"] },
-  { id: "lat-incansavel", rarity: "lendario", name: "Faixa Incansável", changes: { resistencia: 3, velocidade: 3, aceleracao: 2, cruzamento: 1 }, eligible: ["LD", "LE", "ALA"] },
+  { id: "lat-arranque", rarity: "raro", name: "Arranque", changes: { aceleracao: 2, velocidade: 1 }, eligible: ["LD", "LE"] },
+  { id: "lat-fundo", rarity: "epico", name: "Fôlego de Linha", changes: { resistencia: 2, velocidade: 2, cruzamento: 1 }, eligible: ["LD", "LE"] },
+  { id: "lat-incansavel", rarity: "lendario", name: "Faixa Incansável", changes: { resistencia: 3, velocidade: 3, aceleracao: 2, cruzamento: 1 }, eligible: ["LD", "LE"] },
   { id: "mc-passe", rarity: "raro", name: "Passe Vertical", changes: { passe: 2, visao: 1 }, eligible: ["MC", "MEI"] },
   { id: "mc-giro", rarity: "epico", name: "Giro Curto", changes: { dominio: 2, agilidade: 2, passe: 1 }, eligible: ["MC", "MEI"] },
   { id: "mc-frieza", rarity: "lendario", name: "Frieza em Decisão", changes: { visao: 3, passe: 2, finalizacao: 2, chuteLonge: 1 }, eligible: ["MC", "MEI"] },
@@ -36,9 +35,9 @@ export const upgradeCards: UpgradeCard[] = [
   { id: "ataque-chute", rarity: "raro", name: "Técnica de Chute", changes: { finalizacao: 2, potenciaChute: 1 }, eligible: ["SA", "CA"] },
   { id: "ataque-area", rarity: "epico", name: "Ataque à Área", changes: { posicionamento: 2, impulsao: 2, finalizacao: 1 }, eligible: ["SA", "CA"] },
   { id: "ataque-artilheiro", rarity: "lendario", name: "Finalizador Completo", changes: { finalizacao: 3, potenciaChute: 2, posicionamento: 2, forca: 1 }, eligible: ["SA", "CA"] },
-  { id: "geral-resistencia", rarity: "raro", name: "Base Física", changes: { resistencia: 2, forca: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "ALA", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
-  { id: "geral-lideranca", rarity: "epico", name: "Voz de Campo", changes: { lideranca: 2, resistencia: 1, posicionamento: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "ALA", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
-  { id: "geral-atleta", rarity: "lendario", name: "Atleta de Elite", changes: { velocidade: 2, aceleracao: 2, resistencia: 2, forca: 1 }, eligible: ["ZAG", "LD", "LE", "ALA", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
+  { id: "geral-resistencia", rarity: "raro", name: "Base Física", changes: { resistencia: 2, forca: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
+  { id: "geral-lideranca", rarity: "epico", name: "Voz de Campo", changes: { lideranca: 2, resistencia: 1, posicionamento: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
+  { id: "geral-atleta", rarity: "lendario", name: "Atleta de Elite", changes: { velocidade: 2, aceleracao: 2, resistencia: 2, forca: 1 }, eligible: ["ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
 
 ];
 
@@ -142,6 +141,84 @@ function createAttackerFinalEvent(random: () => number): CareerEvent {
   };
 }
 
+const midfieldFinalEvents: CareerEvent[] = [
+  {
+    id: "meio-final-falta",
+    title: "Falta na entrada da área",
+    copy: "No último lance da final, o árbitro marca uma falta perigosa. A bola está na posição perfeita para decidir a taça.",
+    choices: [
+      { label: "Bater colocado no ângulo" },
+      { label: "Levantar na área" },
+      { label: "Tentar uma bomba direta" }
+    ]
+  },
+  {
+    id: "meio-final-passe",
+    title: "Passe entre linhas",
+    copy: "Você recebe de frente para a defesa na última jogada da final. Um companheiro invade a área em velocidade.",
+    choices: [
+      { label: "Enfiar o passe para o atacante" },
+      { label: "Conduzir e abrir espaço" },
+      { label: "Tentar um lançamento longo" }
+    ]
+  },
+  {
+    id: "meio-final-escanteio",
+    title: "Escanteio decisivo",
+    copy: "O relógio se aproxima do fim. Você vai cobrar o escanteio que pode definir a final.",
+    choices: [
+      { label: "Fechar na primeira trave" },
+      { label: "Achar o segundo pau" },
+      { label: "Cobrar curto para segurar a bola" }
+    ]
+  }
+];
+
+const defenseFinalEvents: CareerEvent[] = [
+  {
+    id: "defesa-final-linha",
+    title: "Corte em cima da linha",
+    copy: "No último ataque da final, a bola passa pelo goleiro e segue em direção ao gol. Você chega para decidir.",
+    choices: [
+      { label: "Dar um carrinho para cortar" },
+      { label: "Afastar de bico" },
+      { label: "Tentar dominar a bola" }
+    ]
+  },
+  {
+    id: "defesa-final-cruzamento",
+    title: "Cruzamento do último lance",
+    copy: "Um cruzamento perigoso atravessa a área no fim da final. O atacante adversário aparece livre.",
+    choices: [
+      { label: "Antecipar de cabeça" },
+      { label: "Cortar para escanteio" },
+      { label: "Deixar a bola passar" }
+    ]
+  },
+  {
+    id: "defesa-final-dividida",
+    title: "Última dividida",
+    copy: "O atacante dispara em direção à área no último minuto. Você tem uma chance de impedir o gol da final.",
+    choices: [
+      { label: "Fechar o espaço e desarmar" },
+      { label: "Acompanhar até a linha de fundo" },
+      { label: "Tentar o bote de longe" }
+    ]
+  }
+];
+
+function createMidfieldFinalEvent(random: () => number): CareerEvent {
+  const scenario = midfieldFinalEvents[Math.floor(random() * midfieldFinalEvents.length)];
+  const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
+  return { ...scenario, choices: scenario.choices.map((choice, index) => ({ ...choice, finalOutcome: index === losingChoiceIndex ? "lose" : "win" })) };
+}
+
+function createDefenseFinalEvent(random: () => number): CareerEvent {
+  const scenario = defenseFinalEvents[Math.floor(random() * defenseFinalEvents.length)];
+  const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
+  return { ...scenario, choices: scenario.choices.map((choice, index) => ({ ...choice, finalOutcome: index === losingChoiceIndex ? "lose" : "win" })) };
+}
+
 function createGoalkeeperFinalEvent(random: () => number): CareerEvent {
   const scenario = goalkeeperFinalEvents[Math.floor(random() * goalkeeperFinalEvents.length)];
   const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
@@ -165,6 +242,8 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
   }
   if (position === "GOL" && cupFinal) selected.push(createGoalkeeperFinalEvent(random));
   if (["CA", "SA", "PD", "PE"].includes(position) && cupFinal) selected.push(createAttackerFinalEvent(random));
+  if (["VOL", "MC", "MEI"].includes(position) && cupFinal) selected.push(createMidfieldFinalEvent(random));
+  if (["ZAG", "LD", "LE"].includes(position) && cupFinal) selected.push(createDefenseFinalEvent(random));
   return selected;
 }
 
@@ -304,7 +383,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const creative = (player.attributes.passe + player.attributes.visao + player.attributes.cruzamento) / 300;
   const defensive = (player.attributes.marcacao + player.attributes.dividida + player.attributes.posicionamento) / 300;
   const goals = ["CA", "SA", "PD", "PE", "MEI"].includes(player.position) ? Math.max(0, Math.round(games * attacking * (0.26 + random() * 0.22))) : 0;
-  const assists = ["MC", "MEI", "PD", "PE", "ALA", "LD", "LE"].includes(player.position) ? Math.max(0, Math.round(games * creative * (0.2 + random() * 0.18))) : 0;
+  const assists = ["MC", "MEI", "PD", "PE", "LD", "LE"].includes(player.position) ? Math.max(0, Math.round(games * creative * (0.2 + random() * 0.18))) : 0;
   const cleanSheets = ["GOL", "ZAG", "VOL", "LD", "LE"].includes(player.position) ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
   const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.resistencia / 700) ? Math.round(1 + random() * 7) : 0;
   const league = competitions.find((entry) => entry.id === club.leagueId);
