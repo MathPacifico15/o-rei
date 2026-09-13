@@ -1,4 +1,4 @@
-export type Position = "GOL" | "ZAG" | "LD" | "LE" | "ALA" | "VOL" | "MC" | "MEI" | "PD" | "PE" | "SA" | "CA";
+export type Position = "GOL" | "ZAG" | "LD" | "LE" | "VOL" | "MC" | "MEI" | "PD" | "PE" | "SA" | "CA";
 export type AttributeKey =
   | "velocidade" | "aceleracao" | "resistencia" | "forca" | "potenciaChute"
   | "impulsao" | "agilidade" | "dominio" | "drible" | "passe" | "cruzamento"
