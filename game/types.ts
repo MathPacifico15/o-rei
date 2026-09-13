@@ -1,11 +1,10 @@
-export type Position = "GOL" | "ZAG" | "LD" | "LE" | "VOL" | "MC" | "MEI" | "PD" | "PE" | "SA" | "CA";
+export type Position = "GOL" | "MEI" | "ATA";
 export type AttributeKey =
-  | "velocidade" | "aceleracao" | "resistencia" | "forca" | "potenciaChute"
-  | "impulsao" | "agilidade" | "dominio" | "drible" | "passe" | "cruzamento"
-  | "finalizacao" | "chuteLonge" | "marcacao" | "dividida" | "posicionamento"
-  | "visao" | "reflexos" | "saidaGol" | "lideranca";
+  | "reflexo" | "elasticidade" | "posicionamento" | "saida" | "lideranca" | "fisico"
+  | "velocidade" | "passe" | "finalizacao" | "drible" | "cabecada" | "forca";
 
 export type Attributes = Record<AttributeKey, number>;
+
 export type Rarity = "raro" | "epico" | "lendario";
 
 export interface Club {
