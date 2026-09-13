@@ -116,6 +116,10 @@ export interface SeasonResult {
   events: CareerEvent[];
   finalOpportunity: boolean;
   cupFinal?: CupFinal;
+  /** Torneio de seleções disputado automaticamente ao atingir OVR 82. */
+  nationalTeamCompetition?: string;
+  /** Preenchido apenas quando o jogador conquista o torneio de seleções. */
+  nationalTeamTitle?: string;
 }
 
 export interface CareerState {
