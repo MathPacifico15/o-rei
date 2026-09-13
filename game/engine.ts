@@ -45,10 +45,10 @@ export const upgradeCards: UpgradeCard[] = [
 ];
 
 const sponsorBrands = [
-  { name: "Feralis", logo: "/sponsors/feralis.svg", fame: 8, salary: 3500 },
-  { name: "Voltrun", logo: "/sponsors/voltrun.svg", fame: 7, salary: 3200 },
-  { name: "Altura", logo: "/sponsors/altura.svg", fame: 6, salary: 3000 },
-  { name: "Equinox", logo: "/sponsors/equinox.svg", fame: 6, salary: 2800 }
+  { name: "Pumaro", logo: "/sponsors/pumaro.svg", fame: 8, salary: 3500 },
+  { name: "Nykon", logo: "/sponsors/nykon.svg", fame: 7, salary: 3200 },
+  { name: "Adirax", logo: "/sponsors/adirax.svg", fame: 6, salary: 3000 },
+  { name: "Nova Balance", logo: "/sponsors/nova-balance.svg", fame: 6, salary: 2800 }
 ];
 
 function createSponsorEvent(random: () => number): CareerEvent {
