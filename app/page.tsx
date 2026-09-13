@@ -135,13 +135,13 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLe
           <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
           <div className="finance-strip"><div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div><div><b>R$ {(player.salary / 1000).toFixed(0)}K</b><span>SALÁRIO</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
           <div className="loyalty"><span>IDOLATRIA</span><div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div><div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div></div>
-          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {player.fame >= 60 ? "CONVOCADO" : "EM OBSERVAÇÃO"}<span>{career.history.length} TEMPORADAS</span></div>
+          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>{career.history.length} TEMPORADAS</span></div>
           <button className="career-history" onClick={onLegacy}>☷ VER CARREIRA</button>
         </section>
         <section className="season-panel">
           <div className="season-titleline"><span>O REI ESPORTIVO</span><small>{career.season}/{String(career.season + 1).slice(-2)} · TEMPORADA {career.history.length + 1}</small></div>
-          <h2>{result?.title ? "A TEMPORADA FOI SUA" : seasonGames ? "A HISTÓRIA CONTINUA" : "PRONTO PARA ESTREAR?"}</h2>
-          <p>{result ? `${player.name} fechou o ano com números que a torcida vai lembrar.` : `Seu caminho no ${club.name} começa agora. Toda temporada deixa uma marca.`}</p>
+          <h2>{result?.nationalTeamTitle ? "CAMPEÃO PELA SELEÇÃO" : result?.title ? "A TEMPORADA FOI SUA" : seasonGames ? "A HISTÓRIA CONTINUA" : "PRONTO PARA ESTREAR?"}</h2>
+          <p>{result?.nationalTeamTitle ? `${player.name} conquistou a ${result.nationalTeamTitle} representando ${player.nationality}.` : result ? `${player.name} fechou o ano com números que a torcida vai lembrar.` : `Seu caminho no ${club.name} começa agora. Toda temporada deixa uma marca.`}</p>
           <div className="club-season"><ClubCrest club={club} /><div><b>{club.name}</b><span>{career.currentCompetition}</span></div></div>
           <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI"} /><StatTile value={seasonGames ? seasonRating : "—"} label="NOTA" /><StatTile value={`R$ ${(player.salary / 1000).toFixed(0)}K`} label="GANHOS" gold /></div>
           <button className="play-button" onClick={onPlay}>CONTINUAR</button>
