@@ -79,7 +79,8 @@ export interface CareerEvent {
   id: string;
   title: string;
   copy: string;
-  choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; money?: number }>;
+  sponsor?: { name: string; logo: string };
+  choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; salary?: number; injuryWeeks?: number }>;
 }
 
 /** A final generated from clubs that can plausibly take part in that cup. */
