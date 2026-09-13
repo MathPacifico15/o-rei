@@ -60,8 +60,8 @@ export default function Home() {
     player.injuries += choice.injuryWeeks ?? 0;
     player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0)));
 
-    if (choice.finalWinChance !== undefined && lastResult?.cupFinal) {
-      const won = Math.random() * 100 < choice.finalWinChance;
+    if (choice.finalOutcome && lastResult?.cupFinal) {
+      const won = choice.finalOutcome === "win";
       const cupFinal = { ...lastResult.cupFinal, won };
       const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
       if (won) {
