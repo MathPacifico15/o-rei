@@ -2,6 +2,11 @@
 
 Jogo web/PWA mobile-first de carreira rápida no futebol. O jogador cria um atleta aos 16 anos, escolhe clube e posição, disputa temporadas aceleradas e constrói um legado até a aposentadoria natural.
 
+## Documentação do projeto
+
+- [Contexto e resumo do chat](docs/CONTEXTO-E-CHAT.md) — setup Git, comparação com El Ídolo, o que já existe
+- [Tarefas pendentes (24 tarefas, 12 por pessoa)](TAREFAS.md) — o que falta, dividido entre Matheus e Parceiro
+
 ## O que já funciona
 
 - Criação de atleta, com nacionalidade, posição, pé dominante, altura, número, liga e clube.
