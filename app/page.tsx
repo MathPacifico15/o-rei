@@ -5,7 +5,7 @@ import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, c
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "minigame" | "legacy";
 const positions: Array<{ id: Position; label: string }> = [
-  { id: "GOL", label: "Goleiro" }, { id: "ZAG", label: "Zagueiro" }, { id: "LD", label: "Lateral-direito" }, { id: "LE", label: "Lateral-esquerdo" }, { id: "ALA", label: "Ala" }, { id: "VOL", label: "Volante" }, { id: "MC", label: "Meio-campista" }, { id: "MEI", label: "Meia" }, { id: "PD", label: "Ponta-direita" }, { id: "PE", label: "Ponta-esquerda" }, { id: "SA", label: "Segundo atacante" }, { id: "CA", label: "Centroavante" },
+  { id: "GOL", label: "Goleiro" }, { id: "ZAG", label: "Zagueiro" }, { id: "LD", label: "Lateral-direito" }, { id: "LE", label: "Lateral-esquerdo" }, { id: "VOL", label: "Volante" }, { id: "MC", label: "Meio-campista" }, { id: "MEI", label: "Meia" }, { id: "PD", label: "Ponta-direita" }, { id: "PE", label: "Ponta-esquerda" }, { id: "SA", label: "Segundo atacante" }, { id: "CA", label: "Centroavante" },
 ];
 const attributeLabels: Record<string, string> = { velocidade: "Velocidade", aceleracao: "Aceleração", resistencia: "Resistência", forca: "Força", potenciaChute: "Potência", impulsao: "Impulsão", agilidade: "Agilidade", dominio: "Domínio", drible: "Drible", passe: "Passe", cruzamento: "Cruzamento", finalizacao: "Finalização", chuteLonge: "Chute de longe", marcacao: "Marcação", dividida: "Dividida", posicionamento: "Posicionamento", visao: "Visão", reflexos: "Reflexos", saidaGol: "Saída do gol", lideranca: "Liderança" };
 
