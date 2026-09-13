@@ -1,5 +1,6 @@
 import { clubs, competitions } from "./catalog";
-import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, CupFinal, Player, Position, SeasonResult, UpgradeCard } from "./types";
+import { countries } from "./countries";
+import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, CupFinal, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
 
 const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
   GOL: { reflexos: 0.28, saidaGol: 0.2, posicionamento: 0.2, agilidade: 0.16, impulsao: 0.1, lideranca: 0.06 },
@@ -254,6 +255,61 @@ export function chooseUpgradeCards(position: Position, seed: number): UpgradeCar
     const pool = upgradeCards.filter((card) => card.rarity === rarity && card.eligible.includes(position));
     return pool[Math.floor(random() * pool.length)] ?? upgradeCards[0];
   });
+}
+
+const randomStartPositions: Position[] = [
+  "GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI",
+  "PD", "PD", "PE", "PE", "SA", "SA", "CA", "CA",
+];
+
+function randomInteger(random: () => number, min: number, max: number) {
+  return min + Math.floor(random() * (max - min + 1));
+}
+
+function randomHeight(random: () => number, position: Position) {
+  const range: Record<Position, readonly [number, number]> = {
+    GOL: [185, 202],
+    ZAG: [180, 198],
+    LD: [165, 188],
+    LE: [165, 188],
+    VOL: [170, 193],
+    MC: [170, 193],
+    MEI: [170, 193],
+    PD: [165, 188],
+    PE: [165, 188],
+    SA: [170, 193],
+    CA: [175, 198],
+  };
+  return randomInteger(random, range[position][0], range[position][1]);
+}
+
+/**
+ * Generates a reproducible starter profile for the future “Modo aleatório”.
+ * The player's name remains a UI concern, so it is intentionally not included.
+ */
+export function randomCareerStart(seed: number): RandomCareerStart {
+  const normalizedSeed = seed >>> 0;
+  const random = mulberry32(normalizedSeed);
+  const playableLeagues = competitions.filter((competition) => competition.selectable);
+  const playableLeagueIds = new Set(playableLeagues.map((competition) => competition.id));
+  const eligibleClubs = clubs.filter((club) => playableLeagueIds.has(club.leagueId));
+  const club = eligibleClubs[Math.floor(random() * eligibleClubs.length)] ?? clubs[0];
+  const league = playableLeagues.find((competition) => competition.id === club.leagueId) ?? playableLeagues[0];
+  const position = randomStartPositions[Math.floor(random() * randomStartPositions.length)];
+  const nationality = countries[Math.floor(random() * countries.length)]?.name ?? "Brasil";
+  const footRoll = random();
+  const preferredFoot: Player["preferredFoot"] = footRoll < 0.5 ? "Direito" : footRoll < 0.85 ? "Esquerdo" : "Ambidestro";
+
+  return {
+    seed: normalizedSeed,
+    position,
+    club: { ...club },
+    league: { ...league },
+    nationality,
+    preferredFoot,
+    heightCm: randomHeight(random, position),
+    shirtNumber: randomInteger(random, 1, 99),
+  };
 }
 
 export function computeOvr(player: Pick<Player, "position" | "attributes">) {
