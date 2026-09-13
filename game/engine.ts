@@ -48,7 +48,7 @@ const sponsorBrands = [
   { name: "Pumaro", logo: "/sponsors/pumaro.svg", fame: 8, salary: 3500 },
   { name: "Nykon", logo: "/sponsors/nykon.svg", fame: 7, salary: 3200 },
   { name: "Adirax", logo: "/sponsors/adirax.svg", fame: 6, salary: 3000 },
-  { name: "Nova Balance", logo: "/sponsors/nova-balance.svg", fame: 6, salary: 2800 }
+  { name: "Nova Balance", logo: "/sponsors/nova-balance.png", fame: 6, salary: 2800 }
 ];
 
 function createSponsorEvent(random: () => number): CareerEvent {
