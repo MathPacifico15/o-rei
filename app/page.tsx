@@ -10,6 +10,30 @@ const positions: Array<{ id: Position; label: string }> = [
   { id: "ATA", label: "Atacante · Camisa 9" },
 ];
 const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
+const LOCAL_RANKING_KEY = "o-rei-local-ranking";
+type LocalRankingEntry = { playerId: string; name: string; nationality: string; position: Position; clubName: string; score: number; global: string; titles: number; games: number; retiredAt: string; };
+
+function readLocalRanking(): LocalRankingEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(LOCAL_RANKING_KEY) ?? "[]");
+    return Array.isArray(saved) ? saved.filter((entry): entry is LocalRankingEntry => typeof entry?.score === "number" && typeof entry?.name === "string").slice(0, 10) : [];
+  } catch { return []; }
+}
+
+function saveLocalRanking(career: CareerState, club: Club) {
+  const result = legacy(career.player);
+  const entry: LocalRankingEntry = {
+    playerId: career.player.id, name: career.player.name, nationality: career.player.nationality, position: career.player.position,
+    clubName: club.name, score: result.score, global: result.global, titles: career.player.titles.length, games: career.player.games,
+    retiredAt: new Date().toISOString()
+  };
+  const ranking = [...readLocalRanking().filter((saved) => saved.playerId !== entry.playerId), entry]
+    .sort((a, b) => b.score - a.score || b.titles - a.titles || b.games - a.games)
+    .slice(0, 10);
+  localStorage.setItem(LOCAL_RANKING_KEY, JSON.stringify(ranking));
+  return ranking;
+}
 
 function crestLetters(name: string) { return name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(); }
 function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
@@ -39,7 +63,7 @@ export default function Home() {
   }, []);
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
-  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) return setScreen("legacy"); if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return setScreen("event"); } setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
+  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return setScreen("event"); } setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
   function resolveFinal(won: boolean) {
     if (!career || !lastResult?.cupFinal) return;
     const cupFinal = { ...lastResult.cupFinal, won };
@@ -175,4 +199,4 @@ function TimingGame({ onFinish }: { onFinish: (won: boolean) => void }) { const 
 function GridGame({ onFinish }: { onFinish: (won: boolean) => void }) { const safe = [0, 4, 8]; const [step, setStep] = useState(0); function choose(index: number) { if (index !== safe[step]) return onFinish(false); if (step === 2) return onFinish(true); setStep(step + 1); } return <><div className="scoreboard"><span>Espaços seguros</span><b>{step}/3</b></div><div className="safe-grid">{Array.from({ length: 9 }, (_, index) => <button key={index} onClick={() => choose(index)} aria-label={`Espaço ${index + 1}`} />)}</div><p className="game-hint">Encontre três espaços seguros na ordem certa.</p></>; }
 function ConnectGame({ onFinish }: { onFinish: (won: boolean) => void }) { const [columns, setColumns] = useState<number[]>([]); function play(column: number) { if (columns.includes(column)) return; const next = [...columns, column]; setColumns(next); if (next.length >= 4) onFinish(true); } return <><div className="connect-board">{Array.from({ length: 7 }, (_, index) => <button key={index} onClick={() => play(index)} className={columns.includes(index) ? "filled" : ""} aria-label={`Coluna ${index + 1}`}><i /></button>)}</div><p className="game-hint">Conecte quatro peças diferentes para dominar o duelo mental.</p></>; }
 function CodeGame({ onFinish }: { onFinish: (won: boolean) => void }) { const code = "2714"; const [value, setValue] = useState(""); const [visible, setVisible] = useState(true); useEffect(() => { const timer = window.setTimeout(() => setVisible(false), 1600); return () => window.clearTimeout(timer); }, []); function enter(digit: string) { const next = `${value}${digit}`; setValue(next); if (next.length === 4) onFinish(next === code); } return <><div className="code-display">{visible ? code : value.padEnd(4, "•")}</div><div className="keypad">{[1,2,3,4,5,6,7,8,9,0].map((digit) => <button key={digit} onClick={() => enter(String(digit))}>{digit}</button>)}</div><p className="game-hint">Memorize o código antes que a prancheta feche.</p></>; }
-function Legacy({ career, club, onRestart }: { career: CareerState; club: Club; onRestart: () => void }) { const result = legacy(career.player), idolatry = career.player.clubIdolatry[club.id] ?? 0, clubTitle = idolatry >= 92 ? `Ídolo do ${club.name}` : idolatry >= 75 ? `Lenda do ${club.name}` : `Nome marcante no ${club.name}`; return <main className="app-shell legacy-shell"><div className="legacy-light" /><section className="legacy-wrap"><Brand /><div className="eyebrow">FIM DE CARREIRA</div><span className="legacy-score">{result.score}<small>/ 1000</small></span><h1>{result.global}</h1><p className="club-title">{clubTitle}{career.player.judasAt.length > 0 && ". Judas em uma rivalidade que a torcida não perdoou."}</p><div className="legacy-stats"><span><b>{career.player.games}</b> jogos</span><span><b>{career.player.goals}</b> gols</span><span><b>{career.player.assists}</b> assistências</span><span><b>{career.player.titles.length}</b> títulos</span><span><b>{career.player.awards.length}</b> prêmios</span></div><p className="legacy-copy">O campo esquece placares. As pessoas, não. Sua carreira agora pertence à história.</p><button className="button button-primary" onClick={onRestart}>COMEÇAR NOVA HISTÓRIA <span>→</span></button></section></main>; }
+function Legacy({ career, club, onRestart }: { career: CareerState; club: Club; onRestart: () => void }) { const result = legacy(career.player), ranking = readLocalRanking(), idolatry = career.player.clubIdolatry[club.id] ?? 0, clubTitle = idolatry >= 92 ? `Ídolo do ${club.name}` : idolatry >= 75 ? `Lenda do ${club.name}` : `Nome marcante no ${club.name}`; return <main className="app-shell legacy-shell"><div className="legacy-light" /><section className="legacy-wrap"><Brand /><div className="eyebrow">FIM DE CARREIRA</div><span className="legacy-score">{result.score}<small>/ 1000</small></span><h1>{result.global}</h1><p className="club-title">{clubTitle}{career.player.judasAt.length > 0 && ". Judas em uma rivalidade que a torcida não perdoou."}</p><div className="legacy-stats"><span><b>{career.player.games}</b> jogos</span><span><b>{career.player.goals}</b> gols</span><span><b>{career.player.assists}</b> assistências</span><span><b>{career.player.titles.length}</b> títulos</span><span><b>{career.player.awards.length}</b> prêmios</span></div><div className="local-ranking"><div className="local-ranking-title">TOP 10 DESTE COMPUTADOR <small>OFFLINE</small></div>{ranking.length ? <ol>{ranking.map((entry, index) => <li key={entry.playerId} className={entry.playerId === career.player.id ? "current" : ""}><b>#{index + 1}</b><span>{entry.name} · {entry.position}<small>{entry.clubName} · {entry.titles} títulos</small></span><strong>{entry.score}</strong></li>)}</ol> : <p>Nenhuma carreira encerrada ainda.</p>}</div><p className="legacy-copy">O campo esquece placares. As pessoas, não. Sua carreira agora pertence à história.</p><button className="button button-primary" onClick={onRestart}>COMEÇAR NOVA HISTÓRIA <span>→</span></button></section></main>; }
