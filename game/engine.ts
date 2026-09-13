@@ -2,44 +2,28 @@ import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
 import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, CupFinal, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
 
-const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
-  GOL: { reflexos: 0.28, saidaGol: 0.2, posicionamento: 0.2, agilidade: 0.16, impulsao: 0.1, lideranca: 0.06 },
-  ZAG: { marcacao: 0.24, dividida: 0.2, posicionamento: 0.2, forca: 0.16, impulsao: 0.1, velocidade: 0.1 },
-  LD: { velocidade: 0.19, aceleracao: 0.18, resistencia: 0.16, cruzamento: 0.16, marcacao: 0.16, dividida: 0.15 },
-  LE: { velocidade: 0.19, aceleracao: 0.18, resistencia: 0.16, cruzamento: 0.16, marcacao: 0.16, dividida: 0.15 },
-  VOL: { marcacao: 0.22, dividida: 0.17, passe: 0.16, posicionamento: 0.16, resistencia: 0.15, forca: 0.14 },
-  MC: { passe: 0.22, visao: 0.18, dominio: 0.16, resistencia: 0.15, posicionamento: 0.14, chuteLonge: 0.15 },
-  MEI: { passe: 0.22, visao: 0.22, dominio: 0.18, drible: 0.16, finalizacao: 0.12, chuteLonge: 0.1 },
-  PD: { velocidade: 0.22, aceleracao: 0.2, drible: 0.2, agilidade: 0.16, finalizacao: 0.12, cruzamento: 0.1 },
-  PE: { velocidade: 0.22, aceleracao: 0.2, drible: 0.2, agilidade: 0.16, finalizacao: 0.12, cruzamento: 0.1 },
-  SA: { finalizacao: 0.2, dominio: 0.17, agilidade: 0.16, aceleracao: 0.15, posicionamento: 0.15, drible: 0.17 },
-  CA: { finalizacao: 0.3, posicionamento: 0.2, potenciaChute: 0.16, forca: 0.13, impulsao: 0.11, velocidade: 0.1 },
+export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
+  GOL: ["reflexo", "elasticidade", "posicionamento", "saida", "lideranca", "fisico"],
+  MEI: ["velocidade", "passe", "finalizacao", "drible", "lideranca", "fisico"],
+  ATA: ["finalizacao", "cabecada", "velocidade", "forca", "lideranca", "fisico"],
 };
 
-/** Cartas sempre aumentam atributos de futebol mensuráveis — nunca bônus narrativos vagos. */
-export const upgradeCards: UpgradeCard[] = [
-  { id: "gol-reflexo", rarity: "raro", name: "Reflexo Rápido", changes: { reflexos: 2, agilidade: 1 }, eligible: ["GOL"] },
-  { id: "gol-saida", rarity: "epico", name: "Domínio da Área", changes: { saidaGol: 2, impulsao: 2, posicionamento: 1 }, eligible: ["GOL"] },
-  { id: "gol-seguranca", rarity: "lendario", name: "Segurança Defensiva", changes: { reflexos: 3, saidaGol: 2, posicionamento: 2, lideranca: 1 }, eligible: ["GOL"] },
-  { id: "def-dividida", rarity: "raro", name: "Tempo de Bote", changes: { dividida: 2, marcacao: 1 }, eligible: ["ZAG", "VOL"] },
-  { id: "def-corpo", rarity: "epico", name: "Corpo a Corpo", changes: { forca: 2, impulsao: 2, dividida: 1 }, eligible: ["ZAG", "VOL"] },
-  { id: "def-regular", rarity: "lendario", name: "Regularidade Defensiva", changes: { marcacao: 3, posicionamento: 2, resistencia: 2, lideranca: 1 }, eligible: ["ZAG", "VOL"] },
-  { id: "lat-arranque", rarity: "raro", name: "Arranque", changes: { aceleracao: 2, velocidade: 1 }, eligible: ["LD", "LE"] },
-  { id: "lat-fundo", rarity: "epico", name: "Fôlego de Linha", changes: { resistencia: 2, velocidade: 2, cruzamento: 1 }, eligible: ["LD", "LE"] },
-  { id: "lat-incansavel", rarity: "lendario", name: "Faixa Incansável", changes: { resistencia: 3, velocidade: 3, aceleracao: 2, cruzamento: 1 }, eligible: ["LD", "LE"] },
-  { id: "mc-passe", rarity: "raro", name: "Passe Vertical", changes: { passe: 2, visao: 1 }, eligible: ["MC", "MEI"] },
-  { id: "mc-giro", rarity: "epico", name: "Giro Curto", changes: { dominio: 2, agilidade: 2, passe: 1 }, eligible: ["MC", "MEI"] },
-  { id: "mc-frieza", rarity: "lendario", name: "Frieza em Decisão", changes: { visao: 3, passe: 2, finalizacao: 2, chuteLonge: 1 }, eligible: ["MC", "MEI"] },
-  { id: "ponta-umcontraum", rarity: "raro", name: "Um Contra Um", changes: { drible: 2, agilidade: 1 }, eligible: ["PD", "PE"] },
-  { id: "ponta-explosao", rarity: "epico", name: "Explosão Curta", changes: { aceleracao: 2, velocidade: 2, drible: 1 }, eligible: ["PD", "PE"] },
-  { id: "ponta-imparavel", rarity: "lendario", name: "Ponta Imparável", changes: { velocidade: 3, aceleracao: 3, agilidade: 2, finalizacao: 1 }, eligible: ["PD", "PE"] },
-  { id: "ataque-chute", rarity: "raro", name: "Técnica de Chute", changes: { finalizacao: 2, potenciaChute: 1 }, eligible: ["SA", "CA"] },
-  { id: "ataque-area", rarity: "epico", name: "Ataque à Área", changes: { posicionamento: 2, impulsao: 2, finalizacao: 1 }, eligible: ["SA", "CA"] },
-  { id: "ataque-artilheiro", rarity: "lendario", name: "Finalizador Completo", changes: { finalizacao: 3, potenciaChute: 2, posicionamento: 2, forca: 1 }, eligible: ["SA", "CA"] },
-  { id: "geral-resistencia", rarity: "raro", name: "Base Física", changes: { resistencia: 2, forca: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
-  { id: "geral-lideranca", rarity: "epico", name: "Voz de Campo", changes: { lideranca: 2, resistencia: 1, posicionamento: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
-  { id: "geral-atleta", rarity: "lendario", name: "Atleta de Elite", changes: { velocidade: 2, aceleracao: 2, resistencia: 2, forca: 1 }, eligible: ["ZAG", "LD", "LE", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
+const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
+  GOL: { reflexo: .27, elasticidade: .18, posicionamento: .18, saida: .17, lideranca: .08, fisico: .12 },
+  MEI: { velocidade: .14, passe: .26, finalizacao: .14, drible: .2, lideranca: .1, fisico: .16 },
+  ATA: { finalizacao: .28, cabecada: .17, velocidade: .18, forca: .16, lideranca: .07, fisico: .14 },
+};
 
+export const upgradeCards: UpgradeCard[] = [
+  { id: "gol-reflexo", rarity: "raro", name: "Reflexo Rápido", changes: { reflexo: 2, elasticidade: 1 }, eligible: ["GOL"] },
+  { id: "gol-saida", rarity: "epico", name: "Dono da Área", changes: { saida: 2, posicionamento: 2, fisico: 1 }, eligible: ["GOL"] },
+  { id: "gol-muralha", rarity: "lendario", name: "Muralha", changes: { reflexo: 3, elasticidade: 2, saida: 2, lideranca: 1 }, eligible: ["GOL"] },
+  { id: "mei-passe", rarity: "raro", name: "Passe Cirúrgico", changes: { passe: 2, drible: 1 }, eligible: ["MEI"] },
+  { id: "mei-criacao", rarity: "epico", name: "Maestro em Campo", changes: { passe: 2, velocidade: 1, finalizacao: 1, lideranca: 1 }, eligible: ["MEI"] },
+  { id: "mei-camisa10", rarity: "lendario", name: "Camisa 10", changes: { passe: 3, drible: 2, finalizacao: 2, lideranca: 1 }, eligible: ["MEI"] },
+  { id: "ata-finalizacao", rarity: "raro", name: "Matador", changes: { finalizacao: 2, velocidade: 1 }, eligible: ["ATA"] },
+  { id: "ata-cabeca", rarity: "epico", name: "Dono do Alto", changes: { cabecada: 2, forca: 1, fisico: 1 }, eligible: ["ATA"] },
+  { id: "ata-camisa9", rarity: "lendario", name: "Camisa 9", changes: { finalizacao: 3, cabecada: 2, velocidade: 1, forca: 1 }, eligible: ["ATA"] },
 ];
 
 const sponsorBrands = [
@@ -242,9 +226,9 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
     selected.push(available.splice(index, 1)[0]);
   }
   if (position === "GOL" && cupFinal) selected.push(createGoalkeeperFinalEvent(random));
-  if (["CA", "SA", "PD", "PE"].includes(position) && cupFinal) selected.push(createAttackerFinalEvent(random));
-  if (["VOL", "MC", "MEI"].includes(position) && cupFinal) selected.push(createMidfieldFinalEvent(random));
-  if (["ZAG", "LD", "LE"].includes(position) && cupFinal) selected.push(createDefenseFinalEvent(random));
+  if (position === "ATA" && cupFinal) selected.push(createAttackerFinalEvent(random));
+  if (position === "MEI" && cupFinal) selected.push(createMidfieldFinalEvent(random));
+  
   return selected;
 }
 
@@ -257,39 +241,14 @@ export function chooseUpgradeCards(position: Position, seed: number): UpgradeCar
   });
 }
 
-const randomStartPositions: Position[] = [
-  "GOL", "ZAG", "LD", "LE", "VOL", "MC", "MEI",
-  "PD", "PD", "PE", "PE", "SA", "SA", "CA", "CA",
-];
-
-function randomInteger(random: () => number, min: number, max: number) {
-  return min + Math.floor(random() * (max - min + 1));
-}
-
+const randomStartPositions: Position[] = ["GOL", "MEI", "ATA", "ATA"];
+function randomInteger(random: () => number, min: number, max: number) { return min + Math.floor(random() * (max - min + 1)); }
 function randomHeight(random: () => number, position: Position) {
-  const range: Record<Position, readonly [number, number]> = {
-    GOL: [185, 202],
-    ZAG: [180, 198],
-    LD: [165, 188],
-    LE: [165, 188],
-    VOL: [170, 193],
-    MC: [170, 193],
-    MEI: [170, 193],
-    PD: [165, 188],
-    PE: [165, 188],
-    SA: [170, 193],
-    CA: [175, 198],
-  };
+  const range: Record<Position, readonly [number, number]> = { GOL: [185, 202], MEI: [170, 193], ATA: [175, 198] };
   return randomInteger(random, range[position][0], range[position][1]);
 }
-
-/**
- * Generates a reproducible starter profile for the future “Modo aleatório”.
- * The player's name remains a UI concern, so it is intentionally not included.
- */
 export function randomCareerStart(seed: number): RandomCareerStart {
-  const normalizedSeed = seed >>> 0;
-  const random = mulberry32(normalizedSeed);
+  const normalizedSeed = seed >>> 0, random = mulberry32(normalizedSeed);
   const playableLeagues = competitions.filter((competition) => competition.selectable);
   const playableLeagueIds = new Set(playableLeagues.map((competition) => competition.id));
   const eligibleClubs = clubs.filter((club) => playableLeagueIds.has(club.leagueId));
@@ -298,18 +257,8 @@ export function randomCareerStart(seed: number): RandomCareerStart {
   const position = randomStartPositions[Math.floor(random() * randomStartPositions.length)];
   const nationality = countries[Math.floor(random() * countries.length)]?.name ?? "Brasil";
   const footRoll = random();
-  const preferredFoot: Player["preferredFoot"] = footRoll < 0.5 ? "Direito" : footRoll < 0.85 ? "Esquerdo" : "Ambidestro";
-
-  return {
-    seed: normalizedSeed,
-    position,
-    club: { ...club },
-    league: { ...league },
-    nationality,
-    preferredFoot,
-    heightCm: randomHeight(random, position),
-    shirtNumber: randomInteger(random, 1, 99),
-  };
+  const preferredFoot: Player["preferredFoot"] = footRoll < .5 ? "Direito" : footRoll < .85 ? "Esquerdo" : "Ambidestro";
+  return { seed: normalizedSeed, position, club: { ...club }, league: { ...league }, nationality, preferredFoot, heightCm: randomHeight(random, position), shirtNumber: position === "MEI" ? 10 : position === "ATA" ? 9 : randomInteger(random, 1, 99) };
 }
 
 export function computeOvr(player: Pick<Player, "position" | "attributes">) {
@@ -435,13 +384,13 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const agePenalty = Math.max(0, player.age - 31) * 1.7;
   const role = Math.max(0.18, Math.min(0.96, (ovr - club.strength + 18 - agePenalty) / 30));
   const games = Math.round(14 + role * 28 - player.injuries * 0.4);
-  const attacking = (player.attributes.finalizacao + player.attributes.posicionamento + player.attributes.drible) / 300;
-  const creative = (player.attributes.passe + player.attributes.visao + player.attributes.cruzamento) / 300;
-  const defensive = (player.attributes.marcacao + player.attributes.dividida + player.attributes.posicionamento) / 300;
-  const goals = ["CA", "SA", "PD", "PE", "MEI"].includes(player.position) ? Math.max(0, Math.round(games * attacking * (0.26 + random() * 0.22))) : 0;
-  const assists = ["MC", "MEI", "PD", "PE", "LD", "LE"].includes(player.position) ? Math.max(0, Math.round(games * creative * (0.2 + random() * 0.18))) : 0;
-  const cleanSheets = ["GOL", "ZAG", "VOL", "LD", "LE"].includes(player.position) ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
-  const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.resistencia / 700) ? Math.round(1 + random() * 7) : 0;
+  const attacking = player.position === "ATA" ? (player.attributes.finalizacao + player.attributes.cabecada + player.attributes.velocidade + player.attributes.forca) / 400 : player.position === "MEI" ? (player.attributes.finalizacao + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
+  const creative = player.position === "MEI" ? (player.attributes.passe + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
+  const defensive = player.position === "GOL" ? (player.attributes.reflexo + player.attributes.elasticidade + player.attributes.posicionamento + player.attributes.saida) / 400 : 0;
+  const goals = ["ATA", "MEI"].includes(player.position) ? Math.max(0, Math.round(games * attacking * (0.26 + random() * 0.22))) : 0;
+  const assists = player.position === "MEI" ? Math.max(0, Math.round(games * creative * (0.2 + random() * 0.18))) : 0;
+  const cleanSheets = player.position === "GOL" ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
+  const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.fisico / 700) ? Math.round(1 + random() * 7) : 0;
   const league = competitions.find((entry) => entry.id === club.leagueId);
   const winsTitle = club.strength + ovr * 0.24 + random() * 19 > 104;
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
@@ -473,10 +422,8 @@ export function legacy(player: Player) {
 export function shouldRetire(player: Player, seed: number) {
   const random = mulberry32(seed + player.age * 97)();
   const ovr = computeOvr(player);
-  const threshold = player.position === "GOL" || player.position === "ZAG" || player.position === "VOL" ? 39 : 37;
+  const threshold = player.position === "GOL" ? 39 : 37;
   return player.age >= threshold && (ovr < 72 || random < (player.age - threshold + 1) * 0.24);
 }
 
-export function baseAttributes(): Attributes {
-  return { velocidade: 58, aceleracao: 58, resistencia: 58, forca: 56, potenciaChute: 55, impulsao: 55, agilidade: 58, dominio: 57, drible: 56, passe: 56, cruzamento: 54, finalizacao: 55, chuteLonge: 54, marcacao: 54, dividida: 53, posicionamento: 56, visao: 55, reflexos: 55, saidaGol: 53, lideranca: 50 };
-}
+export function baseAttributes(): Attributes { return { reflexo: 55, elasticidade: 55, posicionamento: 56, saida: 53, lideranca: 50, fisico: 56, velocidade: 58, passe: 56, finalizacao: 55, drible: 56, cabecada: 54, forca: 56 }; }
