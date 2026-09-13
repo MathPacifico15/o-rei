@@ -117,6 +117,16 @@ const attackerFinalEvents: CareerEvent[] = [
       { label: "Driblar o goleiro" },
       { label: "Tentar um chute de longe" }
     ]
+  },
+  {
+    id: "ataque-final-bola-viva",
+    title: "Bola viva na área",
+    copy: "Nos segundos finais da decisão, a bola sobra na pequena área. Você tem uma última chance de decidir a taça.",
+    choices: [
+      { label: "Bater de primeira" },
+      { label: "Dominar e deslocar o goleiro" },
+      { label: "Tentar uma bicicleta" }
+    ]
   }
 ];
 
