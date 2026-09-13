@@ -67,6 +67,17 @@ export interface Player {
   injuries: number;
 }
 
+export interface RandomCareerStart {
+  seed: number;
+  position: Position;
+  club: Club;
+  league: Competition;
+  nationality: string;
+  preferredFoot: Player["preferredFoot"];
+  heightCm: number;
+  shirtNumber: number;
+}
+
 export interface UpgradeCard {
   id: string;
   rarity: Rarity;
