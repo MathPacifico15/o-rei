@@ -97,6 +97,41 @@ const goalkeeperFinalEvents: CareerEvent[] = [
   }
 ];
 
+const attackerFinalEvents: CareerEvent[] = [
+  {
+    id: "ataque-final-penalti",
+    title: "Pênalti da taça",
+    copy: "A final está empatada e você assume a última cobrança. Um gol coloca a taça nas suas mãos.",
+    choices: [
+      { label: "Bater no canto esquerdo", finalOutcome: "win" },
+      { label: "Bater no canto direito", finalOutcome: "win" },
+      { label: "Tentar uma cavadinha", finalOutcome: "lose" }
+    ]
+  },
+  {
+    id: "ataque-final-contra-ataque",
+    title: "Último contra-ataque",
+    copy: "O cronômetro está acabando. Você recebe livre na entrada da área e só o goleiro está à frente.",
+    choices: [
+      { label: "Finalizar cruzado", finalOutcome: "win" },
+      { label: "Driblar o goleiro", finalOutcome: "win" },
+      { label: "Tentar um chute de longe", finalOutcome: "lose" }
+    ]
+  }
+];
+
+function createAttackerFinalEvent(random: () => number): CareerEvent {
+  const scenario = attackerFinalEvents[Math.floor(random() * attackerFinalEvents.length)];
+  const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
+  return {
+    ...scenario,
+    choices: scenario.choices.map((choice, index) => ({
+      ...choice,
+      finalOutcome: index === losingChoiceIndex ? "lose" : "win"
+    }))
+  };
+}
+
 function createGoalkeeperFinalEvent(random: () => number): CareerEvent {
   const scenario = goalkeeperFinalEvents[Math.floor(random() * goalkeeperFinalEvents.length)];
   const losingChoiceIndex = Math.floor(random() * scenario.choices.length);
@@ -119,6 +154,7 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
     selected.push(available.splice(index, 1)[0]);
   }
   if (position === "GOL" && cupFinal) selected.push(createGoalkeeperFinalEvent(random));
+  if (["CA", "SA", "PD", "PE"].includes(position) && cupFinal) selected.push(createAttackerFinalEvent(random));
   return selected;
 }
 
