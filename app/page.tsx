@@ -22,6 +22,7 @@ function createInitialState(data: { name: string; position: Position; club: Club
 }
 
 export default function Home() {
+  const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<Screen>("home");
   const [career, setCareer] = useState<CareerState | null>(null);
   const [lastResult, setLastResult] = useState<SeasonResult | null>(null);
@@ -33,7 +34,11 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("o-rei-career");
     if (saved) { try { setCareer(JSON.parse(saved)); } catch { localStorage.removeItem("o-rei-career"); } }
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    if ("serviceWorker" in navigator) {
+      if (import.meta.env.DEV) navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister())).catch(() => undefined);
+      else navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+    setReady(true);
   }, []);
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
@@ -54,6 +59,7 @@ export default function Home() {
   function takeCard(card: UpgradeCard) { if (!career) return; setCareer({ ...career, player: applyCard(career.player, card) }); setToast(`${card.name} aplicada. OVR recalculado.`); setScreen("career"); }
   function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); setCareer({ ...career, player }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato assinado com ${club.name}.`); setScreen("career"); }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
+  if (!ready) return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carregando…</span></nav></main>;
   if (screen === "home") return <Start hasCareer={Boolean(career)} onNew={() => setScreen("create")} onContinue={() => setScreen("career")} />;
   if (screen === "create") return <Create onBack={() => setScreen("home")} onCreate={begin} />;
   if (!career) return null;
@@ -68,14 +74,113 @@ export default function Home() {
 function Start({ hasCareer, onNew, onContinue }: { hasCareer: boolean; onNew: () => void; onContinue: () => void }) { return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carreira local protegida</span></nav><section className="start-content"><div className="eyebrow">UMA CARREIRA. TODA A HISTÓRIA.</div><Brand /><h1>Do primeiro jogo à eternidade.</h1><p>Crie seu atleta aos 16 anos. Conquiste títulos, enfrente clássicos e escreva um legado que não cabe numa súmula.</p><div className="start-actions"><button className="button button-primary" onClick={onNew}>COMEÇAR CARREIRA <span>→</span></button>{hasCareer && <button className="button button-ghost" onClick={onContinue}>CONTINUAR CARREIRA</button>}</div><div className="feature-row"><span><b>10</b> minigames decisivos</span><span><b>20</b> atributos reais</span><span><b>0–1000</b> legado final</span></div></section><footer>O REI · futebol, escolhas e memória</footer></main>; }
 
 function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Parameters<typeof createInitialState>[0]) => void }) {
-  const [name, setName] = useState("Matheus"), [position, setPosition] = useState<Position>("MEI"), [leagueId, setLeagueId] = useState("bra-a"), [clubId, setClubId] = useState("santos"), [nationality, setNationality] = useState("Brasil"), [foot, setFoot] = useState<Player["preferredFoot"]>("Direito"), [height, setHeight] = useState(178), [shirt, setShirt] = useState(10), [countryOpen, setCountryOpen] = useState(false), [countrySearch, setCountrySearch] = useState("");
+  const [name, setName] = useState("Matheus");
+  const [position, setPosition] = useState<Position>("MEI");
+  const [leagueId, setLeagueId] = useState("bra-a");
+  const [clubId, setClubId] = useState("santos");
+  const [nationality, setNationality] = useState("Brasil");
+  const [foot, setFoot] = useState<Player["preferredFoot"]>("Direito");
+  const [height, setHeight] = useState(178);
+  const [shirt, setShirt] = useState(10);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [locationSearch, setLocationSearch] = useState("");
+
   const playableCompetitions = competitions.filter((competition) => competition.selectable && clubs.some((club) => clubCompetesIn(club, competition.id)));
-  const leagueClubs = clubs.filter((club) => clubCompetesIn(club, leagueId)); const selected = leagueClubs.find((club) => club.id === clubId) ?? leagueClubs[0] ?? clubs[0];
-  function switchLeague(next: string) { const first = clubs.find((club) => clubCompetesIn(club, next)); if (first) { setLeagueId(next); setClubId(first.id); } }
+  const query = locationSearch.trim().toLocaleLowerCase("pt-BR");
+  const matches = (value: string) => !query || value.toLocaleLowerCase("pt-BR").includes(query);
+
+  const visibleCountries = countries.filter((country) => matches(country.name));
+  const visibleCompetitions = playableCompetitions.filter((competition) => matches(competition.name) || matches(competition.country));
+  const competitionOptions = query && !visibleCompetitions.some((competition) => competition.id === leagueId)
+    ? [...visibleCompetitions, ...playableCompetitions.filter((competition) => competition.id === leagueId)]
+    : query ? visibleCompetitions : playableCompetitions;
+  const leagueClubs = clubs.filter((club) => clubCompetesIn(club, leagueId));
+  const clubMatchesSearch = (club: Club) => {
+    if (!query) return true;
+    if (matches(club.name) || matches(club.country)) return true;
+    const league = playableCompetitions.find((competition) => competition.id === club.leagueId);
+    return Boolean(league && (matches(league.name) || matches(league.country)));
+  };
+  const visibleLeagueClubs = query
+    ? clubs.filter((club) => clubMatchesSearch(club) && playableCompetitions.some((competition) => clubCompetesIn(club, competition.id))).slice(0, 36)
+    : leagueClubs.filter((club) => matches(club.name));
+
+  const selected = clubs.find((club) => club.id === clubId) ?? leagueClubs.find((club) => club.id === clubId) ?? leagueClubs[0] ?? clubs[0];
   const selectedCompetition = playableCompetitions.find((competition) => competition.id === leagueId);
   const selectedCountry = countries.find((country) => country.name === nationality) ?? countries.find((country) => country.code === "BR")!;
-  const visibleCountries = countries.filter((country) => country.name.toLocaleLowerCase("pt-BR").includes(countrySearch.toLocaleLowerCase("pt-BR")));
-  return <main className="app-shell form-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">01 / 01</span></nav><section className="form-wrap"><div><div className="eyebrow">FICHA DE INSCRIÇÃO</div><h1>Seu primeiro contrato.</h1><p>Você começa aos 16 anos. O resto será conquistado em campo.</p></div><div className="form-grid"><label className="field field-wide">Nome do atleta<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label><div className="field country-field"><span>Nacionalidade</span><button type="button" className="country-trigger" onClick={() => setCountryOpen(!countryOpen)}><img src={`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`} alt="" /><span>{selectedCountry.name}</span><b>⌄</b></button>{countryOpen && <div className="country-menu"><input autoFocus value={countrySearch} onChange={(event) => setCountrySearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" /> <div className="country-options">{visibleCountries.map((country) => <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setCountrySearch(""); }}><img src={`https://flagcdn.com/w40/${country.code.toLowerCase()}.png`} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span></button>)}</div></div>}</div><label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label><div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => setPosition(item.id)} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div><label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label><label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label><label className="field field-wide">Liga de início<select value={leagueId} onChange={(e) => switchLeague(e.target.value)}>{playableCompetitions.map((competition) => <option key={competition.id} value={competition.id}>{competition.flag} {competition.name}</option>)}</select><small className="field-note">{selectedCompetition?.flag} {selectedCompetition?.country} · {leagueClubs.length} clubes nesta edição</small></label><div className="field field-wide"><span>Clube de início</span><div className="club-picker">{leagueClubs.map((club) => <button key={club.id} onClick={() => setClubId(club.id)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}><ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small></button>)}</div></div></div><button className="button button-primary button-full" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality })}>ASSINAR PRIMEIRO CONTRATO <span>→</span></button></section></main>;
+
+  function switchLeague(next: string) {
+    const first = clubs.find((club) => clubCompetesIn(club, next));
+    if (first) { setLeagueId(next); setClubId(first.id); }
+  }
+
+  function pickClub(club: Club) {
+    setLeagueId(club.leagueId);
+    setClubId(club.id);
+    setLocationSearch("");
+  }
+
+  return (
+    <main className="app-shell form-shell">
+      <nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">01 / 01</span></nav>
+      <section className="form-wrap">
+        <div><div className="eyebrow">FICHA DE INSCRIÇÃO</div><h1>Seu primeiro contrato.</h1><p>Você começa aos 16 anos. O resto será conquistado em campo.</p></div>
+        <div className="form-grid">
+          <label className="field field-wide">Nome do atleta<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label>
+          <div className="field country-field">
+            <span>Nacionalidade</span>
+            <button type="button" className="country-trigger" onClick={() => setCountryOpen(!countryOpen)}>
+              <img src={`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`} alt="" /><span>{selectedCountry.name}</span><b>⌄</b>
+            </button>
+            {countryOpen && (
+              <div className="country-menu">
+                <div className="location-search location-search-menu">
+                  <span className="location-search-icon" aria-hidden>⌕</span>
+                  <input autoFocus value={locationSearch} onChange={(event) => setLocationSearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" />
+                </div>
+                <div className="country-options">
+                  {visibleCountries.map((country) => (
+                    <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setLocationSearch(""); }}>
+                      <img src={`https://flagcdn.com/w40/${country.code.toLowerCase()}.png`} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label>
+          <div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => setPosition(item.id)} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div>
+          <label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label>
+          <label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label>
+          <div className="field field-wide">
+            <span>Buscar país, liga ou clube</span>
+            <div className="location-search">
+              <span className="location-search-icon" aria-hidden>⌕</span>
+              <input value={locationSearch} onChange={(event) => setLocationSearch(event.target.value)} placeholder="Ex.: Brasil, Série A, Santos…" aria-label="Buscar país, liga ou clube" />
+            </div>
+          </div>
+          <label className="field field-wide">Liga de início
+            <select value={leagueId} onChange={(e) => switchLeague(e.target.value)}>
+              {competitionOptions.map((competition) => <option key={competition.id} value={competition.id}>{competition.flag} {competition.name}</option>)}
+            </select>
+            <small className="field-note">{selectedCompetition?.flag} {selectedCompetition?.country} · {visibleLeagueClubs.length} clubes {query ? "encontrados" : "nesta edição"}</small>
+          </label>
+          <div className="field field-wide">
+            <span>Clube de início</span>
+            <div className="club-picker">
+              {visibleLeagueClubs.map((club) => (
+                <button key={club.id} type="button" onClick={() => pickClub(club)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}>
+                  <ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small>
+                </button>
+              ))}
+            </div>
+            {query && visibleLeagueClubs.length === 0 && <small className="field-note">Nenhum clube encontrado para &quot;{locationSearch}&quot;.</small>}
+          </div>
+        </div>
+        <button className="button button-primary button-full" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality })}>ASSINAR PRIMEIRO CONTRATO <span>→</span></button>
+      </section>
+    </main>
+  );
 }
 
 function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLegacy }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void }) {
