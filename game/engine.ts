@@ -40,8 +40,6 @@ export const upgradeCards: UpgradeCard[] = [
   { id: "geral-lideranca", rarity: "epico", name: "Voz de Campo", changes: { lideranca: 2, resistencia: 1, posicionamento: 1 }, eligible: ["GOL", "ZAG", "LD", "LE", "ALA", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
   { id: "geral-atleta", rarity: "lendario", name: "Atleta de Elite", changes: { velocidade: 2, aceleracao: 2, resistencia: 2, forca: 1 }, eligible: ["ZAG", "LD", "LE", "ALA", "VOL", "MC", "MEI", "PD", "PE", "SA", "CA"] },
 
-  { id: "imprensa", title: "Coletiva polêmica", copy: "Uma pergunta maldosa tenta colocar você contra o técnico.", choices: [{ label: "Defender o grupo", fame: 2, idolatry: 2, form: 1 }, { label: "Responder com provocação", fame: 5, idolatry: -2, form: -1 }] },
-  { id: "lesao-leve", title: "Desconforto muscular", copy: "Você sentiu um incômodo no treino. O departamento médico recomenda cuidado.", choices: [{ label: "Seguir o tratamento", form: -1, injuryWeeks: 1 }, { label: "Forçar presença no próximo jogo", fame: 2, form: -4, injuryWeeks: 3 }] },
 ];
 
 const sponsorBrands = [
@@ -120,7 +118,29 @@ const events: CareerEvent[] = [
   { id: "selecao", title: "Pré-lista da seleção", copy: "Seu nome aparece entre os observados para a próxima convocação.", choices: [{ label: "Treinar finalização extra", form: 2, fame: 2 }, { label: "Concentrar no clube", idolatry: 2, form: 1 }, { label: "Falar sobre o sonho", fame: 2, idolatry: -1 }] },
   { id: "comunidade", title: "Ação no bairro", copy: "Uma iniciativa local convida o elenco para um dia com a comunidade.", choices: [{ label: "Participar com discrição", fame: 1, idolatry: 3 }, { label: "Levar doações", fame: 2, idolatry: 2, salary: -2000 }, { label: "Não conseguir comparecer", form: 1 }] },
   { id: "recuperacao", title: "Dia extra de recuperação", copy: "Seu corpo acusa a sequência de viagens e decisões.", choices: [{ label: "Fazer recuperação completa", form: 3, fame: -1 }, { label: "Treino leve com bola", form: 1 }, { label: "Ignorar os sinais", fame: 1, form: -3 }] },
-  { id: "faixa", title: "A braçadeira fica vaga", copy: "O capitão não joga a próxima partida e seu nome surge na conversa.", choices: [{ label: "Assumir a responsabilidade", fame: 1, idolatry: 3 }, { label: "Indicar um veterano", idolatry: 1, form: 1 }, { label: "Dizer que ainda não é a hora", form: 1 }] },
+  { id: "faixa", title: "A braçadeira fica vaga", copy: "O capitão não joga a próxima partida e seu nome surge na conversa.", choices: [{ label: "Assumir a responsabilidade", fame: 1, idolatry: 3 }, { label: "Indicar um veterano", idolatry: 1, form: 1 }, { label: "Dizer que ainda não é a hora", form: 1 }] },,
+
+  { id: "imprensa", title: "Coletiva polêmica", copy: "Uma pergunta maldosa tenta colocar você contra o técnico.", choices: [{ label: "Defender o grupo", fame: 2, idolatry: 2, form: 1 }, { label: "Responder com provocação", fame: 5, idolatry: -2, form: -1 }] },
+  { id: "lesao-leve", title: "Desconforto muscular", copy: "Você sentiu um incômodo no treino. O departamento médico recomenda cuidado.", choices: [{ label: "Seguir o tratamento", form: -1, injuryWeeks: 1 }, { label: "Forçar presença no próximo jogo", fame: 2, form: -4, injuryWeeks: 3 }] },
+
+  { id: "tecnico-fama", title: "Confiança do técnico", copy: "O técnico quer elogiar sua evolução em uma entrevista nacional.", choices: [{ label: "Aceitar a entrevista", fame: 5 }, { label: "Dividir o mérito com o elenco", fame: 2 }] },
+  { id: "tecnico-forma", title: "Plano tático especial", copy: "A comissão criou um treino específico para o seu próximo adversário.", choices: [{ label: "Ficar após o treino", form: 4 }, { label: "Seguir a rotina normal", form: 1 }] },
+  { id: "tecnico-idolatria", title: "Voto de liderança", copy: "O técnico cogita entregar a braçadeira a você em um clássico.", choices: [{ label: "Assumir a braçadeira", idolatry: 5 }, { label: "Indicar um veterano", idolatry: 2 }] },
+  { id: "tecnico-salario", title: "Renovação antecipada", copy: "A diretoria, por indicação do técnico, propõe reajustar seu contrato.", choices: [{ label: "Renovar agora", salary: 3000 }, { label: "Esperar o fim da temporada", salary: 1000 }] },
+  { id: "tecnico-lesao", title: "Treino no limite", copy: "O técnico pede intensidade máxima mesmo com o calendário apertado.", choices: [{ label: "Forçar o treino", form: 2, injuryWeeks: 2 }, { label: "Conversar e controlar a carga", form: -1 }] },
+
+  { id: "torcida-fama", title: "Mural da torcida", copy: "Uma foto sua em um mural de torcedores viraliza nas redes.", choices: [{ label: "Compartilhar a homenagem", fame: 5 }, { label: "Agradecer discretamente", fame: 2 }] },
+  { id: "torcida-forma", title: "Arquibancada em festa", copy: "A torcida prepara uma recepção especial para o próximo jogo.", choices: [{ label: "Entrar no clima", form: 4 }, { label: "Manter o foco em silêncio", form: 1 }] },
+  { id: "torcida-idolatria", title: "Organizada pede presença", copy: "A torcida organizada convida você para um encontro no bairro.", choices: [{ label: "Participar do encontro", idolatry: 5 }, { label: "Mandar uma mensagem em vídeo", idolatry: 2 }] },
+  { id: "torcida-salario", title: "Evento com sócios", copy: "O clube oferece uma participação remunerada em um evento para sócios.", choices: [{ label: "Comparecer ao evento", salary: 1800 }, { label: "Recusar para descansar", form: 1 }] },
+  { id: "torcida-lesao", title: "Desafio beneficente", copy: "Em um jogo beneficente com torcedores, uma dividida pode custar caro.", choices: [{ label: "Entrar em campo", fame: 2, injuryWeeks: 2 }, { label: "Apoiar fora do gramado", idolatry: 2 }] },
+
+  { id: "extra-fama", title: "Programa de TV", copy: "Um programa popular quer mostrar um dia da sua rotina.", choices: [{ label: "Abrir as portas", fame: 5 }, { label: "Dar uma entrevista curta", fame: 2 }] },
+  { id: "extra-forma", title: "Noite antes do jogo", copy: "Amigos chamam você para uma comemoração na véspera de uma partida.", choices: [{ label: "Ficar em casa e descansar", form: 4 }, { label: "Ir por pouco tempo", form: -2, fame: 1 }] },
+  { id: "extra-idolatria", title: "Raízes da carreira", copy: "Seu primeiro clube amador pede sua presença em uma homenagem.", choices: [{ label: "Voltar para agradecer", idolatry: 4 }, { label: "Enviar uma camisa autografada", idolatry: 2 }] },
+  { id: "extra-salario", title: "Campanha publicitária", copy: "Uma empresa local quer você em uma campanha fora do futebol.", choices: [{ label: "Fechar a campanha", salary: 2500 }, { label: "Negociar só uma aparição", salary: 1200 }] },
+  { id: "extra-lesao", title: "Aventura de folga", copy: "Nas férias curtas, você recebe convite para uma atividade radical.", choices: [{ label: "Participar da aventura", fame: 2, injuryWeeks: 3 }, { label: "Escolher um passeio tranquilo", form: 1 }] },
+
 ];
 
 /**
