@@ -232,14 +232,16 @@ export function mulberry32(seed: number) {
 }
 
 /**
- * Forma física e impacto em campo por idade.
- * A progressão culmina aos 26 e a queda posterior é gradual.
+ * Rendimento por idade. O jogador chega ao auge aos 26 e o mantém até os 33.
+ * Depois disso, físico alto suaviza a queda de rendimento.
  */
-export function agePerformanceMultiplier(age: number) {
+export function agePerformanceMultiplier(age: number, physical = 50) {
   if (age <= 16) return 0.82;
   if (age < 26) return 0.82 + (age - 16) * 0.03;
-  if (age === 26) return 1.12;
-  return Math.max(0.55, 1.12 - (age - 26) * 0.045);
+  if (age <= 33) return 1.12;
+  const physicalProtection = 0.55 + Math.max(1, Math.min(99, physical)) / 100;
+  const yearlyDecline = 0.045 / physicalProtection;
+  return Math.max(0.55, 1.12 - (age - 33) * yearlyDecline);
 }
 
 function clamp(value: number) { return Math.max(1, Math.min(99, Math.round(value))); }
@@ -347,7 +349,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
   const club = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
   const ovr = computeOvr(player);
-  const agePerformance = agePerformanceMultiplier(player.age);
+  const agePerformance = agePerformanceMultiplier(player.age, player.attributes.fisico);
   const seasonOvr = ovr * agePerformance;
   const role = Math.max(0.18, Math.min(0.96, (seasonOvr - club.strength + 18) / 30));
   const games = Math.round(14 + role * 28 - player.injuries * 0.4);
@@ -367,7 +369,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const event = seasonEvents[0];
   const award = goals >= 24 ? "Chuteira de Ouro" : player.position === "GOL" && cleanSheets >= 16 ? "Melhor Goleiro da Liga" : goals >= 18 ? "Artilheiro da temporada" : (ovr > 88 && random() > 0.78 ? "Bola de Ouro" : (ovr > 84 && random() > 0.62 ? "Melhor jogador da liga" : undefined));
   player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
-  player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 26) / 240)));
+  player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 33) / (240 * (0.55 + player.attributes.fisico / 100)))));
   player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
   if (title) player.titles = [...player.titles, title]; if (award) player.awards = [...player.awards, award];
   const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
@@ -389,8 +391,12 @@ export function legacy(player: Player) {
 export function shouldRetire(player: Player, seed: number) {
   const random = mulberry32(seed + player.age * 97)();
   const ovr = computeOvr(player);
-  const threshold = player.position === "GOL" ? 39 : 37;
-  return player.age >= threshold && (ovr < 72 || random < (player.age - threshold + 1) * 0.24);
+  const baseThreshold = player.position === "GOL" ? 39 : 37;
+  // Cada 10 pontos acima de 50 de físico prolonga a carreira em um ano.
+  const physicalLongevity = Math.floor(Math.max(0, player.attributes.fisico - 50) / 10);
+  const threshold = baseThreshold + physicalLongevity;
+  const retirementRisk = (player.age - threshold + 1) * (0.24 / (0.55 + player.attributes.fisico / 100));
+  return player.age >= threshold && (ovr < 72 || random < retirementRisk);
 }
 
 export function baseAttributes(): Attributes { return { reflexo: 55, elasticidade: 55, posicionamento: 56, saida: 53, lideranca: 50, fisico: 56, velocidade: 58, passe: 56, finalizacao: 55, drible: 56, cabecada: 54, forca: 56 }; }
