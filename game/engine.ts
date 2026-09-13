@@ -231,6 +231,17 @@ export function mulberry32(seed: number) {
   };
 }
 
+/**
+ * Forma física e impacto em campo por idade.
+ * A progressão culmina aos 26 e a queda posterior é gradual.
+ */
+export function agePerformanceMultiplier(age: number) {
+  if (age <= 16) return 0.82;
+  if (age < 26) return 0.82 + (age - 16) * 0.03;
+  if (age === 26) return 1.12;
+  return Math.max(0.55, 1.12 - (age - 26) * 0.045);
+}
+
 function clamp(value: number) { return Math.max(1, Math.min(99, Math.round(value))); }
 
 export function applyCard(player: Player, card: UpgradeCard): Player {
@@ -336,8 +347,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
   const club = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
   const ovr = computeOvr(player);
-  const agePenalty = Math.max(0, player.age - 31) * 1.7;
-  const role = Math.max(0.18, Math.min(0.96, (ovr - club.strength + 18 - agePenalty) / 30));
+  const agePerformance = agePerformanceMultiplier(player.age);
+  const seasonOvr = ovr * agePerformance;
+  const role = Math.max(0.18, Math.min(0.96, (seasonOvr - club.strength + 18) / 30));
   const games = Math.round(14 + role * 28 - player.injuries * 0.4);
   const attacking = player.position === "ATA" ? (player.attributes.finalizacao + player.attributes.cabecada + player.attributes.velocidade + player.attributes.forca) / 400 : player.position === "MEI" ? (player.attributes.finalizacao + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
   const creative = player.position === "MEI" ? (player.attributes.passe + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
@@ -347,15 +359,15 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const cleanSheets = player.position === "GOL" ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
   const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.fisico / 700) ? Math.round(1 + random() * 7) : 0;
   const league = competitions.find((entry) => entry.id === club.leagueId);
-  const winsTitle = club.strength + ovr * 0.24 + random() * 19 > 104;
+  const winsTitle = club.strength + seasonOvr * 0.24 + random() * 19 > 104;
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
   const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
-  const cupFinal = pickCupFinal(club, ovr, player.form, random);
+  const cupFinal = pickCupFinal(club, seasonOvr, player.form, random);
   const seasonEvents = pickSeasonEvents(random, player.fame, player.position, cupFinal);
   const event = seasonEvents[0];
   const award = goals >= 24 ? "Chuteira de Ouro" : player.position === "GOL" && cleanSheets >= 16 ? "Melhor Goleiro da Liga" : goals >= 18 ? "Artilheiro da temporada" : (ovr > 88 && random() > 0.78 ? "Bola de Ouro" : (ovr > 84 && random() > 0.62 ? "Melhor jogador da liga" : undefined));
   player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
-  player.injuries = injuryWeeks; player.age += 1; player.form = clamp(52 + random() * 42 - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (ovr - 62) / 380 - agePenalty / 300)));
+  player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 26) / 240)));
   player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
   if (title) player.titles = [...player.titles, title]; if (award) player.awards = [...player.awards, award];
   const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
