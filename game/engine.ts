@@ -361,6 +361,7 @@ function cupEligible(club: Club, competitionId: string) {
   if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
   if (competitionId === "copa-verde") return club.competitionIds?.some((id) => COPA_VERDE_STATE_IDS.includes(id)) === true;
   if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
+  if (competitionId === "recopa-sudamericana") return SOUTH_AMERICAN_COUNTRIES.includes(club.country) && club.strength >= 67;
   if (["ucl", "uel", "uecl", "uefa-super"].includes(competitionId)) return EUROPEAN_COUNTRIES.includes(club.country);
   if (competitionId === "concacaf" || competitionId === "leagues-cup") return NORTH_AMERICAN_LEAGUES.includes(club.leagueId);
   if (competitionId === "afc-cl") return ASIAN_LEAGUES.includes(club.leagueId);
