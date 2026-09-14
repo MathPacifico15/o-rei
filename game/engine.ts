@@ -440,15 +440,19 @@ export function legacy(player: Player) {
   return { score, global };
 }
 
-export function shouldRetire(player: Player, seed: number) {
-  const random = mulberry32(seed + player.age * 97)();
-  const ovr = computeOvr(player);
-  const baseThreshold = player.position === "GOL" ? 39 : 37;
-  // Cada 10 pontos acima de 50 de físico prolonga a carreira em um ano.
-  const physicalLongevity = Math.floor(Math.max(0, player.attributes.fisico - 50) / 10);
-  const threshold = baseThreshold + physicalLongevity;
-  const retirementRisk = (player.age - threshold + 1) * (0.24 / (0.55 + player.attributes.fisico / 100));
-  return player.age >= threshold && (ovr < 72 || random < retirementRisk);
+/** A idade de aposentadoria é definida somente pelo físico, com teto absoluto de 42. */
+export function retirementAge(physical: number) {
+  if (physical >= 90) return 42;
+  if (physical >= 85) return 40;
+  return 38;
+}
+
+export function estimateSeasonsUntilRetirement(player: Pick<Player, "age" | "attributes">) {
+  return Math.max(0, retirementAge(player.attributes.fisico) - player.age);
+}
+
+export function shouldRetire(player: Player, _seed: number) {
+  return player.age >= retirementAge(player.attributes.fisico);
 }
 
 export function baseAttributes(): Attributes { return { reflexo: 55, elasticidade: 55, posicionamento: 56, saida: 53, lideranca: 50, fisico: 56, velocidade: 58, passe: 56, finalizacao: 55, drible: 56, cabecada: 54, forca: 56 }; }
