@@ -254,6 +254,10 @@ export function generationalAttributes(position: Position, seed: number): Attrib
   positionAttributeKeys[position].forEach((key) => {
     attributes[key] = clamp(targetOvr + randomInteger(random, -3, 3));
   });
+  // Corrige o atributo com maior peso para garantir o OVR-alvo sorteado.
+  const [mainAttribute, mainWeight] = Object.entries(weights[position]).sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))[0] as [AttributeKey, number];
+  const currentOvr = computeOvr({ position, attributes });
+  attributes[mainAttribute] = clamp(attributes[mainAttribute] + (targetOvr - currentOvr) / mainWeight);
   return attributes;
 }
 
