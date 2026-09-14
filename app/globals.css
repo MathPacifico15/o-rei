@@ -222,3 +222,6 @@ h1, h2, p { margin-top: 0; } h1, h2 { font-family: Georgia, 'Times New Roman', s
 .local-ranking ol { margin:10px 0 0; padding:0; list-style:none; }
 .local-ranking li { display:grid; grid-template-columns:32px 1fr auto; align-items:center; gap:8px; min-height:37px; padding:5px 2px; border-top:1px solid #28312d; color:#e9e9e4; font-size:11px; }
 .local-ranking li > b { color:#d7b667; font-size:10px; }.local-ranking li span { font-weight:800; }.local-ranking li small { display:block; margin-top:2px; color:#87908b; font-size:8px; font-weight:700; }.local-ranking li strong { color:#20df5c; font-size:15px; }.local-ranking li.current { margin:0 -5px; padding-left:7px; padding-right:7px; background:#16241a; }.local-ranking > p { margin:10px 0 0; color:#87908b; font-size:11px; }
+
+.generational-option { display:flex; align-items:center; gap:11px; width:100%; padding:13px; border:1px solid #795e1e; border-radius:8px; background:linear-gradient(110deg,rgba(197,151,45,.14),rgba(18,27,22,.72)); cursor:pointer; }
+.generational-option input { width:18px; height:18px; accent-color:#d7b667; }.generational-option b { display:block; color:#e6c66b; font-size:12px; letter-spacing:.06em; }.generational-option small { display:block; margin-top:3px; color:#bcc3bc; font-size:10px; line-height:1.35; }
