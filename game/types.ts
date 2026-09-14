@@ -128,4 +128,6 @@ export interface CareerState {
   player: Player;
   history: SeasonResult[];
   currentCompetition: string;
+  /** Carreira normal ou com a vantagem inicial de Craque Geracional. */
+  mode?: "normal" | "generational";
 }
