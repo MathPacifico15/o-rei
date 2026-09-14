@@ -1,6 +1,6 @@
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
-import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, CupFinal, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
+import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, ClubCareerRecord, CupFinal, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
 
 export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
   GOL: ["reflexo", "elasticidade", "posicionamento", "saida", "lideranca", "fisico"],
@@ -397,6 +397,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const random = mulberry32(state.seed + state.season * 7919);
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
   const club = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
+  const clubHistory: ClubCareerRecord[] = (state.clubHistory ?? []).map((entry) => ({ ...entry, titles: [...entry.titles] }));
+  let clubRecord = clubHistory.find((entry) => entry.clubId === player.clubId);
+  if (!clubRecord) { clubRecord = { clubId: player.clubId, titles: [] }; clubHistory.push(clubRecord); }
   const ovr = computeOvr(player);
   const generational = state.mode === "generational";
   const agePerformance = agePerformanceMultiplier(player.age, player.attributes.fisico);
@@ -422,11 +425,11 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
   player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 33) / (240 * (0.55 + player.attributes.fisico / 100)))));
   player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
-  if (title) player.titles = [...player.titles, title];
+  if (title) { player.titles = [...player.titles, title]; clubRecord.titles.push(title); }
   if (nationalTeam.title) player.titles = [...player.titles, nationalTeam.title];
   if (award) player.awards = [...player.awards, award];
   const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, nationalTeamCompetition: nationalTeam.competition, nationalTeamTitle: nationalTeam.title, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
-  return { state: { ...state, season: state.season + 1, player, history: [...state.history, result] }, result };
+  return { state: { ...state, season: state.season + 1, player, clubHistory, history: [...state.history, result] }, result };
 }
 
 export function legacy(player: Player) {
