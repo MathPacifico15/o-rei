@@ -246,6 +246,17 @@ export function agePerformanceMultiplier(age: number, physical = 50) {
 
 function clamp(value: number) { return Math.max(1, Math.min(99, Math.round(value))); }
 
+/** A promessa geracional começa mais pronta, com OVR-alvo entre 62 e 70. */
+export function generationalAttributes(position: Position, seed: number): Attributes {
+  const random = mulberry32(seed);
+  const targetOvr = randomInteger(random, 62, 70);
+  const attributes = baseAttributes();
+  positionAttributeKeys[position].forEach((key) => {
+    attributes[key] = clamp(targetOvr + randomInteger(random, -3, 3));
+  });
+  return attributes;
+}
+
 export function applyCard(player: Player, card: UpgradeCard): Player {
   if (!card.eligible.includes(player.position)) return player;
   const attributes = { ...player.attributes };
@@ -358,14 +369,14 @@ function cupEligible(club: Club, competitionId: string) {
     : club.strength >= 67;
 }
 
-function pickCupFinal(club: Club, ovr: number, form: number, random: () => number): CupFinal | undefined {
+function pickCupFinal(club: Club, ovr: number, form: number, random: () => number, opportunityBonus = 0): CupFinal | undefined {
   const available = competitions.filter((competition) =>
     ["cup", "continental", "international", "state"].includes(competition.kind)
     && !NATIONAL_TEAM_COMPETITION_IDS.includes(competition.id as typeof NATIONAL_TEAM_COMPETITION_IDS[number])
     && cupEligible(club, competition.id),
   );
   if (!available.length) return undefined;
-  const chance = Math.min(0.29, 0.035 + Math.max(0, club.strength + ovr * 0.2 - 78) / 210);
+  const chance = Math.min(0.42, 0.035 + Math.max(0, club.strength + ovr * 0.2 - 78) / 210 + opportunityBonus);
   if (random() > chance) return undefined;
   const competition = available[Math.floor(random() * available.length)];
   const opponents = clubs.filter((candidate) => candidate.id !== club.id && cupEligible(candidate, competition.id));
@@ -382,6 +393,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
   const club = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
   const ovr = computeOvr(player);
+  const generational = state.mode === "generational";
   const agePerformance = agePerformanceMultiplier(player.age, player.attributes.fisico);
   const seasonOvr = ovr * agePerformance;
   const role = Math.max(0.18, Math.min(0.96, (seasonOvr - club.strength + 18) / 30));
@@ -394,10 +406,10 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const cleanSheets = player.position === "GOL" ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
   const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.fisico / 700) ? Math.round(1 + random() * 7) : 0;
   const league = competitions.find((entry) => entry.id === club.leagueId);
-  const winsTitle = club.strength + seasonOvr * 0.24 + random() * 19 > 104;
+  const winsTitle = club.strength + seasonOvr * 0.24 + random() * 19 + (generational ? 6 : 0) > 104;
   const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
   const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
-  const cupFinal = pickCupFinal(club, seasonOvr, player.form, random);
+  const cupFinal = pickCupFinal(club, seasonOvr, player.form, random, generational ? 0.1 : 0);
   const nationalTeam = simulateNationalTeamCampaign(player, state.season, ovr, random);
   const seasonEvents = pickSeasonEvents(random, player.fame, player.position, cupFinal);
   const event = seasonEvents[0];
