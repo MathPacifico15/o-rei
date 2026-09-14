@@ -89,7 +89,7 @@ export default function Home() {
       player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
     }
     const history = [...career.history]; history[history.length - 1] = resolved;
-    setCareer(addClubTitle({ ...career, player, history }, cupFinal.competitionName)); setLastResult(resolved);
+    setCareer(won ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }); setLastResult(resolved);
   }
   function chooseEvent(index: number) {
     if (!career || !event) return;
