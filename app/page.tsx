@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, estimateSeasonsUntilRetirement, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "minigame" | "legacy";
 const positions: Array<{ id: Position; label: string }> = [
@@ -142,7 +142,7 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
 }
 
 function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLegacy }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void }) {
-  const player = career.player, ovr = computeOvr(player), seasonsUntilRetirement = estimateSeasonsUntilRetirement(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
+  const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
   const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const seasonGames = result?.games ?? player.games, seasonGoals = result?.goals ?? player.goals, seasonAssists = result?.assists ?? player.assists;
   const seasonRating = (5.4 + (player.form / 100) * 2.3 + Math.min(1.2, (seasonGoals + seasonAssists) / Math.max(1, seasonGames) * .8)).toFixed(1);
@@ -160,7 +160,7 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLe
           <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
           <div className="finance-strip"><div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div><div><b>R$ {(player.salary / 1000).toFixed(0)}K</b><span>SALÁRIO</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
           <div className="loyalty"><span>IDOLATRIA</span><div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div><div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div></div>
-          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>APOSENTA EM {seasonsUntilRetirement} TEMP.</span></div>
+          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>{career.history.length} TEMPORADAS</span></div>
           <button className="career-history" onClick={onLegacy}>☷ VER CARREIRA</button>
         </section>
         <section className="season-panel">
