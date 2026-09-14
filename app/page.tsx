@@ -220,8 +220,8 @@ function Shop({ onBack }: { onBack: () => void }) {
   const oneOff = [
     ["🚗", "Carro esportivo", "Status e 2 de fama.", "US$ 900K"],
     ["🏠", "Casa própria", "Estabilidade para a família.", "US$ 1,5M"],
-    ["🧑‍🤝‍🧑", "Maninho com campo", "Confronte tudo e não coma com fome.", "US$ 1,2M"],
-    ["📷", "Ira particular", "Status e 4 de fama.", "US$ 4,0M"],
+    ["🧑‍🤝‍🧑", "Mansão com campo", "Confronte tudo e não coma com fome.", "US$ 1,2M"],
+    ["📷", "Ilha particular", "Status e 4 de fama.", "US$ 4,0M"],
     ["🌄", "O caminho do seu bairro", "Visite as raízes e recupere a cabeça.", "US$ 7,5M"],
     ["🛋️", "Academia do clube", "Poder +15 de fama e novos contatos.", "US$ 5,0M"],
   ];
