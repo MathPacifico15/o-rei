@@ -225,3 +225,13 @@ h1, h2, p { margin-top: 0; } h1, h2 { font-family: Georgia, 'Times New Roman', s
 
 .generational-option { display:flex; align-items:center; gap:11px; width:100%; padding:13px; border:1px solid #795e1e; border-radius:8px; background:linear-gradient(110deg,rgba(197,151,45,.14),rgba(18,27,22,.72)); cursor:pointer; }
 .generational-option input { width:18px; height:18px; accent-color:#d7b667; }.generational-option b { display:block; color:#e6c66b; font-size:12px; letter-spacing:.06em; }.generational-option small { display:block; margin-top:3px; color:#bcc3bc; font-size:10px; line-height:1.35; }
+
+
+/* Retirement career summary */
+.club-summary { width:min(100%,560px); margin:28px auto; text-align:left; border-top:1px solid #56492f; }
+.club-summary h2 { margin:14px 0 10px; color:#d7b667; font:900 14px/1 Impact,Arial Black,sans-serif; letter-spacing:.1em; }
+.club-summary-row { display:grid; grid-template-columns:34px 1fr; gap:11px; align-items:start; padding:11px 4px; border-top:1px solid #35372f; }
+.club-summary-row .crest { width:31px; height:37px; font-size:8px; }
+.club-summary-row b { display:block; color:#f2eee3; font-size:14px; }
+.club-summary-row small { display:block; margin-top:2px; color:#d7b667; font-size:9px; font-weight:800; letter-spacing:.05em; }
+.club-summary-row p { margin:6px 0 0; color:#b8b9b2; font-size:11px; line-height:1.45; }
