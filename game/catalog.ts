@@ -22,6 +22,7 @@ const baseCompetitions: CompetitionRow[] = [
   { id: "copa-verde", name: "Copa Verde", country: "Brasil", tier: 1, kind: "cup", season: "calendar", prestige: 33 },
   { id: "lib", name: "CONMEBOL Libertadores", country: "América do Sul", tier: 1, kind: "continental", season: "calendar", prestige: 94 },
   { id: "sula", name: "CONMEBOL Sul-Americana", country: "América do Sul", tier: 1, kind: "continental", season: "calendar", prestige: 72 },
+  { id: "recopa-sudamericana", name: "CONMEBOL Recopa Sudamericana", country: "América do Sul", tier: 1, kind: "continental", season: "calendar", prestige: 78 },
   { id: "arg-lp", name: "Liga Profesional", country: "Argentina", tier: 1, kind: "league", season: "calendar", prestige: 77, expectedClubCount: 30 },
   { id: "eng-pl", name: "Premier League", country: "Inglaterra", tier: 1, kind: "league", season: "european", prestige: 96, expectedClubCount: 20 },
   { id: "esp-ll", name: "LaLiga", country: "Espanha", tier: 1, kind: "league", season: "european", prestige: 94, expectedClubCount: 20 },
