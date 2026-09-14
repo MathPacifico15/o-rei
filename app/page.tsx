@@ -40,7 +40,7 @@ function addClubTitle(career: CareerState, title: string): CareerState {
   const clubHistory = (career.clubHistory ?? []).map((entry) => ({ ...entry, titles: [...entry.titles] }));
   let clubRecord = clubHistory.find((entry) => entry.clubId === career.player.clubId);
   if (!clubRecord) { clubRecord = { clubId: career.player.clubId, titles: [] }; clubHistory.push(clubRecord); }
-  if (!clubRecord.titles.includes(title)) clubRecord.titles.push(title);
+  clubRecord.titles.push(title);
   return { ...career, clubHistory };
 }
 
@@ -85,7 +85,7 @@ export default function Home() {
     const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
     const player = { ...career.player, titles: [...career.player.titles], clubIdolatry: { ...career.player.clubIdolatry } };
     if (won) {
-      if (!player.titles.includes(cupFinal.competitionName)) player.titles.push(cupFinal.competitionName);
+      player.titles.push(cupFinal.competitionName);
       player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
     }
     const history = [...career.history]; history[history.length - 1] = resolved;
@@ -106,7 +106,7 @@ export default function Home() {
       const cupFinal = { ...lastResult.cupFinal, won };
       const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
       if (won) {
-        if (!player.titles.includes(cupFinal.competitionName)) player.titles.push(cupFinal.competitionName);
+        player.titles.push(cupFinal.competitionName);
         player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
       }
       const history = [...career.history];
