@@ -1,17 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, legacy, miniGameForSeed, positionAttributeKeys, randomCareerStart, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "minigame" | "legacy";
-const positions: Array<{ id: Position; label: string }> = [
-  { id: "GOL", label: "Goleiro" },
-  { id: "MEI", label: "Meia · Camisa 10" },
-  { id: "ATA", label: "Atacante · Camisa 9" },
+const idoloPositions: Array<{ id: Position; number: string; label: string; tone: string }> = [
+  { id: "ATA", number: "9", label: "ATACANTE", tone: "gold" },
+  { id: "MEI", number: "10", label: "MEIA-ARMADOR", tone: "green" },
+  { id: "GOL", number: "1", label: "GOLEIRO", tone: "teal" },
+];
+const dailyObjectives = [
+  { text: "Termine a carreira", coins: 5 },
+  { text: "Ganhe 1 ou mais copas internacionais", coins: 10 },
+  { text: "Ganhe 2 Bolas de Ouro", coins: 15 },
 ];
 const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
 
 function crestLetters(name: string) { return name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(); }
+function flagUrl(code: string) { return `https://flagcdn.com/w40/${code.toLowerCase()}.png`; }
+function countryCode(name: string) { return countries.find((country) => country.name === name)?.code ?? "UN"; }
 function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
   const [missing, setMissing] = useState(false);
   return <span title={`Símbolo de ${club.name}`} className={`crest crest-${club.id} ${small ? "crest-small" : ""}`}>{missing ? crestLetters(club.name) : <img src={`/crests/${club.crest}.png`} alt={`Escudo do ${club.name}`} onError={() => setMissing(true)} />}</span>;
@@ -120,26 +127,36 @@ export default function Home() {
 function Start({ hasCareer, onNew, onContinue }: { hasCareer: boolean; onNew: () => void; onContinue: () => void }) { return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carreira local protegida</span></nav><section className="start-content"><div className="eyebrow">UMA CARREIRA. TODA A HISTÓRIA.</div><Brand /><h1>Do primeiro jogo à eternidade.</h1><p>Crie seu atleta aos 16 anos. Conquiste títulos, enfrente clássicos e escreva um legado que não cabe numa súmula.</p><div className="start-actions"><button className="button button-primary" onClick={onNew}>COMEÇAR CARREIRA <span>→</span></button>{hasCareer && <button className="button button-ghost" onClick={onContinue}>CONTINUAR CARREIRA</button>}</div><div className="feature-row"><span><b>10</b> minigames decisivos</span><span><b>20</b> atributos reais</span><span><b>0–1000</b> legado final</span></div></section><footer>O REI · futebol, escolhas e memória</footer></main>; }
 
 function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Parameters<typeof createInitialState>[0]) => void }) {
-  const [name, setName] = useState("Matheus");
-  const [position, setPosition] = useState<Position>("MEI");
+  const [name, setName] = useState("matheus");
+  const [position, setPosition] = useState<Position>("ATA");
+  const [leagueCountry, setLeagueCountry] = useState("Brasil");
   const [leagueId, setLeagueId] = useState("bra-a");
   const [clubId, setClubId] = useState("santos");
   const [nationality, setNationality] = useState("Brasil");
   const [foot, setFoot] = useState<Player["preferredFoot"]>("Direito");
   const [height, setHeight] = useState(178);
-  const [shirt, setShirt] = useState(10);
-  const [countryOpen, setCountryOpen] = useState(false);
+  const [shirt, setShirt] = useState(9);
   const [locationSearch, setLocationSearch] = useState("");
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [leagueCountryOpen, setLeagueCountryOpen] = useState(false);
+  const [leagueOpen, setLeagueOpen] = useState(false);
+  const [dailyReset, setDailyReset] = useState("04:00:00");
 
-  const playableCompetitions = competitions.filter((competition) => competition.selectable && clubs.some((club) => clubCompetesIn(club, competition.id)));
+  const playableCompetitions = useMemo(
+    () => competitions.filter((competition) => competition.selectable && clubs.some((club) => clubCompetesIn(club, competition.id))),
+    [],
+  );
+  const leagueCountries = useMemo(
+    () => [...new Set(playableCompetitions.map((competition) => competition.country))].sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [playableCompetitions],
+  );
   const query = locationSearch.trim().toLocaleLowerCase("pt-BR");
   const matches = (value: string) => !query || value.toLocaleLowerCase("pt-BR").includes(query);
-
-  const visibleCountries = countries.filter((country) => matches(country.name));
-  const visibleCompetitions = playableCompetitions.filter((competition) => matches(competition.name) || matches(competition.country));
-  const competitionOptions = query && !visibleCompetitions.some((competition) => competition.id === leagueId)
-    ? [...visibleCompetitions, ...playableCompetitions.filter((competition) => competition.id === leagueId)]
-    : query ? visibleCompetitions : playableCompetitions;
+  const leaguesInCountry = playableCompetitions.filter((competition) => competition.country === leagueCountry);
+  const visibleLeagues = query
+    ? leaguesInCountry.filter((competition) => matches(competition.name) || matches(competition.country))
+    : leaguesInCountry;
   const leagueClubs = clubs.filter((club) => clubCompetesIn(club, leagueId));
   const clubMatchesSearch = (club: Club) => {
     if (!query) return true;
@@ -147,121 +164,271 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
     const league = playableCompetitions.find((competition) => competition.id === club.leagueId);
     return Boolean(league && (matches(league.name) || matches(league.country)));
   };
-  const visibleLeagueClubs = query
-    ? clubs.filter((club) => clubMatchesSearch(club) && playableCompetitions.some((competition) => clubCompetesIn(club, competition.id))).slice(0, 36)
-    : leagueClubs.filter((club) => matches(club.name));
+  const visibleClubs = query
+    ? clubs.filter((club) => clubMatchesSearch(club) && playableCompetitions.some((competition) => clubCompetesIn(club, competition.id)))
+    : leagueClubs;
+  const clubOptions = query ? visibleClubs.slice(0, 48) : leagueClubs;
+  const selected = clubs.find((club) => club.id === clubId) ?? leagueClubs[0] ?? clubs[0];
+  const selectedNationality = countries.find((country) => country.name === nationality) ?? countries.find((country) => country.code === "BR")!;
+  const selectedLeague = playableCompetitions.find((competition) => competition.id === leagueId);
+  const visibleNationalities = countries.filter((country) => country.name.toLocaleLowerCase("pt-BR").includes(countrySearch.toLocaleLowerCase("pt-BR")));
 
-  const selected = clubs.find((club) => club.id === clubId) ?? leagueClubs.find((club) => club.id === clubId) ?? leagueClubs[0] ?? clubs[0];
-  const selectedCompetition = playableCompetitions.find((competition) => competition.id === leagueId);
-  const selectedCountry = countries.find((country) => country.name === nationality) ?? countries.find((country) => country.code === "BR")!;
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const end = new Date(now);
+      end.setHours(24, 0, 0, 0);
+      const diff = Math.max(0, end.getTime() - now.getTime());
+      const hours = String(Math.floor(diff / 3600000)).padStart(2, "0");
+      const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+      const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+      setDailyReset(`${hours}:${minutes}:${seconds}`);
+    };
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
-  function switchLeague(next: string) {
-    const first = clubs.find((club) => clubCompetesIn(club, next));
-    if (first) { setLeagueId(next); setClubId(first.id); }
+  function pickPosition(next: Position) {
+    setPosition(next);
+    setShirt(next === "MEI" ? 10 : next === "ATA" ? 9 : 1);
   }
 
-  function pickClub(club: Club) {
-    setLeagueId(club.leagueId);
+  function switchLeagueCountry(next: string) {
+    setLeagueCountry(next);
+    const firstLeague = playableCompetitions.find((competition) => competition.country === next);
+    if (!firstLeague) return;
+    setLeagueId(firstLeague.id);
+    const firstClub = clubs.find((club) => clubCompetesIn(club, firstLeague.id));
+    if (firstClub) setClubId(firstClub.id);
+  }
+
+  function switchLeague(next: string) {
+    const firstClub = clubs.find((club) => clubCompetesIn(club, next));
+    if (!firstClub) return;
+    setLeagueId(next);
+    setClubId(firstClub.id);
+    const league = playableCompetitions.find((competition) => competition.id === next);
+    if (league) setLeagueCountry(league.country);
+  }
+
+  function switchClub(next: string) {
+    const club = clubs.find((item) => item.id === next);
+    if (!club) return;
     setClubId(club.id);
+    setLeagueId(club.leagueId);
+    const league = playableCompetitions.find((competition) => competition.id === club.leagueId);
+    if (league) setLeagueCountry(league.country);
+    setLocationSearch("");
+  }
+
+  function applyRandom() {
+    const roll = randomCareerStart(Date.now());
+    setName("matheus");
+    pickPosition(roll.position);
+    setNationality(roll.nationality);
+    setLeagueCountry(roll.league.country);
+    setLeagueId(roll.club.leagueId);
+    setClubId(roll.club.id);
+    setFoot(roll.preferredFoot);
+    setHeight(roll.heightCm);
+    setShirt(roll.shirtNumber);
     setLocationSearch("");
   }
 
   return (
-    <main className="app-shell form-shell">
-      <nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">01 / 01</span></nav>
-      <section className="form-wrap">
-        <div><div className="eyebrow">FICHA DE INSCRIÇÃO</div><h1>Seu primeiro contrato.</h1><p>Você começa aos 16 anos. O resto será conquistado em campo.</p></div>
-        <div className="form-grid">
-          <label className="field field-wide">Nome do atleta<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label>
-          <div className="field country-field">
-            <span>Nacionalidade</span>
-            <button type="button" className="country-trigger" onClick={() => setCountryOpen(!countryOpen)}>
-              <img src={`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`} alt="" /><span>{selectedCountry.name}</span><b>⌄</b>
-            </button>
-            {countryOpen && (
-              <div className="country-menu">
-                <div className="location-search location-search-menu">
-                  <span className="location-search-icon" aria-hidden>⌕</span>
-                  <input autoFocus value={locationSearch} onChange={(event) => setLocationSearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" />
-                </div>
-                <div className="country-options">
-                  {visibleCountries.map((country) => (
-                    <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setLocationSearch(""); }}>
-                      <img src={`https://flagcdn.com/w40/${country.code.toLowerCase()}.png`} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span>
+    <main className="app-shell idolo-setup-shell">
+      <div className="idolo-setup-wrap">
+        <article className="idolo-setup-card">
+          <header className="idolo-setup-hero">
+            <button type="button" className="idolo-back" onClick={onBack} aria-label="Voltar">←</button>
+            <div className="idolo-mode-tabs"><span className="active">MODO CARREIRA</span><span className="locked">DUELO 🔒</span></div>
+            <Brand />
+          </header>
+
+          <section className="idolo-banner locked">
+            <div><strong>A CARREIRA DE BUFFON</strong><small>🔒 Em breve no O REI</small></div>
+            <span className="idolo-banner-reward">+50 moedas</span>
+          </section>
+
+          <section className="idolo-daily">
+            <div className="idolo-daily-head"><h3>DESAFIO DO DIA</h3><span>MUDA EM {dailyReset}</span></div>
+            <p className="idolo-daily-label">OBJETIVOS DE HOJE</p>
+            <ul className="idolo-objectives">
+              {dailyObjectives.map((item) => (
+                <li key={item.text}><span>{item.text}</span><b>🪙 {item.coins}</b></li>
+              ))}
+            </ul>
+            <button type="button" className="idolo-locked-btn" disabled>ENTRE PARA JOGAR 🔒</button>
+          </section>
+
+          <section className="idolo-start">
+            <div className="idolo-start-head">
+              <h3>SEU COMEÇO</h3>
+              <button type="button" className="idolo-random-btn" onClick={applyRandom}>🎲 ALEATÓRIO</button>
+            </div>
+
+            <div className="idolo-select-grid">
+              <div className="idolo-field country-field">
+                <span>Nacionalidade</span>
+                <button type="button" className="country-trigger idolo-flag-trigger" onClick={() => { setCountryOpen(!countryOpen); setLeagueCountryOpen(false); setLeagueOpen(false); }}>
+                  <img src={flagUrl(selectedNationality.code)} alt="" /><span>{selectedNationality.name}</span><b>⌄</b>
+                </button>
+                {countryOpen && (
+                  <div className="country-menu idolo-flag-menu">
+                    <div className="location-search location-search-menu">
+                      <span className="location-search-icon" aria-hidden>⌕</span>
+                      <input autoFocus value={countrySearch} onChange={(event) => setCountrySearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" />
+                    </div>
+                    <div className="country-options">
+                      {visibleNationalities.map((country) => (
+                        <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setCountrySearch(""); }}>
+                          <img src={flagUrl(country.code)} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="idolo-field country-field">
+                <span>País da liga</span>
+                <button type="button" className="country-trigger idolo-flag-trigger" onClick={() => { setLeagueCountryOpen(!leagueCountryOpen); setCountryOpen(false); setLeagueOpen(false); }}>
+                  <img src={flagUrl(countryCode(leagueCountry))} alt="" /><span>{leagueCountry || "Escolha…"}</span><b>⌄</b>
+                </button>
+                {leagueCountryOpen && (
+                  <div className="country-menu idolo-flag-menu">
+                    <div className="country-options">
+                      {leagueCountries.map((country) => (
+                        <button type="button" key={country} onClick={() => { switchLeagueCountry(country); setLeagueCountryOpen(false); }}>
+                          <img src={flagUrl(countryCode(country))} alt={`Bandeira de ${country}`} /><span>{country}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="idolo-field country-field idolo-field-wide">
+                <span>Liga</span>
+                <button type="button" className="country-trigger idolo-flag-trigger" onClick={() => { setLeagueOpen(!leagueOpen); setCountryOpen(false); setLeagueCountryOpen(false); }}>
+                  <span className="idolo-league-flag">{selectedLeague?.flag ?? "🏳️"}</span><span>{selectedLeague?.name ?? "—"}</span><b>⌄</b>
+                </button>
+                {leagueOpen && (
+                  <div className="country-menu idolo-flag-menu">
+                    <div className="country-options">
+                      {visibleLeagues.map((competition) => (
+                        <button type="button" key={competition.id} onClick={() => { switchLeague(competition.id); setLeagueOpen(false); }}>
+                          <span className="idolo-league-flag">{competition.flag}</span><span>{competition.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="idolo-field idolo-club-block">
+              <span>Time</span>
+              <div className="location-search idolo-search">
+                <span className="location-search-icon" aria-hidden>⌕</span>
+                <input value={locationSearch} onChange={(event) => setLocationSearch(event.target.value)} placeholder="Buscar país, liga ou clube…" aria-label="Buscar país, liga ou clube" />
+              </div>
+              <div className="club-picker idolo-club-picker">
+                {clubOptions.length === 0
+                  ? <p className="idolo-club-empty">Escolha o país da liga ou busque um clube.</p>
+                  : clubOptions.map((club) => (
+                    <button key={club.id} type="button" onClick={() => switchClub(club.id)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}>
+                      <ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small>
                     </button>
                   ))}
-                </div>
               </div>
-            )}
-          </div>
-          <label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label>
-          <div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => { setPosition(item.id); if (item.id === "MEI") setShirt(10); if (item.id === "ATA") setShirt(9); }} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div>
-          <label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label>
-          <label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label>
-          <div className="field field-wide">
-            <span>Buscar país, liga ou clube</span>
-            <div className="location-search">
-              <span className="location-search-icon" aria-hidden>⌕</span>
-              <input value={locationSearch} onChange={(event) => setLocationSearch(event.target.value)} placeholder="Ex.: Brasil, Série A, Santos…" aria-label="Buscar país, liga ou clube" />
             </div>
-          </div>
-          <label className="field field-wide">Liga de início
-            <select value={leagueId} onChange={(e) => switchLeague(e.target.value)}>
-              {competitionOptions.map((competition) => <option key={competition.id} value={competition.id}>{competition.flag} {competition.name}</option>)}
-            </select>
-            <small className="field-note">{selectedCompetition?.flag} {selectedCompetition?.country} · {visibleLeagueClubs.length} clubes {query ? "encontrados" : "nesta edição"}</small>
-          </label>
-          <div className="field field-wide">
-            <span>Clube de início</span>
-            <div className="club-picker">
-              {visibleLeagueClubs.map((club) => (
-                <button key={club.id} type="button" onClick={() => pickClub(club)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}>
-                  <ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small>
+
+            <label className="idolo-name-field">
+              <input value={name} maxLength={24} onChange={(event) => setName(event.target.value)} placeholder="Seu nome" aria-label="Nome do atleta" />
+            </label>
+
+            <div className="idolo-positions">
+              {idoloPositions.map((item) => (
+                <button key={item.id} type="button" className={`idolo-position idolo-position-${item.tone} ${position === item.id ? "selected" : ""}`} onClick={() => pickPosition(item.id)}>
+                  <strong>{item.number}</strong><span>{item.label}</span>
                 </button>
               ))}
             </div>
-            {query && visibleLeagueClubs.length === 0 && <small className="field-note">Nenhum clube encontrado para &quot;{locationSearch}&quot;.</small>}
-          </div>
-        </div>
-        <button className="button button-primary button-full" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality })}>ASSINAR PRIMEIRO CONTRATO <span>→</span></button>
-      </section>
+
+            <button type="button" className="idolo-start-btn" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality })}>▶ COMEÇAR MINHA CARREIRA</button>
+            <div className="idolo-rare locked"><span>✨ JOIA RARA</span><small>🔒 Em breve</small></div>
+          </section>
+        </article>
+      </div>
     </main>
   );
 }
 
+function fameGrade(fame: number) { return fame >= 8 ? "S" : fame >= 5 ? "A" : fame >= 3 ? "B" : "C"; }
+
 function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onLegacy }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void }) {
   const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
   const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const seasonGames = result?.games ?? player.games, seasonGoals = result?.goals ?? player.goals, seasonAssists = result?.assists ?? player.assists;
-  const seasonRating = (5.4 + (player.form / 100) * 2.3 + Math.min(1.2, (seasonGoals + seasonAssists) / Math.max(1, seasonGames) * .8)).toFixed(1);
+  const seasonGames = result?.games ?? 0, seasonGoals = result?.goals ?? 0;
+  const country = countries.find((item) => item.name === player.nationality) ?? countries.find((item) => item.code === "BR")!;
+  const shirtTag = player.position === "MEI" ? "10" : player.position === "ATA" ? "9" : String(player.shirtNumber);
+  const earned = career.history.length * player.salary;
+  const glory = player.fame * 1375 + idolatry * 12;
+  const nextIdolatry = Math.min(100, Math.ceil(idolatry / 25) * 25 || 25);
+  const selectionStatus = ovr >= 82 ? "CONVOCADO" : ovr >= 72 ? "EM OBSERVAÇÃO" : "SEM CHANCE";
+
   return <main className="app-shell career-shell dashboard-shell">
-    <div className="dashboard-grid">
-      <div className="dashboard-main">
-        <section className="athlete-panel">
+    <div className="dashboard-grid el-idolo-grid">
+      <aside className="gallery-panel">
+        <div className="side-label">GALERIA</div>
+        {player.titles.length === 0
+          ? <p className="gallery-empty">As taças que você ganhar aparecem aqui.</p>
+          : <div className="gallery-trophies">{player.titles.map((title) => <span key={title} className="gallery-trophy" title={title}>🏆</span>)}</div>}
+      </aside>
+      <div className="dashboard-center">
+        <section className="athlete-panel dashboard-card">
           <div className="athlete-head">
             <div className="rating-block"><strong>{ovr}</strong><span>OVERALL</span></div>
-            <div className="athlete-identity"><h1><i>{player.nationality === "Brasil" ? "🇧🇷" : "⚽"}</i> {player.name.toUpperCase()} <b>· {player.position}</b></h1><p>{club.name.toUpperCase()} · {career.currentCompetition.toUpperCase()} · <em>FAMA {player.fame}</em></p></div>
+            <div className="athlete-identity">
+              <h1>{player.name.toUpperCase()} <b>· {player.position} {shirtTag}</b></h1>
+              <p className="athlete-clubline">{club.name.toUpperCase()} · {career.season} · {player.age} ANOS</p>
+              <p className="athlete-leagline"><img src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} alt="" /> {career.currentCompetition.toUpperCase()} · FAMA {fameGrade(player.fame)}</p>
+            </div>
             <ClubCrest club={club} />
             <button className="panel-exit" onClick={onLegacy} aria-label="Ver legado">↗</button>
           </div>
           <div className="score-strip"><StatTile value={player.goals} label="GOLS" accent /><StatTile value={player.assists} label="ASSISTÊNCIAS" /><StatTile value={player.games} label="JOGOS" /><StatTile value={player.titles.length} label="TÍTULOS" /></div>
-          <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
-          <div className="finance-strip"><div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div><div><b>R$ {(player.salary / 1000).toFixed(0)}K</b><span>SALÁRIO</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
-          <div className="loyalty"><span>IDOLATRIA</span><div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div><div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div></div>
-          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>{career.history.length} TEMPORADAS</span></div>
-          <button className="career-history" onClick={onLegacy}>☷ VER CARREIRA</button>
+          <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : value >= 60 ? "gold" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
+          <div className="finance-strip finance-idolo">
+            <div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div>
+            <div><b>R$ {(earned / 1000).toFixed(0)}K</b><span>FATURADO</span></div>
+            <div><b className="glory">{glory.toLocaleString("pt-BR")}</b><span>GLÓRIA</span></div>
+          </div>
+          <div className="loyalty-row">
+            <div className="loyalty">
+              <div className="loyalty-head"><span>IDOLATRIA</span><small>MAIS UM · {idolatry}/{nextIdolatry}</small></div>
+              <div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div>
+              <div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div>
+            </div>
+            <div className="dashboard-actions">
+              <button className="action-chip action-free" type="button" aria-label="Recompensa grátis">🛒<small>GRÁTIS</small></button>
+              {career.season % 2 === 0 && <button className="action-chip action-market" type="button" onClick={onMarket} aria-label="Mercado">💼</button>}
+            </div>
+          </div>
+          <div className="selection-line"><span><img src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} alt="" /> SELEÇÃO: {selectionStatus}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO" : "DISPUTOU"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}</span><span>{career.history.length} TEMPORADAS</span></div>
+          <button className="career-history" type="button" onClick={onLegacy}>☷ VER CARREIRA</button>
         </section>
-        <section className="season-panel">
-          <div className="season-titleline"><span>O REI ESPORTIVO</span><small>{career.season}/{String(career.season + 1).slice(-2)} · TEMPORADA {career.history.length + 1}</small></div>
-          <h2>{result?.nationalTeamTitle ? "CAMPEÃO PELA SELEÇÃO" : result?.title ? "A TEMPORADA FOI SUA" : seasonGames ? "A HISTÓRIA CONTINUA" : "PRONTO PARA ESTREAR?"}</h2>
-          <p>{result?.nationalTeamTitle ? `${player.name} conquistou a ${result.nationalTeamTitle} representando ${player.nationality}.` : result ? `${player.name} fechou o ano com números que a torcida vai lembrar.` : `Seu caminho no ${club.name} começa agora. Toda temporada deixa uma marca.`}</p>
-          <div className="club-season"><ClubCrest club={club} /><div><b>{club.name}</b><span>{career.currentCompetition}</span></div></div>
-          <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI"} /><StatTile value={seasonGames ? seasonRating : "—"} label="NOTA" /><StatTile value={`R$ ${(player.salary / 1000).toFixed(0)}K`} label="GANHOS" gold /></div>
-          <button className="play-button" onClick={onPlay}>CONTINUAR</button>
-          {career.season % 2 === 0 && <button className="market-action" onClick={onMarket}>VER PROPOSTAS DE MERCADO</button>}
+        <section className="season-action">
+          <div className="season-action-meta"><span>{career.season}/{String(career.season + 1).slice(-2)}</span><small>TEMPORADA {career.history.length + 1}</small></div>
+          <button className="play-button" type="button" onClick={onPlay}>CONTINUAR</button>
+          {career.season % 2 === 0 && <button className="market-action" type="button" onClick={onMarket}>VER PROPOSTAS DE MERCADO</button>}
         </section>
       </div>
-      <aside className="trajectory-panel"><div className="trajectory-label">TRAJETÓRIA</div><div className="trajectory-item active"><ClubCrest club={club} small /><div><b>{career.season}</b><span>{club.name}</span><small>{seasonGames} JG · {seasonGoals} GL</small></div></div>{career.history.slice(-3).reverse().map((season) => <div className="trajectory-item" key={season.season}><span className="trajectory-dot" /><div><b>{season.season}</b><span>{season.title ?? "Temporada"}</span><small>{season.games} JG · {season.goals} GL</small></div></div>)}</aside>
+      <aside className="trajectory-panel">
+        <div className="side-label">TRAJETÓRIA</div>
+        <div className="trajectory-item active"><ClubCrest club={club} small /><div><b>{career.season}</b><span>{club.name}</span><small>{seasonGames} JG · {seasonGoals} GL</small></div></div>
+        {career.history.slice(-4).reverse().map((season) => <div className="trajectory-item" key={season.season}><span className="trajectory-dot" /><div><b>{season.season}</b><span>{season.title ?? "Temporada"}</span><small>{season.games} JG · {season.goals} GL</small></div></div>)}
+      </aside>
     </div>
     {toast && <button className="toast" onClick={onDismiss}>{toast}<span>×</span></button>}
   </main>;
