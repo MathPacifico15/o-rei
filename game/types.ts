@@ -66,6 +66,11 @@ export interface Player {
   injuries: number;
 }
 
+export interface ClubCareerRecord {
+  clubId: string;
+  titles: string[];
+}
+
 export interface RandomCareerStart {
   seed: number;
   position: Position;
@@ -127,6 +132,8 @@ export interface CareerState {
   season: number;
   player: Player;
   history: SeasonResult[];
+  /** Histórico preciso de títulos por clube, criado em novas carreiras. */
+  clubHistory: ClubCareerRecord[];
   currentCompetition: string;
   /** Carreira normal ou com a vantagem inicial de Craque Geracional. */
   mode?: "normal" | "generational";
