@@ -507,6 +507,12 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club);
   const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
+  // Os demais clubes da tabela também trocam de divisão; o jogador decide a própria final.
+  table.entries.forEach((entry) => {
+    if (entry.clubId === player.clubId) return;
+    if (entry.position <= table.promotionPlaces) { const target=leagueTarget({...state,leagueAssignments:assignments},leagueId,"up"); if(target) assignments[entry.clubId]=target; }
+    if (entry.position > table.entries.length-table.relegationPlaces) { const target=leagueTarget({...state,leagueAssignments:assignments},leagueId,"down"); if(target) assignments[entry.clubId]=target; }
+  });
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[]),...(national?.title?[national.title]:[])]};
   const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:national?.title,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal)};
   return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam},result};
