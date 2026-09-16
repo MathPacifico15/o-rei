@@ -486,7 +486,6 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12,random);
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
   const league=competitions.find((entry)=>entry.id===leagueId);
-  const divisions=countryDivisions(club.country), divisionIndex=divisions.findIndex((entry)=>entry.id===leagueId);
   const leagueTitle=row.position===1 ? league?.name : undefined;
   const promotion=row.position<=table.promotionPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"up") : undefined;
   const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
