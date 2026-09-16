@@ -535,15 +535,17 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45)):0;
   const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio") ? .65 : 1);
   const injuryWeeks=random()<injuryRisk?Math.round(1+random()*7):0;
-  const analystBoost = seasonal.includes("analista") && club.strength < 76 ? 7 : 0;\n  const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12+analystBoost,random);
+  const analystBoost = seasonal.includes("analista") && club.strength < 76 ? 7 : 0;
+  const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12+analystBoost,random);
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
   const league=competitions.find((entry)=>entry.id===leagueId);
-  const leagueTitle=row.position===1 ? league?.name : undefined;
   const promotion=row.position<=table.promotionPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"up") : undefined;
+  const titleAndPromotion=Boolean(promotion && ["bra-b","bra-c","bra-d"].includes(leagueId));
+  // Nas Séries B/C/D, a decisão de acesso também vale o troféu da divisão.
+  const leagueTitle=row.position===1 && !titleAndPromotion ? league?.name : undefined;
   const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
-  // A única final de divisão do jogador é a do acesso; quedas seguem a tabela anual.
   let cupFinal = promotion
-    ? { competitionId: leagueId, competitionName: "Decisão do acesso", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: "promotion" as const, targetLeagueId: promotion }
+    ? { competitionId: leagueId, competitionName: titleAndPromotion ? (league?.name ?? "Campeonato Nacional") : "Decisão do acesso", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: titleAndPromotion ? "titleAndPromotion" as const : "promotion" as const, targetLeagueId: promotion }
     : pickCupFinal(club, seasonOvr, player.form, random, generational ? .1 : 0);
   const national=simulateFullNationalTeam(player,state.season,ovr,random);
   const contract=state.contract ?? {clubId:player.clubId,monthlySalary:200_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
@@ -559,7 +561,10 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
   const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
-  const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};\n  const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);\n  const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;\n  const marketWindow=opensMarket ? createMarketWindow({ ...state, player, contract: nextContract, highestOvr, originCountry: state.originCountry ?? club.country }, random) : undefined;
+  const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
+  const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
+  const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
+  const marketWindow=opensMarket ? createMarketWindow({ ...state, player, contract: nextContract, highestOvr, originCountry: state.originCountry ?? club.country }, random) : undefined;
   // Os demais clubes da tabela também trocam de divisão; o jogador decide a própria final.
   table.entries.forEach((entry) => {
     if (entry.clubId === player.clubId) return;
