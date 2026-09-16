@@ -496,8 +496,10 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const leagueTitle=row.position===1 ? league?.name : undefined;
   const promotion=row.position<=table.promotionPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"up") : undefined;
   const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
-  let cupFinal=pickCupFinal(club,seasonOvr,player.form,random,generational ? .1 : 0);
-  if (!cupFinal && (promotion||relegation)) cupFinal={competitionId:leagueId,competitionName:promotion?"Decisão do acesso":"Decisão da permanência",opponentClubId:"decisao",opponentClubName:"Rival direto",stakes:promotion?"promotion":"relegation",targetLeagueId:promotion??relegation};
+  // A única final de divisão do jogador é a do acesso; quedas seguem a tabela anual.
+  let cupFinal = promotion
+    ? { competitionId: leagueId, competitionName: "Decisão do acesso", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: "promotion" as const, targetLeagueId: promotion }
+    : pickCupFinal(club, seasonOvr, player.form, random, generational ? .1 : 0);
   const national=simulateFullNationalTeam(player,state.season,ovr,random);
   const contract=state.contract ?? {clubId:player.clubId,monthlySalary:200_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
   const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
