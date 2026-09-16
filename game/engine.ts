@@ -481,7 +481,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const goals=["ATA","MEI"].includes(player.position)?Math.max(0,Math.round(games*attacking*(.26+random()*.22))):0;
   const assists=player.position==="MEI"?Math.max(0,Math.round(games*creative*(.2+random()*.18))):0;
   const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45)):0;
-  const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio")?.65:1);
+  const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio") ? .65 : 1);
   const injuryWeeks=random()<injuryRisk?Math.round(1+random()*7):0;
   const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12,random);
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
