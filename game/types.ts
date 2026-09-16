@@ -72,6 +72,18 @@ export interface Player {
   nationalTeamAssists?: number;
 }
 
+export interface ContractOffer {
+  clubId: string;
+  monthlySalary: number;
+  seasons: number;
+  role: ContractRole;
+  idolatryChange: number;
+}
+export interface MarketWindow {
+  season: number;
+  offers: ContractOffer[];
+  renewal: ContractOffer;
+}
 export interface CareerContract {
   clubId: string;
   monthlySalary: number;
@@ -206,6 +218,6 @@ export interface CareerState {
   leagueAssignments: Record<string, string>;
   leagueTables: Record<string, LeagueTable>;
   shop: ShopState;
-  nationalTeam: { games: number; goals: number; assists: number; titles: string[] };
+  nationalTeam: { games: number; goals: number; assists: number; titles: string[] };\n  originCountry: string;\n  highestOvr: number;\n  marketWindow?: MarketWindow;
 }
 }
