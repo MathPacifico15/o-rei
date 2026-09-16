@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { applyCard, applyFinalConsequence, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
-type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "shop" | "minigame" | "legacy";
+type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "shop" | "minigame" | "celebration" | "legacy";
+type Celebration = { title: string; access?: string };
 const positions: Array<{ id: Position; label: string }> = [
   { id: "GOL", label: "Goleiro" },
   { id: "MEI", label: "Meia · Camisa 10" },
@@ -66,6 +67,7 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [gameScore, setGameScore] = useState(0);
   const [activeGame, setActiveGame] = useState<MiniGameDefinition | null>(null);
+  const [celebration, setCelebration] = useState<Celebration | null>(null);
   useEffect(() => {
     if (localStorage.getItem(CAREER_SUMMARY_RESET_KEY) !== "done") {
       ["o-rei-career", "o-rei:career:v1", LOCAL_RANKING_KEY].forEach((key) => localStorage.removeItem(key));
@@ -78,11 +80,11 @@ export default function Home() {
   }, []);
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
-  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return setScreen("career"); } setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
+  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); } if (outcome.result.title && !outcome.result.cupFinal) { setCelebration({ title: outcome.result.title }); return setScreen("celebration"); } if (outcome.result.events.length) return setScreen("career"); setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
   function resolveFinal(won: boolean) {
     if (!career || !lastResult?.cupFinal) return;
     const cupFinal = { ...lastResult.cupFinal, won };
-    const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
+    const resolved = { ...lastResult, cupFinal, title: won && cupFinal.stakes !== "promotion" ? cupFinal.competitionName : lastResult.title };
     const player = { ...career.player, titles: [...career.player.titles], clubIdolatry: { ...career.player.clubIdolatry } };
     if (won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation") {
       player.titles.push(cupFinal.competitionName);
@@ -108,7 +110,7 @@ export default function Home() {
     if (choice.finalOutcome && lastResult?.cupFinal) {
       const won = choice.finalOutcome === "win";
       const cupFinal = { ...lastResult.cupFinal, won };
-      const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
+      const resolved = { ...lastResult, cupFinal, title: won && cupFinal.stakes !== "promotion" ? cupFinal.competitionName : lastResult.title };
       if (won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation") {
         player.titles.push(cupFinal.competitionName);
         player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
@@ -119,7 +121,7 @@ export default function Home() {
       setLastResult(resolved);
       setEventQueue([]);
       setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
-      setScreen("evolution");
+      if (won) { setCelebration((cupFinal.stakes === "promotion" || cupFinal.stakes === "titleAndPromotion") ? { title: cupFinal.competitionName, access: competitions.find((entry) => entry.id === cupFinal.targetLeagueId)?.name ?? "nova divisão" } : { title: cupFinal.competitionName }); setScreen("celebration"); } else setScreen("evolution");
       return;
     }
 
@@ -154,8 +156,9 @@ export default function Home() {
     if (screen === "evolution") return <Evolution player={career.player} seed={career.seed + career.season} onSelect={takeCard} onSkip={() => setScreen("career")} />;
   if (screen === "market") return <Market currentClub={club} player={career.player} generational={career.mode === "generational"} academy={career.shop.ownedPermanent.includes("academia")} onBack={() => setScreen("career")} onSelect={transferTo} />;
   if (screen === "shop") return <Shop career={career} onBack={() => setScreen("career")} onChange={setCareer} onToast={setToast} />;
-  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { const luckyWin = !won && career.shop.activeSeasonal.includes("psicologo") && Math.random() < .35; resolveFinal(won || luckyWin); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : luckyWin ? "O psicólogo fez a diferença: a sorte ficou ao seu lado." : "A decisão escapou, mas a carreira continua."); setScreen("evolution"); }} />;
-  if (screen === "legacy") return <Legacy career={career} onRestart={() => { localStorage.removeItem("o-rei-career"); setCareer(null); setScreen("home"); }} />;
+  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { const luckyWin = !won && career.shop.activeSeasonal.includes("psicologo") && Math.random() < .35; const victory = won || luckyWin; const final = lastResult?.cupFinal; resolveFinal(victory); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : luckyWin ? "O psicólogo fez a diferença: a sorte ficou ao seu lado." : "A decisão escapou, mas a carreira continua."); if (victory && final) { setCelebration((final.stakes === "promotion" || final.stakes === "titleAndPromotion") ? { title: final.competitionName, access: competitions.find((entry) => entry.id === final.targetLeagueId)?.name ?? "nova divisão" } : { title: final.competitionName }); setScreen("celebration"); } else setScreen("evolution"); }} />;
+  if (screen === "celebration" && celebration) return <Celebration celebration={celebration} onClose={() => { setCelebration(null); if (event) setScreen("career"); else setScreen("evolution"); }} />;
+    if (screen === "legacy") return <Legacy career={career} onRestart={() => { localStorage.removeItem("o-rei-career"); setCareer(null); setScreen("home"); }} />;
   return <Career career={career} club={club} result={lastResult} event={event} onChooseEvent={chooseEvent} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onShop={() => setScreen("shop")} onRenew={renewContract} onLoan={requestLoan} onProposal={acceptProposal} />;
 }
 
@@ -257,6 +260,10 @@ function Shop({ career, onBack, onChange, onToast }: { career: CareerState; onBa
 }
 
 function Market({ currentClub, player, generational, academy, onBack, onSelect }: { currentClub: Club; player: Player; generational: boolean; academy: boolean; onBack: () => void; onSelect: (club: Club) => void }) { const offers = clubs.filter((club) => club.id !== currentClub.id).sort((a, b) => academy || generational ? (b.reputation + b.strength) - (a.reputation + a.strength) : Number(currentClub.rivals.includes(b.id)) - Number(currentClub.rivals.includes(a.id))).slice(0, academy ? 6 : generational ? 6 : 4); return <main className="app-shell market-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Carreira</button><Brand compact /><span className="step">JANELA DE MERCADO</span></nav><section className="market-wrap"><div className="eyebrow">CONTRATOS E CONSEQUÊNCIAS</div><h1>O mercado está de olho.</h1><p>Trocar de clube não é apenas mudar de camisa. Em clássico, a arquibancada não esquece.</p><div className="offer-list"><article className="offer current"><ClubCrest club={currentClub} /><div><small>CLUBE ATUAL</small><h2>{currentClub.name}</h2><p>Idolatria: {player.clubIdolatry[currentClub.id] ?? 0}/100 · contrato ativo</p></div><b>FICAR</b></article>{offers.map((club) => { const rival = currentClub.rivals.includes(club.id); return <article className={`offer ${rival ? "rival" : ""}`} key={club.id}><ClubCrest club={club} /><div><small>{rival ? "RIVAL DIRETO · RISCO DE JUDAS" : "PROPOSTA FORMAL"}</small><h2>{club.name}</h2><p>Força {club.strength} · reputação {club.reputation}</p></div><button className="button button-ghost" onClick={() => onSelect(club)}>ANALISAR</button></article>; })}</div></section></main>; }
+function Celebration({ celebration, onClose }: { celebration: Celebration; onClose: () => void }) {
+  const accessOnly = Boolean(celebration.access) && celebration.title === "Decisão do acesso";
+  return <main className="app-shell celebration-shell"><div className="celebration-frame" /><section className="celebration-card"><div className="celebration-rays" /><div className="generic-trophy" aria-label="Troféu dourado">🏆</div>{accessOnly ? <><div className="eyebrow">NOVO CAPÍTULO</div><h1>VOCÊ CONSEGUIU<br />O ACESSO À</h1><h2>{celebration.access}</h2></> : <><div className="eyebrow">NOITE DE GLÓRIA</div><h1>VOCÊ FOI CAMPEÃO<br />DO/DA</h1><h2>{celebration.title}</h2>{celebration.access && <p>ACESSO GARANTIDO À {celebration.access}</p>}</>}<button className="celebration-close" onClick={onClose}>CONTINUAR A HISTÓRIA →</button></section></main>;
+}
 function MiniGame({ game, result, score, onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
   const body = game.mode === "sequence" ? <SequenceGame game={game} onFinish={onFinish} />
     : game.mode === "timing" ? <TimingGame onFinish={onFinish} />
