@@ -6,6 +6,8 @@ export type AttributeKey =
 export type Attributes = Record<AttributeKey, number>;
 
 export type Rarity = "raro" | "epico" | "lendario";
+export type ContractRole = "promessa" | "rotacao" | "titular" | "estrela";
+export type ShopItemId = "campanha" | "treino" | "chef" | "fisio" | "psicologo" | "preparador" | "empresario" | "chuteiras" | "ferias" | "suplementacao" | "analista" | "familia" | "imprensa" | "carro" | "casa" | "mansao" | "ilha" | "bairro" | "academia";
 
 export interface Club {
   id: string;
@@ -64,6 +66,59 @@ export interface Player {
   clubIdolatry: Record<string, number>;
   judasAt: string[];
   injuries: number;
+  benchAppearances?: number;
+  nationalTeamGames?: number;
+  nationalTeamGoals?: number;
+  nationalTeamAssists?: number;
+}
+
+export interface CareerContract {
+  clubId: string;
+  monthlySalary: number;
+  seasonsRemaining: number;
+  role: ContractRole;
+  expectedMinutes: number;
+}
+
+export interface LoanSpell {
+  parentClubId: string;
+  returnSeason: number;
+}
+
+export interface LeagueTableEntry {
+  clubId: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  position: number;
+}
+
+export interface LeagueTable {
+  competitionId: string;
+  season: number;
+  entries: LeagueTableEntry[];
+  promotionPlaces: number;
+  relegationPlaces: number;
+}
+
+export interface NationalTeamCampaign {
+  competition: string;
+  phase: string;
+  games: number;
+  goals: number;
+  assists: number;
+  qualified: boolean;
+  title?: string;
+}
+
+export interface ShopState {
+  ownedPermanent: ShopItemId[];
+  activeSeasonal: ShopItemId[];
+  freeUses: ShopItemId[];
 }
 
 export interface ClubCareerRecord {
@@ -94,7 +149,7 @@ export interface CareerEvent {
   id: string;
   title: string;
   copy: string;
-  sponsor?: { name: string; logo: string };
+  sponsor?: { name: string; logo: string };\n  context?: string;
   choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; salary?: number; injuryWeeks?: number; finalOutcome?: "win" | "lose" }>;
 }
 
@@ -125,6 +180,10 @@ export interface SeasonResult {
   nationalTeamCompetition?: string;
   /** Preenchido apenas quando o jogador conquista o torneio de seleções. */
   nationalTeamTitle?: string;
+  leaguePosition?: number;
+  leaguePoints?: number;
+  benchAppearances?: number;
+  nationalTeamCampaign?: NationalTeamCampaign;
 }
 
 export interface CareerState {
@@ -137,4 +196,14 @@ export interface CareerState {
   currentCompetition: string;
   /** Carreira normal ou com a vantagem inicial de Craque Geracional. */
   mode?: "normal" | "generational";
+  /** Saldo pessoal do atleta, em dólares. */
+  balance: number;
+  contract: CareerContract;
+  loan?: LoanSpell;
+  /** Divisão atual de cada clube dentro desta carreira. */
+  leagueAssignments: Record<string, string>;
+  leagueTables: Record<string, LeagueTable>;
+  shop: ShopState;
+  nationalTeam: { games: number; goals: number; assists: number; titles: string[] };
+}
 }
