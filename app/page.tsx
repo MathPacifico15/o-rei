@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, applyFinalConsequence, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "shop" | "minigame" | "legacy";
 const positions: Array<{ id: Position; label: string }> = [
@@ -11,7 +11,7 @@ const positions: Array<{ id: Position; label: string }> = [
 ];
 const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
 const LOCAL_RANKING_KEY = "o-rei-local-ranking";
-const CAREER_SUMMARY_RESET_KEY = "o-rei:career-summary-reset:v1";
+const CAREER_SUMMARY_RESET_KEY = "o-rei:career-live-reset:v2";
 type LocalRankingEntry = { playerId: string; name: string; nationality: string; position: Position; clubName: string; score: number; global: string; titles: number; games: number; retiredAt: string; };
 
 function readLocalRanking(): LocalRankingEntry[] {
@@ -53,8 +53,8 @@ function Brand({ compact = false }: { compact?: boolean }) { return <div classNa
 
 function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string; mode: "normal" | "generational" }): CareerState {
   const seed = Date.now();
-  const player: Player = { id: `jogador-${seed}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: data.mode === "generational" ? generationalAttributes(data.position, seed) : baseAttributes(), form: 68, fame: 3, salary: 8000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0 };
-  return { seed, season: 2026, player, history: [], clubHistory: [{ clubId: data.club.id, titles: [] }], currentCompetition: "Brasileirão Série A", mode: data.mode };
+  const player: Player = { id: `jogador-${seed}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: data.mode === "generational" ? generationalAttributes(data.position, seed) : baseAttributes(), form: 68, fame: 3, salary: 200000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0, benchAppearances: 0, nationalTeamGames: 0, nationalTeamGoals: 0, nationalTeamAssists: 0 };
+  return { seed, season: 2026, player, history: [], clubHistory: [{ clubId: data.club.id, titles: [] }], currentCompetition: competitions.find((entry) => entry.id === data.club.leagueId)?.name ?? "Campeonato Nacional", mode: data.mode, balance: 0, contract: { clubId: data.club.id, monthlySalary: 200000, seasonsRemaining: 3, role: "promessa", expectedMinutes: 28 }, leagueAssignments: Object.fromEntries(clubs.map((club) => [club.id, club.leagueId])), leagueTables: {}, shop: { ownedPermanent: [], activeSeasonal: [], freeUses: [] }, nationalTeam: { games: 0, goals: 0, assists: 0, titles: [] } };
 }
 
 export default function Home() {
@@ -78,7 +78,7 @@ export default function Home() {
   }, []);
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
-  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return setScreen("event"); } setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
+  function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return setScreen("career"); } setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
   function resolveFinal(won: boolean) {
     if (!career || !lastResult?.cupFinal) return;
     const cupFinal = { ...lastResult.cupFinal, won };
@@ -89,7 +89,7 @@ export default function Home() {
       player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
     }
     const history = [...career.history]; history[history.length - 1] = resolved;
-    setCareer(won ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }); setLastResult(resolved);
+    const withFinal = won ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }; setCareer(applyFinalConsequence(withFinal, cupFinal, won)); setLastResult(resolved);
   }
   function chooseEvent(index: number) {
     if (!career || !event) return;
@@ -111,7 +111,7 @@ export default function Home() {
       }
       const history = [...career.history];
       history[history.length - 1] = resolved;
-      setCareer(won ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history });
+      const withFinal = won ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }; setCareer(applyFinalConsequence(withFinal, cupFinal, won));
       setLastResult(resolved);
       setEventQueue([]);
       setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
@@ -129,18 +129,17 @@ export default function Home() {
     setScreen(lastResult?.finalOpportunity ? "minigame" : "evolution");
   }
   function takeCard(card: UpgradeCard) { if (!career) return; setCareer({ ...career, player: applyCard(career.player, card) }); setToast(`${card.name} aplicada. OVR recalculado.`); setScreen("career"); }
-  function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); const clubHistory = (career.clubHistory ?? []).map((entry) => ({ ...entry, titles: [...entry.titles] })); if (!clubHistory.some((entry) => entry.clubId === club.id)) clubHistory.push({ clubId: club.id, titles: [] }); setCareer({ ...career, player, clubHistory }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato assinado com ${club.name}.`); setScreen("career"); }
+  function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); const clubHistory = (career.clubHistory ?? []).map((entry) => ({ ...entry, titles: [...entry.titles] })); if (!clubHistory.some((entry) => entry.clubId === club.id)) clubHistory.push({ clubId: club.id, titles: [] }); const monthlySalary = Math.max(200000, Math.round(club.budget * 22000)); const role = computeOvr(player) >= club.strength + 8 ? "estrela" : computeOvr(player) >= club.strength ? "titular" : "rotacao"; setCareer({ ...career, player, clubHistory, contract: { clubId: club.id, monthlySalary, seasonsRemaining: 3, role, expectedMinutes: role === "estrela" ? 42 : role === "titular" ? 34 : 22 } }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato de 3 anos assinado com ${club.name}.`); setScreen("career"); }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
   if (screen === "home") return <Start hasCareer={Boolean(career)} onNew={() => setScreen("create")} onContinue={() => setScreen("career")} />;
   if (screen === "create") return <Create onBack={() => setScreen("home")} onCreate={begin} />;
   if (!career) return null;
-  if (screen === "event" && event) return <Event event={event} onChoose={chooseEvent} />;
-  if (screen === "evolution") return <Evolution player={career.player} seed={career.seed + career.season} onSelect={takeCard} onSkip={() => setScreen("career")} />;
+    if (screen === "evolution") return <Evolution player={career.player} seed={career.seed + career.season} onSelect={takeCard} onSkip={() => setScreen("career")} />;
   if (screen === "market") return <Market currentClub={club} player={career.player} generational={career.mode === "generational"} onBack={() => setScreen("career")} onSelect={transferTo} />;
-  if (screen === "shop") return <Shop onBack={() => setScreen("career")} />;
+  if (screen === "shop") return <Shop career={career} onBack={() => setScreen("career")} onChange={setCareer} onToast={setToast} />;
   if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { resolveFinal(won); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : "A decisão escapou, mas a carreira continua."); setScreen("evolution"); }} />;
   if (screen === "legacy") return <Legacy career={career} onRestart={() => { localStorage.removeItem("o-rei-career"); setCareer(null); setScreen("home"); }} />;
-  return <Career career={career} club={club} result={lastResult} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onShop={() => setScreen("shop")} />;
+  return <Career career={career} club={club} result={lastResult} event={event} onChooseEvent={chooseEvent} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onShop={() => setScreen("shop")} />;
 }
 
 function Start({ hasCareer, onNew, onContinue }: { hasCareer: boolean; onNew: () => void; onContinue: () => void }) { return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carreira local protegida</span></nav><section className="start-content"><div className="eyebrow">UMA CARREIRA. TODA A HISTÓRIA.</div><Brand /><h1>Do primeiro jogo à eternidade.</h1><p>Crie seu atleta aos 16 anos. Conquiste títulos, enfrente clássicos e escreva um legado que não cabe numa súmula.</p><div className="start-actions"><button className="button button-primary" onClick={onNew}>COMEÇAR CARREIRA <span>→</span></button>{hasCareer && <button className="button button-ghost" onClick={onContinue}>CONTINUAR CARREIRA</button>}</div><div className="feature-row"><span><b>10</b> minigames decisivos</span><span><b>20</b> atributos reais</span><span><b>0–1000</b> legado final</span></div></section><footer>O REI · futebol, escolhas e memória</footer></main>; }
@@ -156,7 +155,7 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
   return <main className="app-shell form-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">01 / 01</span></nav><section className="form-wrap"><div><div className="eyebrow">FICHA DE INSCRIÇÃO</div><h1>Seu primeiro contrato.</h1><p>Você começa aos 16 anos. O resto será conquistado em campo.</p></div><div className="form-grid"><label className="field field-wide">Nome do atleta<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label><div className="field country-field"><span>Nacionalidade</span><button type="button" className="country-trigger" onClick={() => setCountryOpen(!countryOpen)}><img src={`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`} alt="" /><span>{selectedCountry.name}</span><b>⌄</b></button>{countryOpen && <div className="country-menu"><input autoFocus value={countrySearch} onChange={(event) => setCountrySearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" /> <div className="country-options">{visibleCountries.map((country) => <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setCountrySearch(""); }}><img src={`https://flagcdn.com/w40/${country.code.toLowerCase()}.png`} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span></button>)}</div></div>}</div><label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label><div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => { setPosition(item.id); if (item.id === "MEI") setShirt(10); if (item.id === "ATA") setShirt(9); }} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div><label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label><label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label><label className="field field-wide">Liga de início<select value={leagueId} onChange={(e) => switchLeague(e.target.value)}>{playableCompetitions.map((competition) => <option key={competition.id} value={competition.id}>{competition.flag} {competition.name}</option>)}</select><small className="field-note">{selectedCompetition?.flag} {selectedCompetition?.country} · {leagueClubs.length} clubes nesta edição</small></label><div className="field field-wide"><span>Clube de início</span><div className="club-picker">{leagueClubs.map((club) => <button key={club.id} onClick={() => setClubId(club.id)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}><ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small></button>)}</div></div></div><label className="generational-option field-wide"><input type="checkbox" checked={generational} onChange={(event) => setGenerational(event.target.checked)} /><span><b>✦ CRAQUE GERACIONAL</b><small>OVR inicial entre 62 e 70, mais finais, títulos e propostas de clubes fortes.</small></span></label><button className="button button-primary button-full" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality, mode: generational ? "generational" : "normal" })}>ASSINAR PRIMEIRO CONTRATO <span>→</span></button></section></main>;
 }
 
-function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onShop }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onShop: () => void }) {
+function Career({ career, club, result, event, onChooseEvent, toast, onDismiss, onPlay, onMarket, onShop }: { career: CareerState; club: Club; result: SeasonResult | null; event: CareerEvent | null; onChooseEvent: (index: number) => void; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onShop: () => void }) {
   const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
   const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const seasonGames = result?.games ?? player.games, seasonGoals = result?.goals ?? player.goals, seasonAssists = result?.assists ?? player.assists;
@@ -173,9 +172,9 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onSh
           </div>
           <div className="score-strip"><StatTile value={player.goals} label="GOLS" accent /><StatTile value={player.assists} label="ASSISTÊNCIAS" /><StatTile value={player.games} label="JOGOS" /><StatTile value={player.titles.length} label="TÍTULOS" /></div>
           <div className="attribute-chips">{top.map(([key, value]) => <div key={key}><b className={value >= 75 ? "green" : ""}>{value}</b><span>{attributeLabels[key]}</span></div>)}</div>
-          <div className="finance-strip"><div><b>R$ {(player.marketValue / 1000).toFixed(0)}K</b><span>VALOR</span></div><div><b>R$ {(player.salary / 1000).toFixed(0)}K</b><span>SALÁRIO</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
+          <div className="finance-strip"><div><b>US$ {(player.marketValue / 1_000_000).toFixed(1)}M</b><span>VALOR</span></div><div><b>US$ {(career.contract.monthlySalary / 1_000_000).toFixed(2)}M</b><span>MENSAL</span></div><div className="next-match"><ClubCrest club={club} small /><b>{career.currentCompetition}</b><span>{club.style === "posse" ? "EQUIPE DE POSSE" : "PRÓXIMO DESAFIO"}</span></div></div>
           <div className="loyalty"><span>IDOLATRIA</span><div className="loyalty-track"><i style={{ width: `${idolatry}%` }} /></div><div className="loyalty-stages"><span>●</span><span>♥</span><span>★</span><span>♛</span></div></div>
-          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {ovr >= 82 ? "CONVOCADO" : "EM OBSERVAÇÃO"}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO DA" : "DISPUTOU A"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}<span>{career.history.length} TEMPORADAS</span></div>
+          <div className="selection-line">{player.nationality === "Brasil" ? "🇧🇷" : "⚽"} SELEÇÃO: {career.nationalTeam.games ? `${career.nationalTeam.games} J · ${career.nationalTeam.goals} G` : "EM OBSERVAÇÃO"}<span>US$ {(career.balance / 1_000_000).toFixed(2)}M · {career.history.length} TEMPORADAS</span></div>
         </section>
         <section className="season-panel">
           <div className="season-titleline"><span>O REI ESPORTIVO</span><small>{career.season}/{String(career.season + 1).slice(-2)} · TEMPORADA {career.history.length + 1}</small></div>
@@ -185,6 +184,8 @@ function Career({ career, club, result, toast, onDismiss, onPlay, onMarket, onSh
           <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI"} /><StatTile value={seasonGames ? seasonRating : "—"} label="NOTA" /><StatTile value={`R$ ${(player.salary / 1000).toFixed(0)}K`} label="GANHOS" gold /></div>
           <button className="play-button" onClick={onPlay}>CONTINUAR</button>
           {(career.mode === "generational" || career.season % 2 === 0) && <button className="market-action" onClick={onMarket}>VER PROPOSTAS DE MERCADO</button>}
+          {Object.values(career.leagueTables).slice(-1).map((table) => <details className="league-table" key={table.competitionId}><summary>TABELA · {result?.leaguePosition ?? "—"}º · {result?.leaguePoints ?? 0} PTS</summary>{table.entries.map((entry) => { const entryClub = clubs.find((item) => item.id === entry.clubId); return <div className={entry.clubId === player.clubId ? "me" : ""} key={entry.clubId}><b>{entry.position}º</b><span>{entryClub?.name ?? entry.clubId}</span><strong>{entry.points}</strong></div>)}</details>)}
+          {event && <section className="inline-event"><small>{event.context ? event.context.toUpperCase() : "DECISÃO DE CARREIRA"}</small><h3>{event.title}</h3><p>{event.copy}</p>{event.sponsor && <img className="sponsor-mark" src={event.sponsor.logo} alt="" />}{event.choices.map((choice,index)=><button key={choice.label} onClick={()=>onChooseEvent(index)}>{choice.label}</button>)}</section>}
         </section>
       </div>
       <aside className="trajectory-panel"><div className="trajectory-label">TRAJETÓRIA</div><div className="trajectory-item active"><ClubCrest club={club} small /><div><b>{career.season}</b><span>{club.name}</span><small>{seasonGames} JG · {seasonGoals} GL</small></div></div>{career.history.slice(-3).reverse().map((season) => <div className="trajectory-item" key={season.season}><span className="trajectory-dot" /><div><b>{season.season}</b><span>{season.title ?? "Temporada"}</span><small>{season.games} JG · {season.goals} GL</small></div></div>)}</aside>
@@ -197,39 +198,48 @@ function Meter({ label, value, gold = false }: { label: string; value: number; g
 
 function Event({ event, onChoose }: { event: CareerEvent; onChoose: (index: number) => void }) { return <main className="app-shell decision-shell"><div className="decision-card"><div className="eyebrow">FORA DAS QUATRO LINHAS</div><span className="decision-mark">◆</span><h1>{event.title}</h1><p>{event.copy}</p>{event.sponsor && <img className="sponsor-mark" src={event.sponsor.logo} alt={`Logo da ${event.sponsor.name}`} />}<div className="choice-list">{event.choices.map((choice, index) => <button key={choice.label} onClick={() => onChoose(index)}><span>0{index + 1}</span>{choice.label}<i>→</i></button>)}</div><small>Suas escolhas também viram parte da sua história.</small></div></main>; }
 function Evolution({ player, seed, onSelect, onSkip }: { player: Player; seed: number; onSelect: (card: UpgradeCard) => void; onSkip: () => void }) { const cards = chooseUpgradeCards(player.position, seed); return <main className="app-shell evolution-shell"><nav className="topbar"><Brand compact /><span className="save-chip">EVOLUÇÃO DE TEMPORADA</span></nav><section className="evolution-wrap"><div className="eyebrow">MOMENTO DE TREINO</div><h1>Escolha o próximo salto.</h1><p>Uma carta por temporada. Ganhos reais, feitos para a posição que você escolheu.</p><div className="card-grid">{cards.map((card) => <button key={card.id} className={`training-card ${card.rarity}`} onClick={() => onSelect(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkip}>Pular evolução desta temporada</button></section></main>; }
-function Shop({ onBack }: { onBack: () => void }) {
-  const featured = [
-    { icon: "📣", name: "Campanha publicitária", copy: "Você grava um comercial e recebe mais massa de sua audiência atual.", price: "Ver anúncio" },
-    { icon: "🎯", name: "Treino personalizado", copy: "Um técnico particular foca no seu ponto mais importante.", price: "Ver anúncio" },
-  ];
-  const seasonals = [
-    ["👔", "Chef particular", "Comece o ano com mais energia.", "US$ 8,00M"],
-    ["🛡️", "Fisioterapeuta pessoal", "Corpo blindado e menos risco de lesão.", "US$ 11,00M"],
-    ["🧠", "Psicólogo esportivo", "Cabeça fria até nas finais.", "US$ 9,00M"],
-    ["🏋️", "Preparador físico", "Clínica particular e rotina de ponta.", "US$ 14,00M"],
-    ["💎", "Super empresário", "Melhores propostas e salários.", "US$ 12,00M"],
-  ];
-  const perSeason = [
-    ["⚽", "Chuteiras profissionais", "Chuteira nova, mais pegada e faro de gol.", "US$ 1,5M"],
-    ["🏝️", "Férias da temporada", "Descanso total para voltar inteiro.", "US$ 2,5M"],
-    ["🥗", "Suplementação esportiva", "Recuperação e força mais rápidas.", "US$ 1,4M"],
-    ["📊", "Analista de vídeo", "Estude os rivais antes de entrar em campo.", "US$ 1,8M"],
-    ["✈️", "A simples", "Aproveite para visitar sua família.", "US$ 2,8M"],
-    ["🏡", "Assessoria de imprensa", "Sua imagem fica protegida.", "US$ 3,8M"],
-  ];
-  const oneOff = [
-    ["🚗", "Carro esportivo", "Status e 2 de fama.", "US$ 900K"],
-    ["🏠", "Casa própria", "Estabilidade para a família.", "US$ 1,5M"],
-    ["🧑‍🤝‍🧑", "Mansão com campo", "Confronte tudo e não coma com fome.", "US$ 1,2M"],
-    ["📷", "Ilha particular", "Status e 4 de fama.", "US$ 4,0M"],
-    ["🌄", "O caminho do seu bairro", "Visite as raízes e recupere a cabeça.", "US$ 7,5M"],
-    ["🛋️", "Academia do clube", "Poder +15 de fama e novos contatos.", "US$ 5,0M"],
-  ];
-  const Card = ({ item, duration }: { item: string[]; duration?: string }) => <article className="shop-item"><span>{item[0]}</span><div><b>{item[1]}</b><p>{item[2]}</p>{duration && <small>{duration}</small>}</div><strong>{item[3]}</strong></article>;
-  return <main className="app-shell shop-shell"><section className="shop-wrap"><header className="shop-header"><div><span>🛒 LOJA</span><small>ASSISTENTE DE CARREIRA</small></div><b>US$ 0</b></header><div className="shop-section"><h2>ASSISTINDO A UM ANÚNCIO</h2><p>Você assiste a um anúncio de verdade e ganha uma ajuda extra para a sua carreira.</p><div className="shop-featured">{featured.map((item) => <article className="shop-featured-item" key={item.name}><span>{item.icon}</span><div><b>{item.name}</b><p>{item.copy}</p><button>{item.price}</button></div></article>)}</div></div><div className="shop-section"><h2>COMEÇAR O MELHOR SEU JOGO</h2><div className="shop-list">{seasonals.map((item) => <Card key={item[1]} item={item} duration="DURA 1 TEMPORADA" />)}</div></div><div className="shop-section"><h2>CONSUMÍVEIS — POR 1 TEMPORADA</h2><div className="shop-grid">{perSeason.map((item) => <Card key={item[1]} item={item} duration="DURA 1 TEMPORADA" />)}</div></div><div className="shop-section"><h2>UMA — E É SÓ GOSTO</h2><div className="shop-grid">{oneOff.map((item) => <Card key={item[1]} item={item} />)}</div></div><button className="shop-close" onClick={onBack}>PRONTO, FECHAR ✓</button><p className="shop-footnote">A grana que você investe em você mesmo fala por você dentro do campo.</p></section></main>;
+function Shop({ career, onBack, onChange, onToast }: { career: CareerState; onBack: () => void; onChange: (career: CareerState) => void; onToast: (message: string) => void }) {
+  const items = [
+    { id:"chef", icon:"👔", name:"Chef particular", copy:"+5 de forma no começo da temporada.", price:8_000_000, seasonal:true },
+    { id:"fisio", icon:"🛡️", name:"Fisioterapeuta pessoal", copy:"35% menos risco de lesão.", price:11_000_000, seasonal:true },
+    { id:"psicologo", icon:"🧠", name:"Psicólogo esportivo", copy:"Uma segunda chance em final.", price:9_000_000, seasonal:true },
+    { id:"preparador", icon:"🏋️", name:"Preparador físico", copy:"+4 de físico nesta temporada.", price:14_000_000, seasonal:true },
+    { id:"empresario", icon:"💎", name:"Super empresário", copy:"25% a mais em salários e propostas.", price:12_000_000, seasonal:true },
+    { id:"chuteiras", icon:"⚽", name:"Chuteiras profissionais", copy:"+2 no atributo ofensivo principal.", price:1_500_000, seasonal:true },
+    { id:"ferias", icon:"🏝️", name:"Férias da temporada", copy:"+5 forma e menos desgaste.", price:2_500_000, seasonal:true },
+    { id:"suplementacao", icon:"🥗", name:"Suplementação esportiva", copy:"+2 físico nesta temporada.", price:1_400_000, seasonal:true },
+    { id:"analista", icon:"📊", name:"Analista de vídeo", copy:"Melhor desempenho contra times fortes.", price:1_800_000, seasonal:true },
+    { id:"familia", icon:"✈️", name:"A simples", copy:"+4 forma nesta temporada.", price:2_800_000, seasonal:true },
+    { id:"imprensa", icon:"🏡", name:"Assessoria de imprensa", copy:"Protege fama e idolatria.", price:3_800_000, seasonal:true },
+    { id:"carro", icon:"🚗", name:"Carro esportivo", copy:"+2 fama permanente.", price:900_000 },
+    { id:"casa", icon:"🏠", name:"Casa própria", copy:"+2 forma em cada temporada.", price:1_500_000 },
+    { id:"mansao", icon:"🏡", name:"Mansão com campo", copy:"+3 físico máximo e +2 fama.", price:1_200_000 },
+    { id:"ilha", icon:"📷", name:"Ilha particular", copy:"+4 fama permanente.", price:4_000_000 },
+    { id:"bairro", icon:"🌄", name:"O caminho do seu bairro", copy:"+5 idolatria no clube atual.", price:7_500_000 },
+    { id:"academia", icon:"🛋️", name:"Academia do clube", copy:"+15 fama e contatos.", price:5_000_000 },
+  ] as const;
+  const purchase=(item: typeof items[number]) => {
+    const shop=career.shop; if (item.seasonal && shop.activeSeasonal.includes(item.id)) return onToast("Este efeito já está ativo nesta temporada.");
+    if (!item.seasonal && shop.ownedPermanent.includes(item.id)) return onToast("Você já possui este item.");
+    if (career.balance < item.price) return onToast("Saldo insuficiente para esta compra.");
+    const player={...career.player,attributes:{...career.player.attributes},clubIdolatry:{...career.player.clubIdolatry}};
+    if(item.id==="carro"||item.id==="mansao") player.fame+=2; if(item.id==="ilha") player.fame+=4; if(item.id==="academia") player.fame+=15; if(item.id==="bairro") player.clubIdolatry[player.clubId]=Math.min(100,(player.clubIdolatry[player.clubId]??0)+5);
+    if(item.id==="chuteiras") { const key=positionAttributeKeys[player.position][0]; player.attributes[key]=Math.min(99,player.attributes[key]+2); }
+    onChange({...career,player,balance:career.balance-item.price,shop:{...shop,activeSeasonal:item.seasonal?[...shop.activeSeasonal,item.id]:shop.activeSeasonal,ownedPermanent:item.seasonal?shop.ownedPermanent:[...shop.ownedPermanent,item.id]}});
+    onToast(`${item.name} adquirido.`);
+  };
+  const free=(kind:"campanha"|"treino") => {
+    if(career.shop.freeUses.includes(kind)) return onToast("Este benefício grátis já foi usado nesta temporada.");
+    const player={...career.player,attributes:{...career.player.attributes}};
+    if(kind==="campanha") player.fame=Math.min(100,player.fame+4); else { const key=positionAttributeKeys[player.position][0]; player.attributes[key]=Math.min(99,player.attributes[key]+2); }
+    onChange({...career,player,shop:{...career.shop,freeUses:[...career.shop.freeUses,kind]}}); onToast(kind==="campanha"?"Campanha concluída: +4 fama.":"Treino concluído: +2 no atributo principal.");
+  };
+  const Card=({item}:{item:typeof items[number]}) => <article className="shop-item"><span>{item.icon}</span><div><b>{item.name}</b><p>{item.copy}</p>{item.seasonal&&<small>DURA 1 TEMPORADA</small>}</div><button onClick={()=>purchase(item)}>US$ {(item.price/1_000_000).toFixed(item.price<1_000_000?1:1)}M</button></article>;
+  const seasonal=items.filter((item)=>item.seasonal), permanent=items.filter((item)=>!item.seasonal);
+  return <main className="app-shell shop-shell"><section className="shop-wrap"><header className="shop-header"><div><span>🛒 LOJA</span><small>ASSISTENTE DE CARREIRA</small></div><b>US$ {(career.balance/1_000_000).toFixed(2)}M</b></header><div className="shop-section"><h2>BÔNUS GRATUITOS</h2><div className="shop-featured"><article className="shop-featured-item"><span>📣</span><div><b>Campanha publicitária</b><p>+4 fama. Uma vez por temporada.</p><button onClick={()=>free("campanha")}>USAR GRÁTIS</button></div></article><article className="shop-featured-item"><span>🎯</span><div><b>Treino personalizado</b><p>+2 no atributo principal. Uma vez por temporada.</p><button onClick={()=>free("treino")}>USAR GRÁTIS</button></div></article></div></div><div className="shop-section"><h2>POR 1 TEMPORADA</h2><div className="shop-grid">{seasonal.map((item)=><Card key={item.id} item={item}/>)}</div></div><div className="shop-section"><h2>PERMANENTES</h2><div className="shop-grid">{permanent.map((item)=><Card key={item.id} item={item}/>)}</div></div><button className="shop-close" onClick={onBack}>PRONTO, FECHAR ✓</button></section></main>;
 }
 
-function Market({ currentClub, player, generational, onBack, onSelect }: { currentClub: Club; player: Player; generational: boolean; onBack: () => void; onSelect: (club: Club) => void }) { const offers = clubs.filter((club) => club.id !== currentClub.id).sort((a, b) => generational ? (b.reputation + b.strength) - (a.reputation + a.strength) : Number(currentClub.rivals.includes(b.id)) - Number(currentClub.rivals.includes(a.id))).slice(0, generational ? 6 : 4); return <main className="app-shell market-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Carreira</button><Brand compact /><span className="step">JANELA DE MERCADO</span></nav><section className="market-wrap"><div className="eyebrow">CONTRATOS E CONSEQUÊNCIAS</div><h1>O mercado está de olho.</h1><p>Trocar de clube não é apenas mudar de camisa. Em clássico, a arquibancada não esquece.</p><div className="offer-list"><article className="offer current"><ClubCrest club={currentClub} /><div><small>CLUBE ATUAL</small><h2>{currentClub.name}</h2><p>Idolatria: {player.clubIdolatry[currentClub.id] ?? 0}/100</p></div><b>FICAR</b></article>{offers.map((club) => { const rival = currentClub.rivals.includes(club.id); return <article className={`offer ${rival ? "rival" : ""}`} key={club.id}><ClubCrest club={club} /><div><small>{rival ? "RIVAL DIRETO · RISCO DE JUDAS" : "PROPOSTA FORMAL"}</small><h2>{club.name}</h2><p>Força {club.strength} · reputação {club.reputation}</p></div><button className="button button-ghost" onClick={() => onSelect(club)}>ANALISAR</button></article>; })}</div></section></main>; }
+function Market({ currentClub, player, generational, onBack, onSelect }: { currentClub: Club; player: Player; generational: boolean; onBack: () => void; onSelect: (club: Club) => void }) { const offers = clubs.filter((club) => club.id !== currentClub.id).sort((a, b) => generational ? (b.reputation + b.strength) - (a.reputation + a.strength) : Number(currentClub.rivals.includes(b.id)) - Number(currentClub.rivals.includes(a.id))).slice(0, generational ? 6 : 4); return <main className="app-shell market-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Carreira</button><Brand compact /><span className="step">JANELA DE MERCADO</span></nav><section className="market-wrap"><div className="eyebrow">CONTRATOS E CONSEQUÊNCIAS</div><h1>O mercado está de olho.</h1><p>Trocar de clube não é apenas mudar de camisa. Em clássico, a arquibancada não esquece.</p><div className="offer-list"><article className="offer current"><ClubCrest club={currentClub} /><div><small>CLUBE ATUAL</small><h2>{currentClub.name}</h2><p>Idolatria: {player.clubIdolatry[currentClub.id] ?? 0}/100 · contrato ativo</p></div><b>FICAR</b></article>{offers.map((club) => { const rival = currentClub.rivals.includes(club.id); return <article className={`offer ${rival ? "rival" : ""}`} key={club.id}><ClubCrest club={club} /><div><small>{rival ? "RIVAL DIRETO · RISCO DE JUDAS" : "PROPOSTA FORMAL"}</small><h2>{club.name}</h2><p>Força {club.strength} · reputação {club.reputation}</p></div><button className="button button-ghost" onClick={() => onSelect(club)}>ANALISAR</button></article>; })}</div></section></main>; }
 function MiniGame({ game, result, score, onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
   const body = game.mode === "sequence" ? <SequenceGame game={game} onFinish={onFinish} />
     : game.mode === "timing" ? <TimingGame onFinish={onFinish} />
