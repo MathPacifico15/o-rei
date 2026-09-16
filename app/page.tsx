@@ -81,6 +81,17 @@ export default function Home() {
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
   function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); } if (outcome.result.title && !outcome.result.cupFinal) { setCelebration({ title: outcome.result.title }); return setScreen("celebration"); } if (outcome.result.events.length) return setScreen("career"); setScreen(outcome.result.finalOpportunity ? "minigame" : "evolution"); }
+  function settleFinal(player: Player, history: SeasonResult[], cupFinal: NonNullable<SeasonResult["cupFinal"]>, won: boolean) {
+    if (!career) return;
+    const titleWon = won && cupFinal.stakes !== "promotion";
+    let next: CareerState = titleWon ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history };
+    if (titleWon) {
+      const prestige = competitions.find((entry) => entry.id === cupFinal.competitionId)?.prestige ?? 40;
+      const selectionIds = ["wc","copa-america","euro","gold-cup","afcon","asian-cup","ofc-nations"];
+      next = { ...next, balance: next.balance + prestige * 50_000, nationalTeam: selectionIds.includes(cupFinal.competitionId) ? { ...next.nationalTeam, titles: [...next.nationalTeam.titles, cupFinal.competitionName] } : next.nationalTeam };
+    }
+    return applyFinalConsequence(next, cupFinal, won);
+  }
   function resolveFinal(won: boolean) {
     if (!career || !lastResult?.cupFinal) return;
     const cupFinal = { ...lastResult.cupFinal, won };
@@ -91,7 +102,7 @@ export default function Home() {
       player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
     }
     const history = [...career.history]; history[history.length - 1] = resolved;
-    const withFinal = won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation" ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }; setCareer(applyFinalConsequence(withFinal, cupFinal, won)); setLastResult(resolved);
+    setCareer(settleFinal(player, history, cupFinal, won)!); setLastResult(resolved);
   }
   function chooseEvent(index: number) {
     if (!career || !event) return;
@@ -117,7 +128,7 @@ export default function Home() {
       }
       const history = [...career.history];
       history[history.length - 1] = resolved;
-      const withFinal = won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation" ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history }; setCareer(applyFinalConsequence(withFinal, cupFinal, won));
+      setCareer(settleFinal(player, history, cupFinal, won)!);
       setLastResult(resolved);
       setEventQueue([]);
       setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
