@@ -431,14 +431,21 @@ function leagueTarget(state: CareerState, leagueId: string, direction: "up" | "d
   const index = divisions.findIndex((entry) => entry.id === leagueId);
   return divisions[index + (direction === "up" ? -1 : 1)]?.id;
 }
-function contextualEvents(player: Player, contractSeasons: number, table: LeagueTable, club: Club): CareerEvent[] {
+function contextualEvents(player: Player, contractSeasons: number, table: LeagueTable, club: Club, random: () => number, facts: { firstLoanWindow: boolean; title?: string; nationalCalled: boolean; goals: number; games: number }): CareerEvent[] {
   const row = table.entries.find((entry) => entry.clubId === club.id);
   const result: CareerEvent[] = [];
-  if ((player.benchAppearances ?? 0) > 12) result.push({ id:"banco-contexto", context:"banco", title:"Conversa no banco", copy:"A sequência fora do time colocou seu futuro no centro da conversa.", choices:[{label:"Cobrar espaço do técnico", form:2, idolatry:-1},{label:"Treinar em silêncio", form:3},{label:"Pedir empréstimo", fame:1}] });
+  const lowMinutes = facts.games < 20 && club.strength >= computeOvr(player) + 8;
+  if (facts.firstLoanWindow && lowMinutes && random() < .18) result.push({ id:"emprestimo-inicial", context:"empréstimo", title:"Proposta de empréstimo", copy:"O clube entende que você precisa jogar mais para evoluir. Chegou uma proposta de empréstimo por uma temporada.", choices:[{label:"Aceitar o empréstimo e buscar minutos", form:2, fame:1},{label:"Ficar e disputar espaço", form:2, idolatry:1},{label:"Pedir para esperar mais seis meses", fame:-1}] });
+  if ((player.benchAppearances ?? 0) > 12 && random() < .3) result.push({ id:"banco-contexto", context:"banco", title:"Conversa no banco", copy:"A sequência fora do time colocou seu futuro no centro da conversa.", choices:[{label:"Cobrar espaço do técnico", form:2, idolatry:-1},{label:"Treinar em silêncio", form:3},{label:"Pedir empréstimo", fame:1}] });
   if (contractSeasons <= 1) result.push({ id:"contrato-contexto", context:"contrato", title:"Contrato perto do fim", copy:"Seu vínculo termina ao fim da próxima temporada.", choices:[{label:"Pedir renovação", idolatry:2},{label:"Ouvir propostas", fame:2},{label:"Focar no campo", form:2}] });
+  if (club.rivals.length && random() < .34) result.push({ id:"classico-contexto", context:"clássico", title:"Semana de clássico", copy:`A torcida do ${club.name} transforma o jogo contra um rival em assunto da cidade inteira.`, choices:[{label:"Prometer entrega total", fame:2, idolatry:3},{label:"Evitar provocações", form:2},{label:"Responder à torcida rival", fame:2, idolatry:-3}] });
+  if (player.judasAt.length && random() < .28) result.push({ id:"rivalidade-contexto", context:"rivalidade", title:"O passado voltou", copy:"Sua história com um rival voltou a ser assunto antes de uma rodada importante.", choices:[{label:"Responder dentro de campo", form:3, idolatry:2},{label:"Dar entrevista respeitosa", fame:2},{label:"Provocar nas redes", fame:3, idolatry:-4}] });
+  if ((player.form < 58 || (facts.games >= 14 && facts.goals === 0 && player.position === "ATA")) && random() < .55) result.push({ id:"sequencia-ruim", context:"fase ruim", title:"Pressão por resposta", copy:"A fase recente virou pauta diária. A torcida quer uma reação imediata.", choices:[{label:"Treinar depois do expediente", form:4, injuryWeeks:1},{label:"Pedir apoio ao elenco", idolatry:2, form:2},{label:"Ignorar o barulho", fame:-2, form:-1}] });
+  if (facts.title) result.push({ id:"titulo-contexto", context:"campeão", title:"A festa do título", copy:`O ${club.name} conquistou ${facts.title}. A comemoração também é uma escolha de carreira.`, choices:[{label:"Celebrar com a torcida", fame:2, idolatry:5},{label:"Dividir o mérito com o elenco", idolatry:3, form:1},{label:"Pensar no próximo desafio", fame:1, form:2}] });
+  if (facts.nationalCalled) result.push({ id:"convocacao-contexto", context:"seleção", title:"Chamado da seleção", copy:"A convocação colocou seu nome em evidência nacional.", choices:[{label:"Foco total na seleção", fame:3, form:1},{label:"Dividir o foco com o clube", idolatry:2, form:1},{label:"Falar sobre o sonho publicamente", fame:4, idolatry:-1}] });
   if (row && row.position <= table.promotionPlaces) result.push({ id:"acesso-contexto", context:"acesso", title:"Acesso ao alcance", copy:"Seu clube está na zona de acesso. A pressão aumentou.", choices:[{label:"Assumir a responsabilidade", form:3, idolatry:2},{label:"Blindar o elenco", form:2},{label:"Falar com a imprensa", fame:2}] });
   if (row && row.position > table.entries.length-table.relegationPlaces) result.push({ id:"queda-contexto", context:"rebaixamento", title:"Luta contra a queda", copy:"O clube entrou na zona de rebaixamento e precisa de reação.", choices:[{label:"Chamar o elenco", form:3, idolatry:2},{label:"Treinar além da conta", form:2, injuryWeeks:1},{label:"Evitar a pressão", fame:-1}] });
-  return result;
+  return result.slice(0, 3);
 }
 function simulateFullNationalTeam(player: Player, season: number, ovr: number, random: () => number) {
   if (ovr < 78 || random() > Math.min(.88, .14 + (ovr-76)*.07 + player.form/250)) return undefined;
@@ -483,7 +490,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45)):0;
   const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio") ? .65 : 1);
   const injuryWeeks=random()<injuryRisk?Math.round(1+random()*7):0;
-  const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12,random);
+  const analystBoost = seasonal.includes("analista") && club.strength < 76 ? 7 : 0;\n  const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12+analystBoost,random);
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
   const league=competitions.find((entry)=>entry.id===leagueId);
   const leagueTitle=row.position===1 ? league?.name : undefined;
@@ -503,7 +510,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
   if(national?.title) player.titles.push(national.title);
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
-  const contextual=contextualEvents(player,contract.seasonsRemaining,table,club);
+  const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
   const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   // Os demais clubes da tabela também trocam de divisão; o jogador decide a própria final.
