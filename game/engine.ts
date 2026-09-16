@@ -499,7 +499,7 @@ export function createMarketWindow(state: CareerState, random: () => number): Ma
   const fallback=clubs.filter((club)=>club.id!==current.id&&!offers.some((offer)=>offer.clubId===club.id)&&club.country===current.country);
   while(offers.length<4&&fallback.length){const club=weightedPick(fallback,current,random);fallback.splice(fallback.findIndex((entry)=>entry.id===club.id),1);offers.push({clubId:club.id,monthlySalary:proposalSalary(club,ovr,random),seasons:2+Math.floor(random()*4),role:proposalRole(ovr,club),idolatryChange:current.rivals.includes(club.id)?-18:-4});}
   const highest=Math.max(state.highestOvr??ovr,ovr), declining=ovr<highest-2||player.age>=33;
-  const renewalFactor=declining?.85+random()*.15:1.1+random()*.15;
+  const renewalFactor=declining ? .85 + random() * .15:1.1+random()*.15;
   return {season:state.season,offers,renewal:{clubId:current.id,monthlySalary:Math.round(state.contract.monthlySalary*renewalFactor/10_000)*10_000,seasons:3,role:proposalRole(ovr,current),idolatryChange:3}};
 }
 export function applyFinalConsequence(state: CareerState, final: CupFinal, won: boolean): CareerState {
