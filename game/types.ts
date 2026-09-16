@@ -161,6 +161,8 @@ export interface CupFinal {
   opponentClubName: string;
   /** Undefined while the minigame has not decided the final yet. */
   won?: boolean;
+  stakes?: "cup" | "promotion" | "relegation" | "continental";
+  targetLeagueId?: string;
 }
 
 export interface SeasonResult {
