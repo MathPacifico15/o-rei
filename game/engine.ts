@@ -1,6 +1,6 @@
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
-import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, ClubCareerRecord, CupFinal, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
+import type { AttributeKey, Attributes, CareerEvent, CareerState, Club, ClubCareerRecord, CupFinal, LeagueTable, LeagueTableEntry, Player, Position, RandomCareerStart, SeasonResult, UpgradeCard } from "./types";
 
 export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
   GOL: ["reflexo", "elasticidade", "posicionamento", "saida", "lideranca", "fisico"],
@@ -393,45 +393,124 @@ function pickCupFinal(club: Club, ovr: number, form: number, random: () => numbe
   return { competitionId: competition.id, competitionName: competition.name, opponentClubId: opponent.id, opponentClubName: opponent.name };
 }
 
+function currentLeagueId(state: CareerState, club: Club) {
+  return state.leagueAssignments?.[club.id] ?? club.leagueId;
+}
+function countryDivisions(country: string) {
+  return competitions.filter((competition) => competition.kind === "league" && competition.country === country)
+    .sort((a, b) => a.tier - b.tier);
+}
+function movementPlaces(competitionId: string) {
+  if (competitionId.startsWith("bra-")) return 4;
+  if (competitionId.startsWith("eng-")) return 3;
+  return 2;
+}
+function buildLeagueTable(state: CareerState, leagueId: string, playerClubId: string, playerBoost: number, random: () => number): LeagueTable {
+  const competition = competitions.find((entry) => entry.id === leagueId) ?? competitions[0];
+  const entries: LeagueTableEntry[] = clubs.filter((club) => currentLeagueId(state, club) === leagueId).map((club) => {
+    const played = Math.max(16, Math.min(38, (clubs.filter((candidate) => currentLeagueId(state, candidate) === leagueId).length - 1) * 2));
+    const boost = club.id === playerClubId ? playerBoost : 0;
+    const quality = Math.max(25, club.strength + boost + random() * 18 - 8);
+    const points = Math.round(played * (0.24 + quality / 170));
+    const wins = Math.min(played, Math.max(0, Math.round(points / 3)));
+    const draws = Math.max(0, Math.min(played - wins, points - wins * 3));
+    const losses = Math.max(0, played - wins - draws);
+    const goalsFor = Math.max(8, Math.round(played * (.65 + quality / 105)));
+    const goalsAgainst = Math.max(5, Math.round(played * (1.75 - quality / 120)));
+    return { clubId: club.id, played, wins, draws, losses, goalsFor, goalsAgainst, points, position: 0 };
+  }).sort((a,b) => b.points-a.points || (b.goalsFor-b.goalsAgainst)-(a.goalsFor-a.goalsAgainst) || b.goalsFor-a.goalsFor)
+    .map((entry,index) => ({ ...entry, position:index+1 }));
+  const divisions = countryDivisions(competition.country);
+  const index = divisions.findIndex((entry) => entry.id === leagueId);
+  return { competitionId: leagueId, season: state.season, entries, promotionPlaces: index > 0 ? movementPlaces(leagueId) : 0, relegationPlaces: index >= 0 && index < divisions.length-1 ? movementPlaces(leagueId) : 0 };
+}
+function leagueTarget(state: CareerState, leagueId: string, direction: "up" | "down") {
+  const competition = competitions.find((entry) => entry.id === leagueId);
+  if (!competition) return undefined;
+  const divisions = countryDivisions(competition.country);
+  const index = divisions.findIndex((entry) => entry.id === leagueId);
+  return divisions[index + (direction === "up" ? -1 : 1)]?.id;
+}
+function contextualEvents(player: Player, contractSeasons: number, table: LeagueTable, club: Club): CareerEvent[] {
+  const row = table.entries.find((entry) => entry.clubId === club.id);
+  const result: CareerEvent[] = [];
+  if ((player.benchAppearances ?? 0) > 12) result.push({ id:"banco-contexto", context:"banco", title:"Conversa no banco", copy:"A sequência fora do time colocou seu futuro no centro da conversa.", choices:[{label:"Cobrar espaço do técnico", form:2, idolatry:-1},{label:"Treinar em silêncio", form:3},{label:"Pedir empréstimo", fame:1}] });
+  if (contractSeasons <= 1) result.push({ id:"contrato-contexto", context:"contrato", title:"Contrato perto do fim", copy:"Seu vínculo termina ao fim da próxima temporada.", choices:[{label:"Pedir renovação", idolatry:2},{label:"Ouvir propostas", fame:2},{label:"Focar no campo", form:2}] });
+  if (row && row.position <= table.promotionPlaces) result.push({ id:"acesso-contexto", context:"acesso", title:"Acesso ao alcance", copy:"Seu clube está na zona de acesso. A pressão aumentou.", choices:[{label:"Assumir a responsabilidade", form:3, idolatry:2},{label:"Blindar o elenco", form:2},{label:"Falar com a imprensa", fame:2}] });
+  if (row && row.position > table.entries.length-table.relegationPlaces) result.push({ id:"queda-contexto", context:"rebaixamento", title:"Luta contra a queda", copy:"O clube entrou na zona de rebaixamento e precisa de reação.", choices:[{label:"Chamar o elenco", form:3, idolatry:2},{label:"Treinar além da conta", form:2, injuryWeeks:1},{label:"Evitar a pressão", fame:-1}] });
+  return result;
+}
+function simulateFullNationalTeam(player: Player, season: number, ovr: number, random: () => number) {
+  if (ovr < 78 || random() > Math.min(.88, .14 + (ovr-76)*.07 + player.form/250)) return undefined;
+  const competition = selectionTournamentFor(player.nationality, season);
+  const games = competition ? 3 + Math.floor(random()*5) : 2 + Math.floor(random()*4);
+  const attacking = player.position === "ATA" ? .42 : player.position === "MEI" ? .25 : .04;
+  const goals = Math.max(0, Math.round(games * attacking * (ovr/88) * random()));
+  const assists = player.position === "MEI" ? Math.max(0, Math.round(games*.28*random())) : 0;
+  const title = competition && random() < Math.min(.46, .04 + (ovr-78)*.018 + player.form/520) ? competition : undefined;
+  return { competition: competition ?? "Eliminatórias", phase: title ? "Campeão" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title };
+}
+export function applyFinalConsequence(state: CareerState, final: CupFinal, won: boolean): CareerState {
+  if (!won || !final.targetLeagueId) return state;
+  const player = { ...state.player };
+  return { ...state, player, currentCompetition: competitions.find((entry) => entry.id === final.targetLeagueId)?.name ?? state.currentCompetition,
+    leagueAssignments: { ...state.leagueAssignments, [player.clubId]: final.targetLeagueId } };
+}
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
   const random = mulberry32(state.seed + state.season * 7919);
-  const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry } };
-  const club = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
-  const clubHistory: ClubCareerRecord[] = (state.clubHistory ?? []).map((entry) => ({ ...entry, titles: [...entry.titles] }));
-  let clubRecord = clubHistory.find((entry) => entry.clubId === player.clubId);
-  if (!clubRecord) { clubRecord = { clubId: player.clubId, titles: [] }; clubHistory.push(clubRecord); }
-  const ovr = computeOvr(player);
-  const generational = state.mode === "generational";
-  const agePerformance = agePerformanceMultiplier(player.age, player.attributes.fisico);
-  const seasonOvr = ovr * agePerformance;
-  const role = Math.max(0.18, Math.min(0.96, (seasonOvr - club.strength + 18) / 30));
-  const games = Math.round(14 + role * 28 - player.injuries * 0.4);
-  const attacking = player.position === "ATA" ? (player.attributes.finalizacao + player.attributes.cabecada + player.attributes.velocidade + player.attributes.forca) / 400 : player.position === "MEI" ? (player.attributes.finalizacao + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
-  const creative = player.position === "MEI" ? (player.attributes.passe + player.attributes.drible + player.attributes.velocidade) / 300 : 0;
-  const defensive = player.position === "GOL" ? (player.attributes.reflexo + player.attributes.elasticidade + player.attributes.posicionamento + player.attributes.saida) / 400 : 0;
-  const goals = ["ATA", "MEI"].includes(player.position) ? Math.max(0, Math.round(games * attacking * (0.26 + random() * 0.22))) : 0;
-  const assists = player.position === "MEI" ? Math.max(0, Math.round(games * creative * (0.2 + random() * 0.18))) : 0;
-  const cleanSheets = player.position === "GOL" ? Math.max(0, Math.round(games * defensive * 0.45)) : 0;
-  const injuryWeeks = random() < Math.max(0.04, 0.2 - player.attributes.fisico / 700) ? Math.round(1 + random() * 7) : 0;
-  const league = competitions.find((entry) => entry.id === club.leagueId);
-  const winsTitle = club.strength + seasonOvr * 0.24 + random() * 19 + (generational ? 6 : 0) > 104;
-  const promotion = club.leagueId === "bra-b" ? "Acesso à Série A" : club.leagueId === "bra-c" ? "Acesso à Série B" : club.leagueId === "bra-d" ? "Acesso à Série C" : undefined;
-  const title = winsTitle ? (promotion ?? league?.name ?? "Campeonato Nacional") : undefined;
-  const cupFinal = pickCupFinal(club, seasonOvr, player.form, random, generational ? 0.1 : 0);
-  const nationalTeam = simulateNationalTeamCampaign(player, state.season, ovr, random);
-  const seasonEvents = pickSeasonEvents(random, player.fame, player.position, cupFinal);
-  const event = seasonEvents[0];
-  const award = goals >= 24 ? "Chuteira de Ouro" : player.position === "GOL" && cleanSheets >= 16 ? "Melhor Goleiro da Liga" : goals >= 18 ? "Artilheiro da temporada" : (ovr > 88 && random() > 0.78 ? "Bola de Ouro" : (ovr > 84 && random() > 0.62 ? "Melhor jogador da liga" : undefined));
-  player.games += games; player.goals += goals; player.assists += assists; player.cleanSheets += cleanSheets; player.saves += player.position === "GOL" ? Math.round(games * (2.4 + random() * 1.6)) : 0;
-  player.injuries = injuryWeeks; player.age += 1; player.form = clamp((52 + random() * 42) * agePerformance - injuryWeeks * 2); player.marketValue = Math.max(50_000, Math.round(player.marketValue * (1 + (seasonOvr - 62) / 380 - Math.max(0, player.age - 33) / (240 * (0.55 + player.attributes.fisico / 100)))));
-  player.clubIdolatry[player.clubId] = clamp((player.clubIdolatry[player.clubId] ?? 25) + games / 12 + (title ? 9 : 0) + goals / 9);
-  if (title) { player.titles = [...player.titles, title]; clubRecord.titles.push(title); }
-  if (nationalTeam.title) player.titles = [...player.titles, nationalTeam.title];
-  if (award) player.awards = [...player.awards, award];
-  const result: SeasonResult = { season: state.season, games, goals, assists, cleanSheets, title, award, injuryWeeks, event, events: seasonEvents, cupFinal, nationalTeamCompetition: nationalTeam.competition, nationalTeamTitle: nationalTeam.title, finalOpportunity: Boolean(title) || Boolean(cupFinal) || random() > 0.84 };
-  return { state: { ...state, season: state.season + 1, player, clubHistory, history: [...state.history, result] }, result };
+  const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
+  const assignments = { ...state.leagueAssignments };
+  let loan = state.loan;
+  if (loan && state.season >= loan.returnSeason) { player.clubId = loan.parentClubId; loan = undefined; }
+  const baseClub = clubs.find((entry) => entry.id === player.clubId) ?? clubs[0];
+  const leagueId = assignments[baseClub.id] ?? baseClub.leagueId;
+  const club = { ...baseClub, leagueId };
+  const clubHistory: ClubCareerRecord[] = (state.clubHistory ?? []).map((entry) => ({...entry,titles:[...entry.titles]}));
+  let clubRecord = clubHistory.find((entry) => entry.clubId === player.clubId); if (!clubRecord) { clubRecord={clubId:player.clubId,titles:[]}; clubHistory.push(clubRecord); }
+  const ovr=computeOvr(player), generational=state.mode==="generational", agePerformance=agePerformanceMultiplier(player.age,player.attributes.fisico);
+  const rolePower = { promessa:.42, rotacao:.58, titular:.78, estrela:.92 }[state.contract?.role ?? "promessa"];
+  const seasonal=state.shop?.activeSeasonal ?? [], permanent=state.shop?.ownedPermanent ?? [];
+  const physicalBonus=(seasonal.includes("preparador")?4:0)+(seasonal.includes("suplementacao")?2:0)+(permanent.includes("mansao")?3:0);
+  const seasonOvr=(ovr+physicalBonus)*agePerformance;
+  const role=Math.max(.12,Math.min(.96,(seasonOvr-club.strength+18)/30*rolePower));
+  const games=Math.max(1,Math.round(8+role*34-player.injuries*.4));
+  const benchAppearances=Math.max(0,Math.round(25-games*.45+(1-role)*10));
+  const attacking=player.position==="ATA"?(player.attributes.finalizacao+player.attributes.cabecada+player.attributes.velocidade+player.attributes.forca)/400:player.position==="MEI"?(player.attributes.finalizacao+player.attributes.drible+player.attributes.velocidade)/300:0;
+  const creative=player.position==="MEI"?(player.attributes.passe+player.attributes.drible+player.attributes.velocidade)/300:0;
+  const defensive=player.position==="GOL"?(player.attributes.reflexo+player.attributes.elasticidade+player.attributes.posicionamento+player.attributes.saida)/400:0;
+  const goals=["ATA","MEI"].includes(player.position)?Math.max(0,Math.round(games*attacking*(.26+random()*.22))):0;
+  const assists=player.position==="MEI"?Math.max(0,Math.round(games*creative*(.2+random()*.18))):0;
+  const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45)):0;
+  const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio")?.65:1);
+  const injuryWeeks=random()<injuryRisk?Math.round(1+random()*7):0;
+  const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12,random);
+  const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
+  const league=competitions.find((entry)=>entry.id===leagueId);
+  const divisions=countryDivisions(club.country), divisionIndex=divisions.findIndex((entry)=>entry.id===leagueId);
+  const leagueTitle=row.position===1 ? league?.name : undefined;
+  const promotion=row.position<=table.promotionPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"up") : undefined;
+  const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
+  let cupFinal=pickCupFinal(club,seasonOvr,player.form,random,generational?.1:0);
+  if (!cupFinal && (promotion||relegation)) cupFinal={competitionId:leagueId,competitionName:promotion?"Decisão do acesso":"Decisão da permanência",opponentClubId:"decisao",opponentClubName:"Rival direto",stakes:promotion?"promotion":"relegation",targetLeagueId:promotion??relegation};
+  const national=simulateFullNationalTeam(player,state.season,ovr,random);
+  const contract=state.contract ?? {clubId:player.clubId,monthlySalary:200_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
+  const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
+  const prize=(leagueTitle?league?.prestige??0:0)*50_000+(national?.title?800_000:0);
+  const balance=(state.balance??0)+monthlySalary*12+prize;
+  player.games+=games; player.goals+=goals; player.assists+=assists; player.cleanSheets+=cleanSheets; player.saves+=player.position==="GOL"?Math.round(games*(2.4+random()*1.6)):0; player.benchAppearances=(player.benchAppearances??0)+benchAppearances;
+  player.nationalTeamGames=(player.nationalTeamGames??0)+(national?.games??0); player.nationalTeamGoals=(player.nationalTeamGoals??0)+(national?.goals??0); player.nationalTeamAssists=(player.nationalTeamAssists??0)+(national?.assists??0);
+  player.injuries=injuryWeeks; player.age+=1; player.form=clamp((52+random()*42)*agePerformance-injuryWeeks*2+(seasonal.includes("chef")?5:0)+(seasonal.includes("ferias")?5:0)+(permanent.includes("casa")?2:0)); player.marketValue=Math.max(50_000,Math.round(player.marketValue*(1+(seasonOvr-62)/380)));
+  player.clubIdolatry[player.clubId]=clamp((player.clubIdolatry[player.clubId]??25)+games/12+(leagueTitle?9:0)+goals/9);
+  if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
+  if(national?.title) player.titles.push(national.title);
+  const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
+  const contextual=contextualEvents(player,contract.seasonsRemaining,table,club);
+  const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
+  const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
+  const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[]),...(national?.title?[national.title]:[])]};
+  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:national?.title,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal)};
+  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam},result};
 }
-
 export function legacy(player: Player) {
   const ovr = computeOvr(player);
   const performance = Math.min(300, Math.round(player.games * 0.22 + player.goals * 1.1 + player.assists * 0.9 + player.cleanSheets * 0.8 + player.saves * 0.14));
