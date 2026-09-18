@@ -191,14 +191,18 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
 /** Três cartas sorteadas: raras dominam, épicas são especiais e lendárias exceção. */
 export function chooseUpgradeCards(position: Position, seed: number): UpgradeCard[] {
   const random = mulberry32(seed);
+  const selected = new Set<string>();
   const rarityFor = () => {
     const roll = random();
     return roll < .75 ? "raro" : roll < .95 ? "epico" : "lendario";
   };
   return Array.from({ length: 3 }, () => {
     const rarity = rarityFor();
-    const pool = upgradeCards.filter((card) => card.rarity === rarity && card.eligible.includes(position));
-    return pool[Math.floor(random() * pool.length)] ?? upgradeCards[0];
+    const pool = upgradeCards.filter((card) => card.rarity === rarity && card.eligible.includes(position) && !selected.has(card.id));
+    const fallback = upgradeCards.filter((card) => card.eligible.includes(position) && !selected.has(card.id));
+    const card = pool[Math.floor(random() * pool.length)] ?? fallback[Math.floor(random() * fallback.length)] ?? upgradeCards[0];
+    selected.add(card.id);
+    return card;
   });
 }
 
@@ -569,7 +573,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
-  const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)].slice(0,3);
+  const allSeasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
+  // Uma decisão é o padrão; duas são exceção. Assim a temporada permanece rápida.
+  const seasonEvents=allSeasonEvents.slice(0,random()<.72?1:2);
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
   const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
