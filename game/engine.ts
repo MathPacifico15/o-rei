@@ -511,6 +511,8 @@ export function createMarketWindow(state: CareerState, random: () => number): Ma
 export function applyFinalConsequence(state: CareerState, final: CupFinal, won: boolean): CareerState {
   if (!won || !final.targetLeagueId) return state;
   const player = { ...state.player };
+  const promotedClub = clubs.find((club) => club.id === player.clubId);
+  if (promotedClub) promotedClub.strength = Math.min(99, promotedClub.strength + 4);
   return { ...state, player, currentCompetition: competitions.find((entry) => entry.id === final.targetLeagueId)?.name ?? state.currentCompetition,
     leagueAssignments: { ...state.leagueAssignments, [player.clubId]: final.targetLeagueId } };
 }
@@ -552,7 +554,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
   const cupFinal = promotion
     ? { competitionId: leagueId, competitionName: titleAndPromotion ? (league?.name ?? "Campeonato Nacional") : "Decisão do acesso", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: titleAndPromotion ? "titleAndPromotion" as const : "promotion" as const, targetLeagueId: promotion }
-    : undefined;
+    : pickCupFinal(club, seasonOvr, player.form, random, generational ? .1 : 0);
   const national=simulateFullNationalTeam(player,state.season,ovr,random);
   const contract=state.contract ?? {clubId:player.clubId,monthlySalary:200_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
   const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
