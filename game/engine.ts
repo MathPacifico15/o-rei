@@ -449,7 +449,7 @@ function contextualEvents(player: Player, contractSeasons: number, table: League
   if ((player.form < 58 || (facts.games >= 14 && facts.goals === 0 && player.position === "ATA")) && random() < .55) result.push({ id:"sequencia-ruim", context:"fase ruim", title:"Pressão por resposta", copy:"A fase recente virou pauta diária. A torcida quer uma reação imediata.", choices:[{label:"Treinar depois do expediente", form:4, injuryWeeks:1},{label:"Pedir apoio ao elenco", idolatry:2, form:2},{label:"Ignorar o barulho", fame:-2, form:-1}] });
   if (facts.title) result.push({ id:"titulo-contexto", context:"campeão", title:"A festa do título", copy:`O ${club.name} conquistou ${facts.title}. A comemoração também é uma escolha de carreira.`, choices:[{label:"Celebrar com a torcida", fame:2, idolatry:5},{label:"Dividir o mérito com o elenco", idolatry:3, form:1},{label:"Pensar no próximo desafio", fame:1, form:2}] });
   if (facts.nationalCalled) result.push({ id:"convocacao-contexto", context:"seleção", title:"Chamado da seleção", copy:"A convocação colocou seu nome em evidência nacional.", choices:[{label:"Foco total na seleção", fame:3, form:1},{label:"Dividir o foco com o clube", idolatry:2, form:1},{label:"Falar sobre o sonho publicamente", fame:4, idolatry:-1}] });
-  if (row && row.position <= table.promotionPlaces) result.push({ id:"acesso-contexto", context:"acesso", title:"Acesso ao alcance", copy:"Seu clube está na zona de acesso. A pressão aumentou.", choices:[{label:"Assumir a responsabilidade", form:3, idolatry:2},{label:"Blindar o elenco", form:2},{label:"Falar com a imprensa", fame:2}] });
+  if (table.promotionPlaces > 0 && random() < .4) result.push({ id:"acesso-contexto", context:"acesso", title:"Decisão de acesso", copy:"A divisão permite o acesso e a temporada terá uma decisão decisiva para o clube.", choices:[{label:"Assumir a responsabilidade", form:3, idolatry:2},{label:"Blindar o elenco", form:2},{label:"Falar com a imprensa", fame:2}] });
   if (row && row.position > table.entries.length-table.relegationPlaces) result.push({ id:"queda-contexto", context:"rebaixamento", title:"Luta contra a queda", copy:"O clube entrou na zona de rebaixamento e precisa de reação.", choices:[{label:"Chamar o elenco", form:3, idolatry:2},{label:"Treinar além da conta", form:2, injuryWeeks:1},{label:"Evitar a pressão", fame:-1}] });
   return result.slice(0, 3);
 }
@@ -547,7 +547,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const table=buildLeagueTable({...state,leagueAssignments:assignments},leagueId,player.clubId,(seasonOvr-club.strength)*.7+player.form/12+analystBoost,random);
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
   const league=competitions.find((entry)=>entry.id===leagueId);
-  const promotion=row.position<=table.promotionPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"up") : undefined;
+  // Para o clube do jogador, toda divisão que permite subir termina em uma decisão de acesso.
+  // A tabela segue apenas como registro da temporada, sem zona de promoção.
+  const promotion=leagueTarget({...state,leagueAssignments:assignments},leagueId,"up");
   const titleAndPromotion=Boolean(promotion && ["bra-b","bra-c","bra-d"].includes(leagueId));
   // Nas Séries B/C/D, a decisão de acesso também vale o troféu da divisão.
   const leagueTitle=row.position===1 && !titleAndPromotion ? league?.name : undefined;
