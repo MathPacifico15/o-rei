@@ -161,7 +161,8 @@ export interface CareerEvent {
   id: string;
   title: string;
   copy: string;
-  sponsor?: { name: string; logo: string };\n  context?: string;
+  sponsor?: { name: string; logo: string };
+  context?: string;
   choices: Array<{ label: string; fame?: number; idolatry?: number; form?: number; salary?: number; injuryWeeks?: number; finalOutcome?: "win" | "lose" }>;
 }
 
@@ -218,6 +219,9 @@ export interface CareerState {
   leagueAssignments: Record<string, string>;
   leagueTables: Record<string, LeagueTable>;
   shop: ShopState;
-  nationalTeam: { games: number; goals: number; assists: number; titles: string[] };\n  originCountry: string;\n  highestOvr: number;\n  marketWindow?: MarketWindow;
+  nationalTeam: { games: number; goals: number; assists: number; titles: string[] };
+  originCountry: string;
+  highestOvr: number;
+  marketWindow?: MarketWindow;
 }
 }
