@@ -171,7 +171,7 @@ function createGoalkeeperFinalEvent(random: () => number): CareerEvent {
   };
 }
 
-function pickSeasonEvents(random: () => number, fame: number, position: Position, cupFinal?: CupFinal) {
+function pickSeasonEvents(random: () => number, fame: number, _position: Position) {
   const available = [...events];
   if (fame >= 50) available.push(createSponsorEvent(random));
   // Eventos enriquecem a temporada, mas não devem impedir o ritmo da carreira.
@@ -181,10 +181,6 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
     const index = Math.floor(random() * available.length);
     selected.push(available.splice(index, 1)[0]);
   }
-  if (position === "GOL" && cupFinal) selected.push(createGoalkeeperFinalEvent(random));
-  if (position === "ATA" && cupFinal) selected.push(createAttackerFinalEvent(random));
-  if (position === "MEI" && cupFinal) selected.push(createMidfieldFinalEvent(random));
-  
   return selected;
 }
 
@@ -554,14 +550,10 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   // Nas Séries B/C/D, a decisão de acesso também vale o troféu da divisão.
   const leagueTitle=row.position===1 && !titleAndPromotion ? league?.name : undefined;
   const relegation=row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
-  let cupFinal = promotion
+  const cupFinal = promotion
     ? { competitionId: leagueId, competitionName: titleAndPromotion ? (league?.name ?? "Campeonato Nacional") : "Decisão do acesso", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: titleAndPromotion ? "titleAndPromotion" as const : "promotion" as const, targetLeagueId: promotion }
-    : pickCupFinal(club, seasonOvr, player.form, random, generational ? .1 : 0);
+    : undefined;
   const national=simulateFullNationalTeam(player,state.season,ovr,random);
-  if (national?.title) {
-    const selectionCompetition=competitions.find((entry) => entry.name === national.title);
-    cupFinal={ competitionId: selectionCompetition?.id ?? "national-title", competitionName: national.title, opponentClubId: "selecao-rival", opponentClubName: "Seleção rival", stakes: "cup" };
-  }
   const contract=state.contract ?? {clubId:player.clubId,monthlySalary:200_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
   const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
   const prize=(leagueTitle?league?.prestige??0:0)*50_000+(national?.title?800_000:0);
@@ -573,9 +565,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
-  const allSeasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
-  // Uma única decisão narrativa por temporada: ritmo rápido e sem fila cansativa.
-  const seasonEvents=allSeasonEvents.slice(0,1);
+  const allSeasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position)];
+  // Cada temporada tem somente 1 a 3 decisões narrativas.
+  const seasonEvents=allSeasonEvents.slice(0,1+Math.floor(random()*3));
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
   const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
@@ -587,7 +579,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
     if (entry.position > table.entries.length-table.relegationPlaces) { const target=leagueTarget({...state,leagueAssignments:assignments},leagueId,"down"); if(target) assignments[entry.clubId]=target; }
   });
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[])]};
-  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:national?.title && !cupFinal ? national.title : undefined,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal)};
+  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:national?.title,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal)};
   return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow},result};
 }
 export function legacy(player: Player) {
