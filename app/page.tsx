@@ -88,7 +88,9 @@ export default function Home() {
     }
     const saved = localStorage.getItem("o-rei-career");
     if (saved) { try { const parsed = JSON.parse(saved) as CareerState; const validPosition = ["GOL", "MEI", "ATA"].includes(parsed.player?.position); const validAttributes = positionAttributeKeys[parsed.player?.position as Position]?.every((key) => typeof parsed.player.attributes?.[key] === "number"); if (validPosition && validAttributes) setCareer(parsed); else { localStorage.removeItem("o-rei-career"); setToast("A atualização de posições exige uma nova carreira."); } } catch { localStorage.removeItem("o-rei-career"); } }
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    // Remove o antigo cache offline: ele podia manter o cliente de desenvolvimento
+    // do Vite e abrir um painel de erro sobre o jogo.
+    if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then((registrations) => Promise.all(registrations.map((registration) => registration.unregister()))).catch(() => undefined);
   }, []);
   useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
