@@ -574,8 +574,8 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
   const allSeasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
-  // Uma decisão é o padrão; duas são exceção. Assim a temporada permanece rápida.
-  const seasonEvents=allSeasonEvents.slice(0,random()<.72?1:2);
+  // Uma única decisão narrativa por temporada: ritmo rápido e sem fila cansativa.
+  const seasonEvents=allSeasonEvents.slice(0,1);
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
   const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
