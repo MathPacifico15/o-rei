@@ -224,4 +224,3 @@ export interface CareerState {
   highestOvr: number;
   marketWindow?: MarketWindow;
 }
-}
