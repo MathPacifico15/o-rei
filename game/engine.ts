@@ -174,7 +174,8 @@ function createGoalkeeperFinalEvent(random: () => number): CareerEvent {
 function pickSeasonEvents(random: () => number, fame: number, position: Position, cupFinal?: CupFinal) {
   const available = [...events];
   if (fame >= 50) available.push(createSponsorEvent(random));
-  const count = Math.max(1, Math.floor(random() * 6));
+  // Eventos enriquecem a temporada, mas não devem impedir o ritmo da carreira.
+  const count = 1 + Math.floor(random() * 3);
   const selected: CareerEvent[] = [];
   while (selected.length < count && available.length > 0) {
     const index = Math.floor(random() * available.length);
@@ -187,10 +188,15 @@ function pickSeasonEvents(random: () => number, fame: number, position: Position
   return selected;
 }
 
-/** Uma opção de cada raridade, com desempate determinístico por semente. */
+/** Três cartas sorteadas: raras dominam, épicas são especiais e lendárias exceção. */
 export function chooseUpgradeCards(position: Position, seed: number): UpgradeCard[] {
   const random = mulberry32(seed);
-  return (["raro", "epico", "lendario"] as const).map((rarity) => {
+  const rarityFor = () => {
+    const roll = random();
+    return roll < .75 ? "raro" : roll < .95 ? "epico" : "lendario";
+  };
+  return Array.from({ length: 3 }, () => {
+    const rarity = rarityFor();
     const pool = upgradeCards.filter((card) => card.rarity === rarity && card.eligible.includes(position));
     return pool[Math.floor(random() * pool.length)] ?? upgradeCards[0];
   });
@@ -606,3 +612,4 @@ export function shouldRetire(player: Player, _seed: number) {
 }
 
 export function baseAttributes(): Attributes { return { reflexo: 55, elasticidade: 55, posicionamento: 56, saida: 53, lideranca: 50, fisico: 56, velocidade: 58, passe: 56, finalizacao: 55, drible: 56, cabecada: 54, forca: 56 }; }
+
