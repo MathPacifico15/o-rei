@@ -569,7 +569,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
   const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
-  const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)];
+  const seasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position,cupFinal)].slice(0,3);
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
   const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
