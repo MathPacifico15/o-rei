@@ -16,7 +16,7 @@ function competitionRows(country: string, season: Competition["season"], kind: C
 const baseCompetitions: CompetitionRow[] = [
   { id: "bra-a", name: "Brasileirão Série A", country: "Brasil", tier: 1, kind: "league", season: "calendar", prestige: 82, expectedClubCount: 20 },
   { id: "bra-b", name: "Brasileirão Série B", country: "Brasil", tier: 2, kind: "league", season: "calendar", prestige: 58, expectedClubCount: 20 },
-  { id: "bra-c", name: "Brasileirão Série C", country: "Brasil", tier: 3, kind: "league", season: "calendar", prestige: 42, expectedClubCount: 20 },
+  { id: "bra-c", name: "Brasileirão Série C", country: "Brasil", tier: 3, kind: "league", season: "calendar", prestige: 42, expectedClubCount: 22 },
   { id: "bra-d", name: "Brasileirão Série D", country: "Brasil", tier: 4, kind: "league", season: "calendar", prestige: 28, expectedClubCount: 96 },
   { id: "copa-br", name: "Copa do Brasil", country: "Brasil", tier: 1, kind: "cup", season: "calendar", prestige: 72 },
   { id: "copa-verde", name: "Copa Verde", country: "Brasil", tier: 1, kind: "cup", season: "calendar", prestige: 33 },

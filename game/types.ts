@@ -199,6 +199,12 @@ export interface SeasonResult {
   leaguePoints?: number;
   benchAppearances?: number;
   nationalTeamCampaign?: NationalTeamCampaign;
+  leagueId?: string;
+  leagueName?: string;
+  clubId?: string;
+  rating?: number;
+  annualEarnings?: number;
+  titles?: string[];
 }
 
 export interface CareerState {
@@ -223,4 +229,8 @@ export interface CareerState {
   originCountry: string;
   highestOvr: number;
   marketWindow?: MarketWindow;
+  /** Ajustes de força persistentes, sem mutar o catálogo global. */
+  clubStrengthAdjustments?: Record<string, number>;
+  recentEventIds?: string[];
+  recentCardIds?: string[];
 }
