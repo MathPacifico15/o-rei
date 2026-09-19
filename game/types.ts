@@ -118,6 +118,7 @@ export interface LeagueTable {
 }
 
 export interface NationalTeamCampaign {
+  competitionId?: string;
   competition: string;
   phase: string;
   games: number;
@@ -136,6 +137,14 @@ export interface ShopState {
 export interface ClubCareerRecord {
   clubId: string;
   titles: string[];
+}
+
+/** Valores que evoluem somente dentro da carreira, sem mudar o catálogo base. */
+export interface ClubDynamics {
+  strength: number;
+  reputation: number;
+  budget: number;
+  titles: number;
 }
 
 export interface RandomCareerStart {
@@ -176,6 +185,10 @@ export interface CupFinal {
   won?: boolean;
   stakes?: "cup" | "promotion" | "relegation" | "continental" | "titleAndPromotion";
   targetLeagueId?: string;
+  /** A primeira decisão é pelo título; ao perdê-la, abre o jogo de acesso. */
+  phase?: "title" | "access";
+  /** Finais de seleções atualizam o histórico nacional, não o clube. */
+  scope?: "club" | "national";
 }
 
 export interface SeasonResult {
@@ -205,6 +218,11 @@ export interface SeasonResult {
   rating?: number;
   annualEarnings?: number;
   titles?: string[];
+  access?: "pending" | "promoted" | "stayed";
+  relegated?: boolean;
+  consequences?: string[];
+  phaseReached?: string;
+  opponentName?: string;
 }
 
 export interface CareerState {
@@ -233,4 +251,7 @@ export interface CareerState {
   clubStrengthAdjustments?: Record<string, number>;
   recentEventIds?: string[];
   recentCardIds?: string[];
+  clubDynamics?: Record<string, ClubDynamics>;
+  /** Títulos anteriores que liberam copas continentais e supercopas. */
+  clubHonors?: Record<string, string[]>;
 }

@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, applyFinalConsequence, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, applyFinalConsequence, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, supabaseCareer, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
 
-type Screen = "home" | "create" | "career" | "evolution" | "event" | "market" | "shop" | "minigame" | "celebration" | "legacy";
+type Screen = "home" | "create" | "career" | "evolution" | "event" | "shop" | "minigame" | "celebration" | "legacy" | "account" | "sync";
+type CloudSession = { userId: string; token: string; email?: string };
+const CLOUD_SESSION_KEY = "o-rei:supabase-session";
 type Celebration = { title: string; access?: string };
 const positions: Array<{ id: Position; label: string }> = [
   { id: "GOL", label: "Goleiro" },
@@ -12,7 +14,7 @@ const positions: Array<{ id: Position; label: string }> = [
 ];
 const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
 const LOCAL_RANKING_KEY = "o-rei-local-ranking";
-const CAREER_SUMMARY_RESET_KEY = "o-rei:career-live-reset:v3";
+const CAREER_SUMMARY_RESET_KEY = "o-rei:career-live-reset:v4";
 type LocalRankingEntry = { playerId: string; name: string; nationality: string; position: Position; clubName: string; score: number; global: string; titles: number; games: number; retiredAt: string; };
 
 function readLocalRanking(): LocalRankingEntry[] {
@@ -63,8 +65,8 @@ function Brand({ compact = false }: { compact?: boolean }) { return <div classNa
 
 function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string; mode: "normal" | "generational" }): CareerState {
   const seed = Date.now();
-  const player: Player = { id: `jogador-${seed}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: data.mode === "generational" ? generationalAttributes(data.position, seed) : baseAttributes(), form: 68, fame: 3, salary: 200000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0, benchAppearances: 0, nationalTeamGames: 0, nationalTeamGoals: 0, nationalTeamAssists: 0 };
-  return { seed, season: 2026, player, history: [], clubHistory: [{ clubId: data.club.id, titles: [] }], currentCompetition: competitions.find((entry) => entry.id === data.club.leagueId)?.name ?? "Campeonato Nacional", mode: data.mode, balance: 0, contract: { clubId: data.club.id, monthlySalary: 200000, seasonsRemaining: 3, role: "promessa", expectedMinutes: 28 }, leagueAssignments: Object.fromEntries(clubs.map((club) => [club.id, club.leagueId])), leagueTables: {}, shop: { ownedPermanent: [], activeSeasonal: [], freeUses: [] }, nationalTeam: { games: 0, goals: 0, assists: 0, titles: [] }, originCountry: data.club.country, highestOvr: computeOvr(player), clubStrengthAdjustments: {}, recentEventIds: [], recentCardIds: [] };
+  const player: Player = { id: `jogador-${seed}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: data.mode === "generational" ? generationalAttributes(data.position, seed) : baseAttributes(), form: 68, fame: 3, salary: 16_700, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0, benchAppearances: 0, nationalTeamGames: 0, nationalTeamGoals: 0, nationalTeamAssists: 0 };
+  return { seed, season: 2026, player, history: [], clubHistory: [{ clubId: data.club.id, titles: [] }], currentCompetition: competitions.find((entry) => entry.id === data.club.leagueId)?.name ?? "Campeonato Nacional", mode: data.mode, balance: 0, contract: { clubId: data.club.id, monthlySalary: 16_700, seasonsRemaining: 3, role: "promessa", expectedMinutes: 28 }, leagueAssignments: Object.fromEntries(clubs.map((club) => [club.id, club.leagueId])), leagueTables: {}, shop: { ownedPermanent: [], activeSeasonal: [], freeUses: [] }, nationalTeam: { games: 0, goals: 0, assists: 0, titles: [] }, originCountry: data.club.country, highestOvr: computeOvr(player), clubStrengthAdjustments: {}, clubDynamics: {}, clubHonors: {}, recentEventIds: [], recentCardIds: [] };
 }
 
 export default function Home() {
@@ -80,6 +82,8 @@ export default function Home() {
   const [gameScore, setGameScore] = useState(0);
   const [activeGame, setActiveGame] = useState<MiniGameDefinition | null>(null);
   const [celebration, setCelebration] = useState<Celebration | null>(null);
+  const [cloudSession, setCloudSession] = useState<CloudSession | null>(null);
+  const [cloudCareer, setCloudCareer] = useState<CareerState | null>(null);
   useEffect(() => {
     if (localStorage.getItem(CAREER_SUMMARY_RESET_KEY) !== "done") {
       ["o-rei-career", "o-rei:career:v1", LOCAL_RANKING_KEY].forEach((key) => localStorage.removeItem(key));
@@ -92,27 +96,48 @@ export default function Home() {
     // do Vite e abrir um painel de erro sobre o jogo.
     if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then((registrations) => Promise.all(registrations.map((registration) => registration.unregister()))).catch(() => undefined);
   }, []);
-  useEffect(() => { if (career) localStorage.setItem("o-rei-career", JSON.stringify(career)); }, [career]);
+  useEffect(() => {
+    const stored = localStorage.getItem(CLOUD_SESSION_KEY);
+    if (stored) try { setCloudSession(JSON.parse(stored) as CloudSession); } catch { localStorage.removeItem(CLOUD_SESSION_KEY); }
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const token = params.get("access_token"), userId = params.get("user_id"), email = params.get("email") ?? undefined;
+    if (token && userId) { const session = { token, userId, email }; localStorage.setItem(CLOUD_SESSION_KEY, JSON.stringify(session)); setCloudSession(session); window.history.replaceState({}, "", window.location.pathname); }
+    else if (token && supabaseCareer.configured()) supabaseCareer.currentUser(token).then((user) => { const session = { token, userId: user.id, email: user.email }; localStorage.setItem(CLOUD_SESSION_KEY, JSON.stringify(session)); setCloudSession(session); window.history.replaceState({}, "", window.location.pathname); }).catch(() => setToast("Não foi possível concluir o login Google."));
+  }, []);
+  useEffect(() => { if (career) { localStorage.setItem("o-rei-career", JSON.stringify(career)); if (cloudSession && supabaseCareer.configured()) supabaseCareer.save(cloudSession.userId, cloudSession.token, career).catch(() => setToast("Não foi possível sincronizar agora. O save local continua protegido.")); } }, [career, cloudSession]);
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
   function finishSeason() { setEvent(null); setEventQueue([]); setSeasonSummary(true); setUpgradeReady(true); setScreen("career"); }
   function playSeason() { if (!career) return; const outcome = simulateSeason(career); setCareer(outcome.state); setLastResult(outcome.result); setGameScore(0); setActiveGame(miniGameForSeed(outcome.state.seed + outcome.state.season)); setSeasonSummary(false); setUpgradeReady(false); setSeasonConsequences([]); if (shouldRetire(outcome.state.player, outcome.state.seed)) { saveLocalRanking(outcome.state, clubs.find((entry) => entry.id === outcome.state.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return; } if (outcome.result.title && !outcome.result.cupFinal) { setCelebration({ title: outcome.result.title }); return setScreen("celebration"); } if (outcome.result.finalOpportunity) return setScreen("minigame"); finishSeason(); }
   function settleFinal(player: Player, history: SeasonResult[], cupFinal: NonNullable<SeasonResult["cupFinal"]>, won: boolean) {
     if (!career) return;
     const titleWon = won && cupFinal.stakes !== "promotion";
-    let next: CareerState = titleWon ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history };
+    const national = cupFinal.scope === "national";
+    let next: CareerState = titleWon && !national ? addClubTitle({ ...career, player, history }, cupFinal.competitionName) : { ...career, player, history };
     if (titleWon) {
       const prestige = competitions.find((entry) => entry.id === cupFinal.competitionId)?.prestige ?? 40;
-      const selectionIds = ["wc","copa-america","euro","gold-cup","afcon","asian-cup","ofc-nations"];
-      next = { ...next, balance: next.balance + prestige * 50_000, nationalTeam: selectionIds.includes(cupFinal.competitionId) ? { ...next.nationalTeam, titles: [...next.nationalTeam.titles, cupFinal.competitionName] } : next.nationalTeam };
+      const honors = { ...(next.clubHonors ?? {}) };
+      if (!national) honors[player.clubId] = [...(honors[player.clubId] ?? []), cupFinal.competitionName];
+      next = { ...next, balance: next.balance + prestige * 50_000, clubHonors: honors, nationalTeam: national ? { ...next.nationalTeam, titles: [...next.nationalTeam.titles, cupFinal.competitionName] } : next.nationalTeam };
     }
     return applyFinalConsequence(next, cupFinal, won);
   }
   function resolveFinal(won: boolean) {
     if (!career || !lastResult?.cupFinal) return;
     const cupFinal = { ...lastResult.cupFinal, won };
-    const resolved = { ...lastResult, cupFinal, title: won && cupFinal.stakes !== "promotion" ? cupFinal.competitionName : lastResult.title };
+    if (!won && cupFinal.stakes === "titleAndPromotion" && cupFinal.targetLeagueId) {
+      const accessFinal = { ...cupFinal, won: undefined, stakes: "promotion" as const, phase: "access" as const, competitionName: "Jogo do Acesso" };
+      const pending = { ...lastResult, cupFinal: accessFinal, access: "pending" as const, phaseReached: "Jogo do Acesso" };
+      const history = [...career.history]; history[history.length - 1] = pending;
+      setCareer({ ...career, history }); setLastResult(pending); setActiveGame(miniGameForSeed(career.seed + career.season + 91)); setGameScore(0); setToast("A taça escapou. Agora o Jogo do Acesso decide sua divisão."); setScreen("minigame");
+      return;
+    }
+    const titleWon = won && cupFinal.stakes !== "promotion";
+    const title = titleWon ? cupFinal.competitionName : lastResult.title;
+    const titles = titleWon ? [...(lastResult.titles ?? []), cupFinal.competitionName].filter((value, index, all) => all.indexOf(value) === index) : (lastResult.titles ?? []);
+    const access = cupFinal.stakes === "promotion" ? (won ? "promoted" : "stayed") : lastResult.access;
+    const resolved = { ...lastResult, cupFinal, title, titles, nationalTeamTitle: titleWon && cupFinal.scope === "national" ? cupFinal.competitionName : lastResult.nationalTeamTitle, access };
     const player = { ...career.player, titles: [...career.player.titles], clubIdolatry: { ...career.player.clubIdolatry } };
-    if (won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation") {
+    if (titleWon && cupFinal.scope !== "national") {
       player.titles.push(cupFinal.competitionName);
       player.clubIdolatry[player.clubId] = Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + 9);
     }
@@ -123,7 +148,9 @@ export default function Home() {
     if (!career || !event) return;
     const choice = event.choices[index];
     if ((event.id === "emprestimo-inicial" && index === 0) || (event.id === "banco-contexto" && index === 2)) { requestLoan(); setSeasonConsequences((items) => [...items, eventConsequence(event, choice)]); if (eventQueue.length) { setEvent(eventQueue[0]); setEventQueue(eventQueue.slice(1)); } else finishSeason(); return; }
-    const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry }, titles: [...career.player.titles] };
+    const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry }, titles: [...career.player.titles], attributes: { ...career.player.attributes } };
+    const protectedByPress = career.shop.activeSeasonal.includes("imprensa");
+    const soften = (value = 0) => protectedByPress && value < 0 ? Math.ceil(value / 2) : value;
 
     if (choice.finalOutcome && lastResult?.cupFinal) {
       const won = choice.finalOutcome === "win";
@@ -143,8 +170,17 @@ export default function Home() {
       return;
     }
 
-    setCareer({ ...career, player });
-    setSeasonConsequences((items) => [...items, eventConsequence(event, choice)]);
+    player.fame = Math.max(0, Math.min(100, player.fame + soften(choice.fame)));
+    player.form = Math.max(0, Math.min(100, player.form + (choice.form ?? 0)));
+    player.salary = Math.max(0, player.salary + (choice.salary ?? 0));
+    player.injuries = Math.max(player.injuries, choice.injuryWeeks ?? 0);
+    player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + soften(choice.idolatry)));
+    const consequence = eventConsequence(event, choice);
+    const history = [...career.history];
+    if (history.length) history[history.length - 1] = { ...history[history.length - 1], consequences: [...(history[history.length - 1].consequences ?? []), consequence] };
+    setCareer({ ...career, player, history });
+    setLastResult(history[history.length - 1] ?? lastResult);
+    setSeasonConsequences((items) => [...items, consequence]);
     if (eventQueue.length && !lastResult?.finalOpportunity) {
       setEvent(eventQueue[0]);
       setEventQueue(eventQueue.slice(1));
@@ -169,18 +205,32 @@ export default function Home() {
     setToast(changingClub ? `Contrato assinado com ${target.name}.` : `Renovação assinada com ${target.name}.`);
   }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
-  if (screen === "home") return <Start hasCareer={Boolean(career)} onNew={() => setScreen("create")} onContinue={() => setScreen("career")} />;
+  async function openAccount(session = cloudSession) {
+    if (!session || !supabaseCareer.configured()) return setScreen("account");
+    try { const remote = await supabaseCareer.load(session.userId, session.token); if (remote && career) { setCloudCareer(remote); setScreen("sync"); } else if (remote) { setCareer(remote); setScreen("career"); } else setScreen("career"); } catch { setToast("Não foi possível ler o save online agora."); }
+  }
+  function useCloudChoice(which: "local" | "cloud") { if (which === "cloud" && cloudCareer) setCareer(cloudCareer); setCloudCareer(null); setScreen("career"); }
+  if (screen === "home") return <Start hasCareer={Boolean(career)} cloud={Boolean(cloudSession)} onNew={() => setScreen("create")} onContinue={() => cloudSession ? openAccount() : setScreen("career")} onAccount={() => setScreen("account")} />;
   if (screen === "create") return <Create onBack={() => setScreen("home")} onCreate={begin} />;
+  if (screen === "account") return <Account onBack={() => setScreen("home")} onSignedIn={(session) => { localStorage.setItem(CLOUD_SESSION_KEY, JSON.stringify(session)); setCloudSession(session); openAccount(session); }} />;
+  if (screen === "sync" && cloudCareer && career) return <SyncChoice local={career} cloud={cloudCareer} onChoose={useCloudChoice} />;
   if (!career) return null;
-  if (screen === "market") return <Market currentClub={club} player={career.player} generational={career.mode === "generational"} academy={career.shop.ownedPermanent.includes("academia")} onBack={() => setScreen("career")} onSelect={transferTo} />;
   if (screen === "shop") return <Shop career={career} onBack={() => setScreen("career")} onChange={setCareer} onToast={setToast} />;
-  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { const luckyWin = !won && career.shop.activeSeasonal.includes("psicologo") && Math.random() < .35; const victory = won || luckyWin; const final = lastResult?.cupFinal; resolveFinal(victory); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : luckyWin ? "O psicólogo fez a diferença: a sorte ficou ao seu lado." : "A decisão escapou, mas a carreira continua."); if (victory && final) { setCelebration((final.stakes === "promotion" || final.stakes === "titleAndPromotion") ? { title: final.competitionName, access: competitions.find((entry) => entry.id === final.targetLeagueId)?.name ?? "nova divisão" } : { title: final.competitionName }); setScreen("celebration"); } else finishSeason(); }} />;
+  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { const luckyWin = !won && career.shop.activeSeasonal.includes("psicologo") && Math.random() < .35; const victory = won || luckyWin; const final = lastResult?.cupFinal; if (!victory && final?.stakes === "titleAndPromotion") return resolveFinal(false); resolveFinal(victory); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : luckyWin ? "O psicólogo fez a diferença: a sorte ficou ao seu lado." : "A decisão escapou, mas a carreira continua."); if (victory && final) { setCelebration((final.stakes === "promotion" || final.stakes === "titleAndPromotion") ? { title: final.competitionName, access: competitions.find((entry) => entry.id === final.targetLeagueId)?.name ?? "nova divisão" } : { title: final.competitionName }); setScreen("celebration"); } else finishSeason(); }} />;
   if (screen === "celebration" && celebration) return <Celebration celebration={celebration} onClose={() => { setCelebration(null); finishSeason(); }} />;
     if (screen === "legacy") return <Legacy career={career} onRestart={() => { localStorage.removeItem("o-rei-career"); setCareer(null); setScreen("home"); }} />;
-  return <Career career={career} club={club} result={lastResult} event={event} seasonSummary={seasonSummary} seasonConsequences={seasonConsequences} upgradeReady={upgradeReady} onChooseEvent={chooseEvent} onChooseCard={takeCard} onSkipCard={() => setUpgradeReady(false)} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onShop={() => setScreen("shop")} onRenew={renewContract} onLoan={requestLoan} onProposal={acceptProposal} />;
+  return <Career career={career} club={club} result={lastResult} event={event} seasonSummary={seasonSummary} seasonConsequences={seasonConsequences} upgradeReady={upgradeReady} onChooseEvent={chooseEvent} onChooseCard={takeCard} onSkipCard={() => setUpgradeReady(false)} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onShop={() => setScreen("shop")} onRenew={renewContract} onProposal={acceptProposal} />;
 }
 
-function Start({ hasCareer, onNew, onContinue }: { hasCareer: boolean; onNew: () => void; onContinue: () => void }) { return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carreira local protegida</span></nav><section className="start-content"><div className="eyebrow">UMA CARREIRA. TODA A HISTÓRIA.</div><Brand /><h1>Do primeiro jogo à eternidade.</h1><p>Crie seu atleta aos 16 anos. Conquiste títulos, enfrente clássicos e escreva um legado que não cabe numa súmula.</p><div className="start-actions"><button className="button button-primary" onClick={onNew}>COMEÇAR CARREIRA <span>→</span></button>{hasCareer && <button className="button button-ghost" onClick={onContinue}>CONTINUAR CARREIRA</button>}</div><div className="feature-row"><span><b>10</b> minigames decisivos</span><span><b>20</b> atributos reais</span><span><b>0–1000</b> legado final</span></div></section><footer>O REI · futebol, escolhas e memória</footer></main>; }
+function Start({ hasCareer, cloud, onNew, onContinue, onAccount }: { hasCareer: boolean; cloud: boolean; onNew: () => void; onContinue: () => void; onAccount: () => void }) { return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><button className="save-chip" onClick={onAccount}>◉ {cloud ? "CONTA CONECTADA" : "MODO VISITANTE"}</button></nav><section className="start-content"><div className="eyebrow">UMA CARREIRA. TODA A HISTÓRIA.</div><Brand /><h1>Do primeiro jogo à eternidade.</h1><p>Crie seu atleta aos 16 anos. Conquiste títulos, enfrente clássicos e escreva um legado que não cabe numa súmula.</p><div className="start-actions"><button className="button button-primary" onClick={onNew}>COMEÇAR CARREIRA <span>→</span></button>{hasCareer && <button className="button button-ghost" onClick={onContinue}>CONTINUAR CARREIRA</button>}</div><div className="feature-row"><span><b>10</b> minigames decisivos</span><span><b>18</b> atributos reais</span><span><b>0–1000</b> legado final</span></div></section><footer>O REI · futebol, escolhas e memória</footer></main>; }
+
+function Account({ onBack, onSignedIn }: { onBack: () => void; onSignedIn: (session: CloudSession) => void }) {
+  const [email, setEmail] = useState(""), [password, setPassword] = useState(""), [message, setMessage] = useState("");
+  async function passwordAuth(signUp: boolean) { try { const response = signUp ? await supabaseCareer.signUp(email, password) : await supabaseCareer.signInWithPassword(email, password); if (!response.access_token || !response.user?.id) return setMessage("Confira seu e-mail para confirmar a conta e entre depois."); onSignedIn({ userId: response.user.id, token: response.access_token, email: response.user.email }); } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível entrar."); } }
+  return <main className="app-shell form-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">CONTA</span></nav><section className="form-wrap"><div><div className="eyebrow">SAVE ONLINE</div><h1>Proteja sua carreira.</h1><p>Você pode continuar como visitante ou sincronizar suas temporadas em qualquer dispositivo.</p></div>{!supabaseCareer.configured() ? <p className="field-note">O modo online será liberado quando as chaves do Supabase forem configuradas.</p> : <><button className="button button-primary button-full" onClick={() => supabaseCareer.signInWithGoogle()}>ENTRAR COM GOOGLE</button><label className="field field-wide">E-mail<input value={email} type="email" onChange={(event) => setEmail(event.target.value)} /></label><label className="field field-wide">Senha<input value={password} type="password" minLength={6} onChange={(event) => setPassword(event.target.value)} /></label><div className="start-actions"><button className="button button-primary" onClick={() => passwordAuth(false)}>ENTRAR</button><button className="button button-ghost" onClick={() => passwordAuth(true)}>CRIAR CONTA</button></div>{message && <p className="field-note">{message}</p>}</>}<button className="text-action" onClick={onBack}>CONTINUAR COMO VISITANTE</button></section></main>;
+}
+
+function SyncChoice({ local, cloud, onChoose }: { local: CareerState; cloud: CareerState; onChoose: (choice: "local" | "cloud") => void }) { const card = (label: string, state: CareerState, choice: "local" | "cloud") => <button className="training-card raro" onClick={() => onChoose(choice)}><span className="rarity">{label}</span><b>{state.player.name}</b><div><span>{state.season} · {state.currentCompetition}</span><span>OVR {computeOvr(state.player)} · {state.history.length} temporadas</span></div><i>USAR ESTA CARREIRA →</i></button>; return <main className="app-shell evolution-shell"><section className="evolution-wrap"><div className="eyebrow">CONFLITO DE SAVE</div><h1>Escolha a carreira que deseja manter.</h1><p>A versão não escolhida será substituída pela escolhida na próxima sincronização.</p><div className="card-grid">{card("NESTE DISPOSITIVO", local, "local")}{card("SAVE ONLINE", cloud, "cloud")}</div></section></main>; }
 
 function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Parameters<typeof createInitialState>[0]) => void }) {
   const [name, setName] = useState("Matheus"), [position, setPosition] = useState<Position>("MEI"), [leagueId, setLeagueId] = useState("bra-a"), [clubId, setClubId] = useState("santos"), [nationality, setNationality] = useState("Brasil"), [foot, setFoot] = useState<Player["preferredFoot"]>("Direito"), [height, setHeight] = useState(178), [shirt, setShirt] = useState(10), [generational, setGenerational] = useState(false), [countryOpen, setCountryOpen] = useState(false), [countrySearch, setCountrySearch] = useState("");
@@ -193,7 +243,7 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
   return <main className="app-shell form-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Voltar</button><Brand compact /><span className="step">01 / 01</span></nav><section className="form-wrap"><div><div className="eyebrow">FICHA DE INSCRIÇÃO</div><h1>Seu primeiro contrato.</h1><p>Você começa aos 16 anos. O resto será conquistado em campo.</p></div><div className="form-grid"><label className="field field-wide">Nome do atleta<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label><div className="field country-field"><span>Nacionalidade</span><button type="button" className="country-trigger" onClick={() => setCountryOpen(!countryOpen)}><img src={`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`} alt="" /><span>{selectedCountry.name}</span><b>⌄</b></button>{countryOpen && <div className="country-menu"><input autoFocus value={countrySearch} onChange={(event) => setCountrySearch(event.target.value)} placeholder="Buscar país" aria-label="Buscar país" /> <div className="country-options">{visibleCountries.map((country) => <button type="button" key={country.code} onClick={() => { setNationality(country.name); setCountryOpen(false); setCountrySearch(""); }}><img src={`https://flagcdn.com/w40/${country.code.toLowerCase()}.png`} alt={`Bandeira de ${country.name}`} /><span>{country.name}</span></button>)}</div></div>}</div><label className="field">Pé dominante<select value={foot} onChange={(e) => setFoot(e.target.value as Player["preferredFoot"])}><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select></label><div className="field field-wide"><span>Posição principal</span><div className="position-grid">{positions.map((item) => <button key={item.id} onClick={() => { setPosition(item.id); if (item.id === "MEI") setShirt(10); if (item.id === "ATA") setShirt(9); }} className={`position-choice ${position === item.id ? "selected" : ""}`}>{item.label}</button>)}</div></div><label className="field">Altura<input type="number" min={155} max={210} value={height} onChange={(e) => setHeight(Number(e.target.value))} /></label><label className="field">Camisa<input type="number" min={1} max={99} value={shirt} onChange={(e) => setShirt(Number(e.target.value))} /></label><label className="field field-wide">Liga de início<select value={leagueId} onChange={(e) => switchLeague(e.target.value)}>{playableCompetitions.map((competition) => <option key={competition.id} value={competition.id}>{competition.flag} {competition.name}</option>)}</select><small className="field-note">{selectedCompetition?.flag} {selectedCompetition?.country} · {leagueClubs.length} clubes nesta edição</small></label><div className="field field-wide"><span>Clube de início</span><div className="club-picker">{leagueClubs.map((club) => <button key={club.id} onClick={() => setClubId(club.id)} className={`club-choice ${clubId === club.id ? "selected" : ""}`}><ClubCrest club={club} small /><span>{club.name}</span><small>FOR {club.strength}</small></button>)}</div></div></div><label className="generational-option field-wide"><input type="checkbox" checked={generational} onChange={(event) => setGenerational(event.target.checked)} /><span><b>✦ CRAQUE GERACIONAL</b><small>OVR inicial entre 62 e 70, mais finais, títulos e propostas de clubes fortes.</small></span></label><button className="button button-primary button-full" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality, mode: generational ? "generational" : "normal" })}>ASSINAR PRIMEIRO CONTRATO <span>→</span></button></section></main>;
 }
 
-function Career({ career, club, result, event, seasonSummary, seasonConsequences, upgradeReady, onChooseEvent, onChooseCard, onSkipCard, toast, onDismiss, onPlay, onMarket, onShop, onRenew, onLoan, onProposal }: { career: CareerState; club: Club; result: SeasonResult | null; event: CareerEvent | null; seasonSummary: boolean; seasonConsequences: string[]; upgradeReady: boolean; onChooseEvent: (index: number) => void; onChooseCard: (card: UpgradeCard) => void; onSkipCard: () => void; toast: string | null; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onShop: () => void; onRenew: () => void; onLoan: () => void; onProposal: (offer: NonNullable<CareerState["marketWindow"]>["offers"][number] | NonNullable<CareerState["marketWindow"]>["renewal"]) => void }) {
+function Career({ career, club, result, event, seasonSummary, seasonConsequences, upgradeReady, onChooseEvent, onChooseCard, onSkipCard, toast, onDismiss, onPlay, onShop, onRenew, onProposal }: { career: CareerState; club: Club; result: SeasonResult | null; event: CareerEvent | null; seasonSummary: boolean; seasonConsequences: string[]; upgradeReady: boolean; onChooseEvent: (index: number) => void; onChooseCard: (card: UpgradeCard) => void; onSkipCard: () => void; toast: string | null; onDismiss: () => void; onPlay: () => void; onShop: () => void; onRenew: () => void; onProposal: (offer: NonNullable<CareerState["marketWindow"]>["offers"][number] | NonNullable<CareerState["marketWindow"]>["renewal"]) => void }) {
   const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
   const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const);
   const seasonGames = result?.games ?? player.games, seasonGoals = result?.goals ?? player.goals, seasonAssists = result?.assists ?? player.assists;
@@ -223,12 +273,12 @@ function Career({ career, club, result, event, seasonSummary, seasonConsequences
           <div className="club-season"><ClubCrest club={club} /><div><b>{club.name}</b><span>{career.currentCompetition}</span></div></div>
           <div className="season-stats"><StatTile value={seasonGames} label="JOGOS" /><StatTile value={seasonGoals} label="GOLS" accent /><StatTile value={seasonAssists} label="ASSIST." accent={player.position === "MEI"} /><StatTile value={result?.rating ?? (seasonGames ? seasonRating : "—")} label="NOTA" /><StatTile value={`US$ ${(((result?.annualEarnings ?? career.contract.monthlySalary * 12) / 1_000_000)).toFixed(2)}M`} label="GANHOS" gold /></div>
           <button className="play-button" onClick={onPlay} disabled={Boolean(event || career.marketWindow)}>{event ? "RESOLVA A DECISÃO ABAIXO" : career.marketWindow ? "RESOLVA AS PROPOSTAS ABAIXO" : "CONTINUAR"}</button>
-          {career.contract.seasonsRemaining <= 1 && !career.marketWindow && <button className="market-action" onClick={onRenew}>RENOVAR CONTRATO · 3 ANOS</button>}{(player.benchAppearances ?? 0) > 12 && !career.loan && <button className="market-action" onClick={onLoan}>PEDIR EMPRÉSTIMO DE 1 ANO</button>}
-          {seasonSummary && result && <section className="inline-event season-summary"><small>RESUMO DA TEMPORADA · {result.season} · TEMPORADA {career.history.length}</small><h3>{competitions.find((entry)=>entry.id===result.leagueId)?.flag ?? "🏆"} {result.leagueName ?? career.currentCompetition}</h3><p>{clubs.find((entry)=>entry.id===result.clubId)?.name ?? club.name} terminou em <b>{result.leaguePosition}º lugar</b>, com {result.leaguePoints} pontos. A final de acesso é uma decisão especial, independente da tabela.</p><div className="season-stats"><StatTile value={result.games} label="JOGOS" /><StatTile value={result.goals} label="GOLS" accent /><StatTile value={result.assists} label="ASSIST." /><StatTile value={result.rating ?? seasonRating} label="NOTA" /><StatTile value={`US$ ${((result.annualEarnings ?? 0) / 1_000_000).toFixed(2)}M`} label="GANHOS" gold /></div>{(result.titles ?? [result.title, result.nationalTeamTitle].filter((title): title is string => Boolean(title))).length > 0 && <div className="season-consequences"><b>TÍTULOS CONQUISTADOS</b>{(result.titles ?? []).map((title) => <span key={title}>🏆 {title}</span>)}</div>}{seasonConsequences.length > 0 && <div className="season-consequences"><b>CONSEQUÊNCIAS DAS DECISÕES</b>{seasonConsequences.map((item, index) => <span key={`${item}-${index}`}>• {item}</span>)}</div>}{upgradeReady && <div className="inline-cards"><b>EVOLUÇÃO DA TEMPORADA</b><div className="card-grid">{upgradeCards.map((card, index) => <button key={`${card.id}-${index}`} className={`training-card ${card.rarity}`} onClick={() => onChooseCard(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkipCard}>Pular evolução desta temporada</button></div>}</section>}
+          {career.contract.seasonsRemaining <= 1 && !career.marketWindow && <button className="market-action" onClick={onRenew}>RENOVAR CONTRATO · 3 ANOS</button>}
+          {seasonSummary && result && <section className="inline-event season-summary"><small>RESUMO DA TEMPORADA · {result.season} · TEMPORADA {career.history.length}</small><h3>{competitions.find((entry)=>entry.id===result.leagueId)?.flag ?? "🏆"} {result.leagueName ?? career.currentCompetition}</h3><p>{clubs.find((entry)=>entry.id===result.clubId)?.name ?? club.name} terminou em <b>{result.leaguePosition}º lugar</b>, com {result.leaguePoints} pontos. {result.access === "promoted" ? "O acesso foi conquistado no Jogo do Acesso." : result.access === "stayed" ? "O clube permanece na divisão após o Jogo do Acesso." : result.relegated ? "A campanha regular terminou em rebaixamento." : "A tabela registra a campanha regular."}</p><div className="season-stats"><StatTile value={result.games} label="JOGOS" /><StatTile value={result.goals} label="GOLS" accent /><StatTile value={result.assists} label="ASSIST." /><StatTile value={result.rating ?? seasonRating} label="NOTA" /><StatTile value={`US$ ${((result.annualEarnings ?? 0) / 1_000_000).toFixed(2)}M`} label="GANHOS" gold /></div>{(result.titles ?? []).length > 0 && <div className="season-consequences"><b>TÍTULOS CONQUISTADOS</b>{(result.titles ?? []).map((title) => <span key={title}>🏆 {title}</span>)}</div>}{(result.consequences ?? seasonConsequences).length > 0 && <div className="season-consequences"><b>CONSEQUÊNCIAS DAS DECISÕES</b>{(result.consequences ?? seasonConsequences).map((item, index) => <span key={`${item}-${index}`}>• {item}</span>)}</div>}{upgradeReady && <div className="inline-cards"><b>EVOLUÇÃO DA TEMPORADA</b><div className="card-grid">{upgradeCards.map((card, index) => <button key={`${card.id}-${index}`} className={`training-card ${card.rarity}`} onClick={() => onChooseCard(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkipCard}>Pular evolução desta temporada</button></div>}</section>}
           {event && <section className="inline-event"><small>{event.context ? event.context.toUpperCase() : "DECISÃO DE CARREIRA"}</small><h3>{event.title}</h3><p>{event.copy}</p>{event.sponsor && <img className="sponsor-mark" src={event.sponsor.logo} alt="" />}{event.choices.map((choice,index)=><button key={choice.label} onClick={()=>onChooseEvent(index)}>{choice.label}</button>)}</section>}{career.marketWindow && <section className="inline-event market-inline"><small>JANELA DE MERCADO · {career.marketWindow.offers.length} PROPOSTAS</small><h3>O mercado está de olho em você.</h3><p>Escolha uma proposta ou renove com o {club.name}. Seu clube atual sempre oferece continuidade.</p><div className="inline-offers">{career.marketWindow.offers.map((offer) => { const target=clubs.find((item)=>item.id===offer.clubId) ?? club; const league=competitions.find((item)=>item.id===(career.leagueAssignments[target.id] ?? target.leagueId)); return <article key={offer.clubId}><ClubCrest club={target} small /><div><b>{target.name}</b><span>{league?.name ?? "Liga"} · {offer.role.toUpperCase()} · {offer.seasons} anos</span><strong>US$ {(offer.monthlySalary/1_000_000).toFixed(2)}M/mês</strong><small>{offer.idolatryChange < 0 ? `${offer.idolatryChange} idolatria ao sair` : "Nova oportunidade"}</small></div><button onClick={()=>onProposal(offer)}>ASSINAR</button></article>})}</div><button className="market-renewal" onClick={()=>onProposal(career.marketWindow!.renewal)}><ClubCrest club={club} small /> RENOVAR COM {club.name.toUpperCase()} · US$ {(career.marketWindow.renewal.monthlySalary/1_000_000).toFixed(2)}M/MÊS</button></section>}
         </section>
       </div>
-      <aside className="trajectory-panel"><div className="trajectory-label">TRAJETÓRIA</div><div className="trajectory-item active"><ClubCrest club={club} small /><div><b>{career.season}</b><span>{club.name}</span><small>{seasonGames} JG · {seasonGoals} GL</small></div></div>{career.history.slice(-3).reverse().map((season) => <div className="trajectory-item" key={season.season}><span className="trajectory-dot" /><div><b>{season.season}</b><span>{season.title ?? "Temporada"}</span><small>{season.games} JG · {season.goals} GL</small></div></div>)}</aside>
+      <aside className="trajectory-panel"><div className="trajectory-label">TRAJETÓRIA</div><div className="trajectory-item active"><ClubCrest club={club} small /><div><b>{career.season}</b><span>{club.name} · {career.currentCompetition}</span><small>{seasonGames} JG · {seasonGoals} GL</small></div></div>{career.history.slice(-3).reverse().map((season) => <div className="trajectory-item" key={season.season}><span className="trajectory-dot" /><div><b>{season.season}</b><span>{clubs.find((item) => item.id === season.clubId)?.name ?? "Clube"} · {season.leagueName ?? "Liga"}</span><small>{season.games} JG · {season.goals} GL {season.titles?.length ? `· ${season.titles.length} título(s)` : ""}</small></div></div>)}</aside>
     </div>
     {toast && <button className="toast" onClick={onDismiss}>{toast}<span>×</span></button>}
   </main>;
@@ -240,23 +290,23 @@ function Event({ event, onChoose }: { event: CareerEvent; onChoose: (index: numb
 function Evolution({ player, seed, onSelect, onSkip }: { player: Player; seed: number; onSelect: (card: UpgradeCard) => void; onSkip: () => void }) { const cards = chooseUpgradeCards(player.position, seed); return <main className="app-shell evolution-shell"><nav className="topbar"><Brand compact /><span className="save-chip">EVOLUÇÃO DE TEMPORADA</span></nav><section className="evolution-wrap"><div className="eyebrow">MOMENTO DE TREINO</div><h1>Escolha o próximo salto.</h1><p>Uma carta por temporada. Ganhos reais, feitos para a posição que você escolheu.</p><div className="card-grid">{cards.map((card) => <button key={card.id} className={`training-card ${card.rarity}`} onClick={() => onSelect(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkip}>Pular evolução desta temporada</button></section></main>; }
 function Shop({ career, onBack, onChange, onToast }: { career: CareerState; onBack: () => void; onChange: (career: CareerState) => void; onToast: (message: string) => void }) {
   const items = [
-    { id:"chef", icon:"👔", name:"Chef particular", copy:"+5 de forma no começo da temporada.", price:8_000_000, seasonal:true },
-    { id:"fisio", icon:"🛡️", name:"Fisioterapeuta pessoal", copy:"35% menos risco de lesão.", price:11_000_000, seasonal:true },
-    { id:"psicologo", icon:"🧠", name:"Psicólogo esportivo", copy:"Uma segunda chance em final.", price:9_000_000, seasonal:true },
-    { id:"preparador", icon:"🏋️", name:"Preparador físico", copy:"+4 de físico nesta temporada.", price:14_000_000, seasonal:true },
-    { id:"empresario", icon:"💎", name:"Super empresário", copy:"25% a mais em salários e propostas.", price:12_000_000, seasonal:true },
-    { id:"chuteiras", icon:"⚽", name:"Chuteiras profissionais", copy:"+2 no atributo ofensivo principal.", price:1_500_000, seasonal:true },
-    { id:"ferias", icon:"🏝️", name:"Férias da temporada", copy:"+5 forma e menos desgaste.", price:2_500_000, seasonal:true },
-    { id:"suplementacao", icon:"🥗", name:"Suplementação esportiva", copy:"+2 físico nesta temporada.", price:1_400_000, seasonal:true },
-    { id:"analista", icon:"📊", name:"Analista de vídeo", copy:"Melhor desempenho contra times fortes.", price:1_800_000, seasonal:true },
-    { id:"familia", icon:"✈️", name:"A simples", copy:"+4 forma nesta temporada.", price:2_800_000, seasonal:true },
-    { id:"imprensa", icon:"🏡", name:"Assessoria de imprensa", copy:"Protege fama e idolatria.", price:3_800_000, seasonal:true },
-    { id:"carro", icon:"🚗", name:"Carro esportivo", copy:"+2 fama permanente.", price:900_000, seasonal:false },
-    { id:"casa", icon:"🏠", name:"Casa própria", copy:"+2 forma em cada temporada.", price:1_500_000, seasonal:false },
-    { id:"mansao", icon:"🏡", name:"Mansão com campo", copy:"+3 físico máximo e +2 fama.", price:1_200_000, seasonal:false },
-    { id:"ilha", icon:"📷", name:"Ilha particular", copy:"+4 fama permanente.", price:4_000_000, seasonal:false },
-    { id:"bairro", icon:"🌄", name:"O caminho do seu bairro", copy:"+5 idolatria no clube atual.", price:7_500_000, seasonal:false },
-    { id:"academia", icon:"🛋️", name:"Academia do clube", copy:"+15 fama e contatos.", price:5_000_000, seasonal:false },
+    { id:"chef", icon:"👔", name:"Chef particular", copy:"+5 de forma no começo da temporada.", price:70_000, seasonal:true },
+    { id:"fisio", icon:"🛡️", name:"Fisioterapeuta pessoal", copy:"35% menos risco de lesão.", price:95_000, seasonal:true },
+    { id:"psicologo", icon:"🧠", name:"Psicólogo esportivo", copy:"Uma segunda chance em final.", price:80_000, seasonal:true },
+    { id:"preparador", icon:"🏋️", name:"Preparador físico", copy:"+4 de físico nesta temporada.", price:115_000, seasonal:true },
+    { id:"empresario", icon:"💎", name:"Super empresário", copy:"25% a mais em salários e propostas.", price:100_000, seasonal:true },
+    { id:"chuteiras", icon:"⚽", name:"Chuteiras profissionais", copy:"+2 no atributo ofensivo principal.", price:18_000, seasonal:true },
+    { id:"ferias", icon:"🏝️", name:"Férias da temporada", copy:"+5 forma e menos desgaste.", price:28_000, seasonal:true },
+    { id:"suplementacao", icon:"🥗", name:"Suplementação esportiva", copy:"+2 físico nesta temporada.", price:16_000, seasonal:true },
+    { id:"analista", icon:"📊", name:"Analista de vídeo", copy:"Melhor desempenho contra times fortes.", price:22_000, seasonal:true },
+    { id:"familia", icon:"✈️", name:"A simples", copy:"+4 forma nesta temporada.", price:30_000, seasonal:true },
+    { id:"imprensa", icon:"🏡", name:"Assessoria de imprensa", copy:"Protege fama e idolatria.", price:38_000, seasonal:true },
+    { id:"carro", icon:"🚗", name:"Carro esportivo", copy:"+2 fama permanente.", price:90_000, seasonal:false },
+    { id:"casa", icon:"🏠", name:"Casa própria", copy:"+2 forma em cada temporada.", price:150_000, seasonal:false },
+    { id:"mansao", icon:"🏡", name:"Mansão com campo", copy:"+3 físico máximo e +2 fama.", price:120_000, seasonal:false },
+    { id:"ilha", icon:"📷", name:"Ilha particular", copy:"+4 fama permanente.", price:400_000, seasonal:false },
+    { id:"bairro", icon:"🌄", name:"O caminho do seu bairro", copy:"+5 idolatria no clube atual.", price:750_000, seasonal:false },
+    { id:"academia", icon:"🛋️", name:"Academia do clube", copy:"+15 fama e contatos.", price:500_000, seasonal:false },
   ] as const;
   const purchase=(item: typeof items[number]) => {
     const shop=career.shop; if (item.seasonal && shop.activeSeasonal.includes(item.id)) return onToast("Este efeito já está ativo nesta temporada.");
