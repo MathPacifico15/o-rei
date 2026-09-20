@@ -77,6 +77,8 @@ export interface ContractOffer {
   monthlySalary: number;
   seasons: number;
   role: ContractRole;
+  /** Percentual de partidas que o clube espera que o atleta dispute. */
+  expectedMinutes: number;
   idolatryChange: number;
 }
 export interface MarketWindow {
@@ -126,6 +128,7 @@ export interface NationalTeamCampaign {
   assists: number;
   qualified: boolean;
   title?: string;
+  category?: "sub20" | "olympic" | "senior";
 }
 
 export interface ShopState {
@@ -223,6 +226,11 @@ export interface SeasonResult {
   consequences?: string[];
   phaseReached?: string;
   opponentName?: string;
+  /** Snapshot imutável da situação no começo da temporada. */
+  division?: number;
+  contractRole?: ContractRole;
+  contractMonthlySalary?: number;
+  calendar?: Array<{ competition: string; phase: string; opponent?: string }>;
 }
 
 export interface CareerState {
@@ -254,4 +262,9 @@ export interface CareerState {
   clubDynamics?: Record<string, ClubDynamics>;
   /** Títulos anteriores que liberam copas continentais e supercopas. */
   clubHonors?: Record<string, string[]>;
+  /** Transferência aceita no mercado; só passa a valer na próxima temporada. */
+  pendingTransfer?: ContractOffer;
+  /** Especialização escolhida na pré-temporada. */
+  careerProfile?: string;
+  saveVersion?: number;
 }

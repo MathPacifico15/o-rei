@@ -27,15 +27,15 @@ function loadTypeScriptModule(filePath, cache = new Map()) {
   const resolved = filePath.endsWith(".ts") ? filePath : `${filePath}.ts`;
   if (cache.has(resolved)) return cache.get(resolved);
   const source = fs.readFileSync(resolved, "utf8");
-  const module = { exports: {} };
-  cache.set(resolved, module.exports);
+  const moduleRecord = { exports: {} };
+  cache.set(resolved, moduleRecord.exports);
   const localRequire = (request) => request.startsWith(".")
     ? loadTypeScriptModule(path.resolve(path.dirname(resolved), request), cache)
     : require(request);
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  vm.runInNewContext(compiled, { module, exports: module.exports, require: localRequire });
-  cache.set(resolved, module.exports);
-  return module.exports;
+  vm.runInNewContext(compiled, { module: moduleRecord, exports: moduleRecord.exports, require: localRequire });
+  cache.set(resolved, moduleRecord.exports);
+  return moduleRecord.exports;
 }
 
 function walk(directory) {
