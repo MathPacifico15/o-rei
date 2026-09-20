@@ -1,4 +1,5 @@
 export type Position = "GOL" | "MEI" | "ATA";
+export type FinalStyle = "supersticioso" | "misto" | "habilidoso";
 export type AttributeKey =
   | "reflexo" | "elasticidade" | "posicionamento" | "saida" | "lideranca" | "fisico"
   | "velocidade" | "passe" | "finalizacao" | "drible" | "cabecada" | "forca";
@@ -128,4 +129,6 @@ export interface CareerState {
   player: Player;
   history: SeasonResult[];
   currentCompetition: string;
+  /** Como as finais são resolvidas — escolhido na criação e não muda depois. */
+  finalStyle?: FinalStyle;
 }
