@@ -186,12 +186,49 @@ export interface CupFinal {
   opponentClubName: string;
   /** Undefined while the minigame has not decided the final yet. */
   won?: boolean;
-  stakes?: "cup" | "promotion" | "relegation" | "continental" | "titleAndPromotion";
+  stakes?: "cup" | "promotion" | "relegation" | "continental" | "titleAndPromotion" | "campaign";
   targetLeagueId?: string;
   /** A primeira decisão é pelo título; ao perdê-la, abre o jogo de acesso. */
   phase?: "title" | "access";
   /** Finais de seleções atualizam o histórico nacional, não o clube. */
   scope?: "club" | "national";
+  campaignId?: string;
+  /** Partida de uma campanha longa, como Copa do Mundo ou Super Mundial. */
+  campaignMatchIndex?: number;
+  campaignDifficulty?: number;
+}
+
+export type CampaignStatus = "scheduled" | "active" | "eliminated" | "final" | "champion";
+export type CampaignMatchResult = "pending" | "won" | "drawn" | "lost";
+export interface CampaignMatch {
+  phase: string;
+  opponentId?: string;
+  opponentName: string;
+  playerGoals?: number;
+  opponentGoals?: number;
+  result: CampaignMatchResult;
+  playable?: boolean;
+  difficulty?: number;
+}
+export interface CampaignQualification {
+  competitionId: string;
+  source: string;
+}
+export interface SeasonCampaign {
+  id: string;
+  competitionId: string;
+  competitionName: string;
+  category: "league" | "state" | "cup" | "supercup" | "continental" | "world" | "national";
+  qualification: CampaignQualification;
+  status: CampaignStatus;
+  phase: string;
+  matches: CampaignMatch[];
+  prize: number;
+  title?: string;
+  groupTable?: Array<{ name: string; points: number; goalDifference: number; goalsFor: number; position: number }>;
+}
+export interface CampaignResult extends SeasonCampaign {
+  consequence?: string;
 }
 
 export interface SeasonResult {
@@ -231,6 +268,8 @@ export interface SeasonResult {
   contractRole?: ContractRole;
   contractMonthlySalary?: number;
   calendar?: Array<{ competition: string; phase: string; opponent?: string }>;
+  campaigns?: CampaignResult[];
+  finals?: CupFinal[];
 }
 
 export interface CareerState {
@@ -267,4 +306,8 @@ export interface CareerState {
   /** Especialização escolhida na pré-temporada. */
   careerProfile?: string;
   saveVersion?: number;
+  /** Vagas conquistadas para o calendário seguinte, por clube. */
+  campaignQualifications?: Record<string, CampaignQualification[]>;
+  /** Campeões necessários para montar supercopas e ciclos do Mundial. */
+  competitionWinners?: Record<string, Array<{ clubId: string; season: number }>>;
 }
