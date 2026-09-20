@@ -33,13 +33,15 @@ export function MiniGameLab() {
   const [selected, setSelected] = useState<GameId>("code");
   const [difficulty, setDifficulty] = useState<Difficulty>("Fácil");
   const [key, setKey] = useState(0);
+  const [ready, setReady] = useState(false);
+  useEffect(() => { setReady(true); }, []);
   const game = games.find((entry) => entry.id === selected)!;
   return <main className="lab-shell">
     <header className="lab-header"><a href="/">← O REI</a><div><small>ÁREA DE TESTE</small><h1>MINIGAMES</h1><p>Teste os 10 minigames antes de colocá-los na carreira.</p></div></header>
     <section className="lab-selector">
       <div className="lab-game-list">{games.map((entry) => <button key={entry.id} onClick={() => { setSelected(entry.id); setKey((value) => value + 1); }} className={selected === entry.id ? "selected" : ""}><b>{entry.name}</b><small>{entry.exclusive ? "COPA DO MUNDO / SUPER MUNDIAL" : "NORMAL"}</small></button>)}</div>
       <article className="lab-stage"><div className="lab-intro"><span>{game.exclusive ? "EXCLUSIVO · COPA DO MUNDO E SUPER MUNDIAL" : "MINIGAME NORMAL"}</span><h2>{game.name}</h2><p>{game.summary}</p><div className="difficulty-picker">{(Object.keys(config) as Difficulty[]).map((level) => <button key={level} className={difficulty === level ? "active" : ""} onClick={() => { setDifficulty(level); setKey((value) => value + 1); }}>{level}</button>)}</div></div>
-        <GameRunner key={`${selected}-${difficulty}-${key}`} game={selected} difficulty={difficulty} />
+        {ready ? <GameRunner key={`${selected}-${difficulty}-${key}`} game={selected} difficulty={difficulty} /> : <div className="lab-game lab-loading">Preparando o desafio…</div>}
       </article>
     </section>
   </main>;
