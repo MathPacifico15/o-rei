@@ -198,6 +198,19 @@ export interface CupFinal {
   campaignDifficulty?: number;
 }
 
+/** Escolha anual de evolução natural, separada das cartas de treino. */
+export type EvolutionFocus = "assinatura" | "estilo" | "liderancaFisica";
+export interface SeasonEvolution {
+  season: number;
+  age: number;
+  points: number;
+  mode: "normal" | "generational";
+  available: EvolutionFocus[];
+  focus?: EvolutionFocus;
+  gains?: Partial<Attributes>;
+  bonusSignature?: boolean;
+}
+
 export type CampaignStatus = "scheduled" | "active" | "eliminated" | "final" | "champion";
 export type CampaignMatchResult = "pending" | "won" | "drawn" | "lost";
 export interface CampaignMatch {
@@ -270,6 +283,7 @@ export interface SeasonResult {
   calendar?: Array<{ competition: string; phase: string; opponent?: string }>;
   campaigns?: CampaignResult[];
   finals?: CupFinal[];
+  evolution?: SeasonEvolution;
 }
 
 export interface CareerState {
@@ -310,4 +324,8 @@ export interface CareerState {
   campaignQualifications?: Record<string, CampaignQualification[]>;
   /** Campeões necessários para montar supercopas e ciclos do Mundial. */
   competitionWinners?: Record<string, Array<{ clubId: string; season: number }>>;
+  /** Radar de Evolução pendente: a temporada não avança sem esta escolha. */
+  pendingEvolution?: SeasonEvolution;
+  lastEvolutionFocus?: EvolutionFocus;
+  evolutionFocusStreak?: number;
 }

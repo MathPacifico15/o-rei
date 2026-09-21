@@ -1,6 +1,6 @@
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
-import type { AttributeKey, Attributes, CampaignMatch, CampaignQualification, CampaignResult, CareerEvent, CareerState, Club, ClubCareerRecord, ClubDynamics, ContractOffer, ContractRole, CupFinal, LeagueTable, LeagueTableEntry, MarketWindow, Player, Position, RandomCareerStart, SeasonCampaign, SeasonResult, UpgradeCard } from "./types";
+import type { AttributeKey, Attributes, CampaignMatch, CampaignQualification, CampaignResult, CareerEvent, CareerState, Club, ClubCareerRecord, ClubDynamics, ContractOffer, ContractRole, CupFinal, EvolutionFocus, LeagueTable, LeagueTableEntry, MarketWindow, Player, Position, RandomCareerStart, SeasonCampaign, SeasonEvolution, SeasonResult, UpgradeCard } from "./types";
 
 export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
   GOL: ["reflexo", "elasticidade", "posicionamento", "saida", "lideranca", "fisico"],
@@ -435,6 +435,70 @@ function effectiveClub(state: CareerState, base: Club): Club {
   };
 }
 
+const evolutionFocuses: Record<Position, Record<EvolutionFocus, AttributeKey[]>> = {
+  GOL: {
+    assinatura: ["reflexo"],
+    estilo: ["elasticidade", "posicionamento", "saida"],
+    liderancaFisica: ["lideranca", "fisico"],
+  },
+  MEI: {
+    assinatura: ["passe"],
+    estilo: ["velocidade", "finalizacao", "drible"],
+    liderancaFisica: ["lideranca", "fisico"],
+  },
+  ATA: {
+    assinatura: ["finalizacao"],
+    estilo: ["cabecada", "velocidade"],
+    liderancaFisica: ["forca", "lideranca", "fisico"],
+  },
+};
+
+/** Pontos naturais anuais. A faixa maior pertence ao Craque Geracional. */
+export function naturalEvolutionRange(age: number, mode: CareerState["mode"] = "normal"): readonly [number, number] | undefined {
+  const normal = age <= 18 ? [5, 8] : age <= 22 ? [4, 7] : age <= 26 ? [3, 5] : age <= 30 ? [1, 3] : undefined;
+  const generational = age <= 18 ? [8, 12] : age <= 22 ? [6, 10] : age <= 26 ? [5, 7] : age <= 30 ? [2, 5] : undefined;
+  return (mode === "generational" ? generational : normal) as readonly [number, number] | undefined;
+}
+
+export function createSeasonEvolution(player: Player, mode: CareerState["mode"], season: number, seed: number, rating = 6.5): SeasonEvolution | undefined {
+  const range = naturalEvolutionRange(player.age, mode);
+  if (!range) return undefined;
+  const random = mulberry32(seed);
+  // A nota apenas decide onde a carreira cai dentro da faixa, sem retirar evolução de uma temporada ruim.
+  const performance = Math.max(0, Math.min(1, (rating - 5.2) / 3.2));
+  const spread = range[1] - range[0];
+  const points = range[0] + Math.min(spread, Math.max(0, Math.round(performance * spread + random() * .75)));
+  return { season, age: player.age, points, mode: mode === "generational" ? "generational" : "normal", available: ["assinatura", "estilo", "liderancaFisica"] };
+}
+
+/**
+ * Aplica a identidade escolhida no Radar. Depois de 85, cada ponto técnico
+ * tem uma chance menor de entrar naquele atributo — o potencial não some,
+ * mas fica progressivamente mais difícil de lapidar.
+ */
+export function applySeasonEvolution(player: Player, evolution: SeasonEvolution, focus: EvolutionFocus, seed: number, previousFocus?: EvolutionFocus, streak = 0): { player: Player; evolution: SeasonEvolution; streak: number } {
+  const random = mulberry32(seed);
+  const attributes = { ...player.attributes };
+  const keys = evolutionFocuses[player.position][focus];
+  const gains: Partial<Attributes> = {};
+  const addPoint = (key: AttributeKey) => {
+    if (attributes[key] >= 99) return false;
+    if (attributes[key] >= 85 && random() > .48) return false;
+    attributes[key] = clamp(attributes[key] + 1);
+    gains[key] = (gains[key] ?? 0) + 1;
+    return true;
+  };
+  for (let point = 0; point < evolution.points; point += 1) {
+    const ordered = [...keys].sort(() => random() - .5);
+    for (const key of ordered) if (addPoint(key)) break;
+  }
+  const nextStreak = previousFocus === focus ? streak + 1 : 1;
+  const signature = evolutionFocuses[player.position].assinatura[0];
+  let bonusSignature = false;
+  if (nextStreak >= 2 && addPoint(signature)) bonusSignature = true;
+  return { player: { ...player, attributes }, evolution: { ...evolution, focus, gains, bonusSignature }, streak: nextStreak };
+}
+
 function campaignCategory(competitionId: string): SeasonCampaign["category"] {
   const competition = competitions.find((item) => item.id === competitionId);
   if (competitionId === "cwc") return "world";
@@ -733,6 +797,7 @@ export function applyFinalConsequence(state: CareerState, final: CupFinal, won: 
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
   const random = mulberry32(state.seed + state.season * 7919);
   const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
+  const seasonStartAge = player.age;
   const assignments = { ...state.leagueAssignments };
   let activeContract = state.contract;
   /* A oferta é aceita agora, mas a transferência só inicia quando a próxima temporada começa. */
@@ -822,15 +887,16 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[])]};
   if (relegation) assignments[player.clubId] = relegation;
   const rating=Number((5.4 + player.form / 100 * 2.3 + Math.min(1.5,(goals+assists)/Math.max(1,games)*2)).toFixed(1));
+  const evolution = createSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193, rating);
   const allCampaignFinals = [...worldCupCampaign.finals, ...generatedCampaigns.finals];
   const campaignFinals = promotion ? [cupFinal!, ...allCampaignFinals] : worldCupCampaign.finals[0] ? allCampaignFinals : national?.reachedFinal && national.competitionId ? [cupFinal!, ...allCampaignFinals] : allCampaignFinals;
   const calendar=[{competition:league?.name??"Liga",phase:`${row.position}º lugar`},...generatedCampaigns.campaigns.map((campaign)=>({competition:campaign.competitionName,phase:campaign.phase,opponent:campaign.matches.at(-1)?.opponentName})),...(national?[{competition:national.competition,phase:national.phase}]:[])];
-  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:undefined,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal),leagueId,leagueName:league?.name,clubId:player.clubId,division:league?.tier,contractRole:contract.role,contractMonthlySalary:contract.monthlySalary,rating,annualEarnings:monthlySalary*12+prize,titles:[leagueTitle].filter((value): value is string => Boolean(value)),access:promotion ? "pending" : undefined,relegated:Boolean(relegation),phaseReached:cupFinal ? "Final" : national?.phase,opponentName:cupFinal?.opponentClubName,calendar,campaigns:generatedCampaigns.campaigns,finals:campaignFinals};
+  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:undefined,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal),leagueId,leagueName:league?.name,clubId:player.clubId,division:league?.tier,contractRole:contract.role,contractMonthlySalary:contract.monthlySalary,rating,annualEarnings:monthlySalary*12+prize,titles:[leagueTitle].filter((value): value is string => Boolean(value)),access:promotion ? "pending" : undefined,relegated:Boolean(relegation),phaseReached:cupFinal ? "Final" : national?.phase,opponentName:cupFinal?.opponentClubName,calendar,campaigns:generatedCampaigns.campaigns,finals:campaignFinals,evolution};
   const campaignQualifications={...(state.campaignQualifications??{}),[player.clubId]:nextSeasonQualifications(leagueId,row.position,table.entries.length)};
   const competitionWinners={...(state.competitionWinners??{})};
   const clubHonors={...(state.clubHonors??{})};
   if (leagueTitle) { competitionWinners[leagueId]=[...(competitionWinners[leagueId]??[]),{clubId:player.clubId,season:state.season}].slice(-8); clubHonors[player.clubId]=[...(clubHonors[player.clubId]??[]),leagueTitle]; }
-  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:competitions.find((entry)=>entry.id===(assignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveClubDynamics(state,table,random),pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors},result};
+  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:competitions.find((entry)=>entry.id===(assignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveClubDynamics(state,table,random),pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:evolution},result};
 }
 export function legacy(player: Player) {
   const ovr = computeOvr(player);
