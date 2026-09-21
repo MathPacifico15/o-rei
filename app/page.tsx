@@ -1,6 +1,7 @@
 "use client";
 
 import "./minigames.css";
+import "./final-tweaks.css";
 
 import { useEffect, useMemo, useState } from "react";
 import { applyCard, applyFinalConsequence, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForFinal, miniGameForSeed, positionAttributeKeys, shouldRetire, simulateSeason, supabaseCareer, type CareerEvent, type CareerState, type Club, type MiniGameDefinition, type Player, type Position, type SeasonResult, type UpgradeCard } from "@/game";
@@ -384,9 +385,9 @@ function Celebration({ celebration, onClose }: { celebration: Celebration; onClo
 function MiniGame({ game, result, score: _score, onScore: _onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
   const body = game.mode === "code" ? <CodeGame onFinish={onFinish} />
     : game.mode === "cups" ? <CupsGame onFinish={onFinish} />
-      : game.mode === "timing" || game.mode === "goldZone" ? <TimingGame onFinish={onFinish} hard={game.mode === "goldZone"} rounds={game.rounds} />
+      : game.mode === "timing" || game.mode === "goldZone" ? <FinalTimingGame onFinish={onFinish} hard={game.mode === "goldZone"} rounds={game.rounds} />
         : game.mode === "maze" ? <MazeGame onFinish={onFinish} />
-          : game.mode === "ticTacToe" ? <TicTacToeGame onFinish={onFinish} />
+          : game.mode === "ticTacToe" ? <FinalTicTacToeGame onFinish={onFinish} />
             : game.mode === "pairs" ? <PairsGame onFinish={onFinish} />
               : game.mode === "puzzle" ? <PuzzleGame onFinish={onFinish} />
                 : game.mode === "pressureMap" ? <PressureMapGame onFinish={onFinish} length={game.rounds} />
@@ -404,6 +405,25 @@ function PairsGame({onFinish}:{onFinish:(won:boolean)=>void}) { const [deck]=use
 function PuzzleGame({onFinish}:{onFinish:(won:boolean)=>void}) { const [tiles,setTiles]=useState(()=>{let a=[1,2,3,4,5,6,7,8,0];for(let n=0;n<12;n++){const z=a.indexOf(0),choices=[z-1,z+1,z-3,z+3].filter(i=>i>=0&&i<9&&(Math.floor(i/3)===Math.floor(z/3)||Math.abs(i-z)===3)),p=choices[Math.floor(Math.random()*choices.length)];[a[z],a[p]]=[a[p],a[z]]}return a}),[time,setTime]=useState(60);useEffect(()=>{const t=setInterval(()=>setTime(v=>{if(v<=1){onFinish(false);return 0}return v-1}),1000);return()=>clearInterval(t)},[onFinish]);function slide(i:number){const z=tiles.indexOf(0),same=Math.floor(i/3)===Math.floor(z/3);if(!((same&&Math.abs(i-z)===1)||Math.abs(i-z)===3))return;const n=[...tiles];[n[z],n[i]]=[n[i],n[z]];if(n.every((v,j)=>v===(j+1)%9))return onFinish(true);setTiles(n)}return <><div className="scoreboard"><span>Quebra-cabeça</span><b>{time}s</b></div><div className="puzzle-board">{tiles.map((v,i)=><button key={i} onClick={()=>slide(i)} className={v?"":"empty"}>{v||""}</button>)}</div></> }
 function PressureMapGame({onFinish,length}:{onFinish:(won:boolean)=>void;length:number}) { const [sequence]=useState(()=>Array.from({length:Math.max(1,length)},()=>Math.floor(Math.random()*16))),[show,setShow]=useState(true),[step,setStep]=useState(0);useEffect(()=>{let i=0;const t=setInterval(()=>{i++;if(i>=sequence.length){clearInterval(t);setTimeout(()=>setShow(false),300)}},520);return()=>clearInterval(t)},[sequence]);function tap(i:number){if(show)return;if(i!==sequence[step])return onFinish(false);if(step+1===sequence.length)return onFinish(true);setStep(step+1)}return <div className="pressure-board">{Array.from({length:16},(_,i)=><button key={i} onClick={()=>tap(i)} className={show&&sequence[Math.min(step,sequence.length-1)]===i?"lit":""} />)}</div> }
 function BallTrackGame({onFinish,count}:{onFinish:(won:boolean)=>void;count:number}) { const total=Math.min(25,Math.max(6,3+count*3)),[route]=useState(()=>Array.from({length:8+count},()=>Math.floor(Math.random()*total))),[show,setShow]=useState(true),[step,setStep]=useState(0);useEffect(()=>{let i=0;const t=setInterval(()=>{i++;if(i>=route.length){clearInterval(t);setTimeout(()=>setShow(false),200)}else setStep(i)},180);return()=>clearInterval(t)},[route]);return <div className="track-players" style={{gridTemplateColumns:`repeat(${Math.ceil(Math.sqrt(total))},1fr)`}}>{Array.from({length:total},(_,i)=><button key={i} onClick={()=>!show&&onFinish(i===route.at(-1))} className={show&&route[step]===i?"has-ball":""}>{show&&route[step]===i?"⚽":"●"}</button>)}</div> }
+function FinalTimingGame({onFinish,hard,rounds}:{onFinish:(won:boolean)=>void;hard?:boolean;rounds:number}) {
+  const width=hard?Math.max(10,22-(rounds-3)*2.5):18;
+  const speed=hard?Math.max(42,92-(rounds-3)*8):75;
+  const [mark,setMark]=useState(()=>Math.random()*100),[moving,setMoving]=useState(true),[targetLeft]=useState(()=>Math.random()*(100-width));
+  useEffect(()=>{if(!moving)return;const timer=setInterval(()=>setMark(value=>(value+5)%101),speed);return()=>clearInterval(timer)},[moving,speed]);
+  function stop(){setMoving(false);onFinish(mark>=targetLeft&&mark<=targetLeft+width)}
+  return <div className="timing"><div className="timing-track"><i className="timing-target" style={{left:targetLeft+"%",width:width+"%"}}/><b style={{left:mark+"%"}}/></div><button className="button button-primary" onClick={stop}>PARAR MARCADOR</button></div>
+}
+function FinalTicTacToeGame({onFinish}:{onFinish:(won:boolean)=>void}) {
+  const [cells,setCells]=useState<string[]>(Array(25).fill("")),[ties,setTies]=useState(0),[winner,setWinner]=useState<"X"|"O"|null>(null),[gold,setGold]=useState<number[]>([]);
+  const lines=useMemo(()=>{const all:number[][]=[];for(let y=0;y<5;y++)for(let x=0;x<=1;x++)all.push([0,1,2,3].map(k=>y*5+x+k));for(let x=0;x<5;x++)for(let y=0;y<=1;y++)all.push([0,1,2,3].map(k=>(y+k)*5+x));for(let y=0;y<=1;y++)for(let x=0;x<=1;x++){all.push([0,1,2,3].map(k=>(y+k)*5+x+k));all.push([0,1,2,3].map(k=>(y+k)*5+x+3-k))}return all},[]);
+  const lineFor=(board:string[],mark:string)=>lines.find(line=>line.every(index=>board[index]===mark));
+  const free=(board:string[])=>board.map((value,index)=>value?null:index).filter((value):value is number=>value!==null);
+  function finish(board:string[],mark:"X"|"O"){setCells(board);setWinner(mark);setGold(lineFor(board,mark)??[])}
+  function bot(board:string[]){const choices=free(board);for(const mark of ["O","X"])for(const index of choices){board[index]=mark;if(lineFor(board,mark)){board[index]="";return index}board[index]=""}if(Math.random()<.14)return choices[Math.floor(Math.random()*choices.length)];let best=choices[0],score=-Infinity;for(const index of choices){board[index]="O";const value=lines.reduce((total,line)=>{const ours=line.filter(i=>board[i]==="O").length,theirs=line.filter(i=>board[i]==="X").length;return total+(theirs?0:ours*ours)-ours*theirs*.82},0);board[index]="";if(value>score){score=value;best=index}}return best}
+  function tie(){if(ties===0){setTies(1);setCells(Array(25).fill(""));return}setWinner("X");setGold([])}
+  function play(index:number){if(cells[index]||winner)return;const board=[...cells];board[index]="X";if(lineFor(board,"X"))return finish(board,"X");if(!free(board).length)return tie();board[bot(board)]="O";if(lineFor(board,"O"))return finish(board,"O");if(!free(board).length)return tie();setCells(board)}
+  return <><div className="ttt-board">{cells.map((mark,index)=><button key={index} disabled={Boolean(winner)} onClick={()=>play(index)}><span className={gold.includes(index)?"ttt-winner":mark==="X"?"ttt-x":mark==="O"?"ttt-o":""}>{mark}</span></button>)}</div>{winner&&<><h2 className="ttt-result">{gold.length?(winner==="X"?"VOCÊ VENCEU":"A IA VENCEU"):"SEGUNDO EMPATE — VOCÊ VENCEU"}</h2><p className="game-hint">{gold.length?"A linha dourada mostra os quatro símbolos vencedores.":"Dois empates garantiram sua vitória."}</p><button className="button button-primary" onClick={()=>onFinish(winner==="X")}>CONTINUAR</button></>}</>
+}
 function Legacy({ career, onRestart }: { career: CareerState; onRestart: () => void }) {
   const result = legacy(career.player), ranking = readLocalRanking();
   const clubRows = career.clubHistory.map((entry, index) => {
