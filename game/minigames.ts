@@ -1,30 +1,29 @@
-export type MiniGameId =
-  | "memoria-tatica" | "sequencia-sinais" | "rastrear-bola" | "zonas-goleiro"
-  | "timing-chute" | "finta-defensor" | "corrida-faixas" | "quatro-em-linha"
-  | "grade-segura" | "codigo-senha";
+export type MiniGameId = "codigo-prancheta" | "copos-embaralhados" | "marca-vermelha" | "labirinto" | "jogo-velha" | "pareamento" | "quebra-cabeca" | "mapa-pressao" | "zona-ouro" | "rastrear-bola";
 
 export interface MiniGameDefinition {
   id: MiniGameId;
   name: string;
-  mode: "sequence" | "lanes" | "timing" | "grid" | "connect" | "code";
-  description: string;
-  tutorial: string;
-  rounds: number;
+  mode: "code" | "cups" | "timing" | "maze" | "ticTacToe" | "pairs" | "puzzle" | "pressureMap" | "goldZone" | "ballTrack";
+  description: string; tutorial: string; rounds: number; exclusive?: boolean;
 }
-
-export const minigames: MiniGameDefinition[] = [
-  { id: "memoria-tatica", name: "Memória tática", mode: "sequence", description: "O padrão de pressão precisa ser lembrado antes do apito.", tutorial: "Repita a sequência de posições indicada.", rounds: 4 },
-  { id: "sequencia-sinais", name: "Sequência de sinais", mode: "sequence", description: "O banco passa a jogada por sinais discretos.", tutorial: "Toque os sinais na ordem certa.", rounds: 5 },
-  { id: "rastrear-bola", name: "Rastrear a bola", mode: "lanes", description: "A bola sumiu entre pernas e sombras na área.", tutorial: "Escolha a faixa em que a bola termina.", rounds: 5 },
-  { id: "zonas-goleiro", name: "Zonas do goleiro", mode: "lanes", description: "O goleiro fecha o canto antes da cobrança.", tutorial: "Escolha a melhor zona para finalizar.", rounds: 5 },
-  { id: "timing-chute", name: "Timing de chute", mode: "timing", description: "A finalização pede precisão no último toque.", tutorial: "Pare o marcador dentro da faixa dourada.", rounds: 3 },
-  { id: "finta-defensor", name: "Finta do defensor", mode: "lanes", description: "O marcador entrega um lado. Você precisa ler o corpo.", tutorial: "Escolha o lado oposto ao bote.", rounds: 4 },
-  { id: "corrida-faixas", name: "Corrida de faixas", mode: "lanes", description: "O corredor está abrindo e fechando em segundos.", tutorial: "Escolha a faixa livre para avançar.", rounds: 5 },
-  { id: "quatro-em-linha", name: "Quatro em linha", mode: "connect", description: "Na concentração, o duelo mental decide a confiança.", tutorial: "Conecte quatro peças antes do adversário.", rounds: 1 },
-  { id: "grade-segura", name: "Grade segura", mode: "grid", description: "O vestiário montou um treino de leitura de espaços.", tutorial: "Encontre os espaços seguros sem errar.", rounds: 3 },
-  { id: "codigo-senha", name: "Código e senha", mode: "code", description: "A prancheta foi protegida antes da decisão.", tutorial: "Observe o código e repita os algarismos.", rounds: 1 },
+const generic: MiniGameDefinition[] = [
+  { id:"codigo-prancheta",name:"Código da prancheta",mode:"code",description:"O auxiliar protegeu a jogada decisiva com um código.",tutorial:"Memorize cinco números de 1 a 9. A terceira fase desaparece mais rápido.",rounds:3 },
+  { id:"copos-embaralhados",name:"Copos embaralhados",mode:"cups",description:"A bola desapareceu sob quatro copos antes da decisão.",tutorial:"Acompanhe a bola durante 6 a 8 trocas e escolha um copo.",rounds:1 },
+  { id:"marca-vermelha",name:"Marca vermelha",mode:"timing",description:"O último toque precisa parar no momento exato.",tutorial:"Pare o marcador dentro da faixa vermelha.",rounds:1 },
+  { id:"labirinto",name:"Labirinto",mode:"maze",description:"Você enxerga a rota por segundos antes de ela desaparecer.",tutorial:"Revele o caminho, memorize e leve a bola até o gol.",rounds:1 },
+  { id:"jogo-velha",name:"Jogo da Velha",mode:"ticTacToe",description:"Um duelo tático 5×5 decide a confiança do elenco.",tutorial:"Conecte quatro X. Primeiro empate reinicia; segundo empate é seu.",rounds:1 },
+  { id:"pareamento",name:"Pareamento rápido",mode:"pairs",description:"A concentração pede memória visual sob pressão.",tutorial:"Memorize 8 pares por 1,35 segundo. Cinco erros encerram o jogo.",rounds:1 },
+  { id:"quebra-cabeca",name:"Quebra-cabeça",mode:"puzzle",description:"O plano de jogo foi desmontado no vestiário.",tutorial:"Organize 1 a 8 antes do relógio acabar.",rounds:1 },
 ];
-
-export function miniGameForSeed(seed: number): MiniGameDefinition {
-  return minigames[Math.abs(seed) % minigames.length];
+export const exclusiveMinigames: MiniGameDefinition[] = [
+  { id:"mapa-pressao",name:"Mapa de pressão",mode:"pressureMap",description:"Cada jogo ocupa um quadrado do caminho até a taça.",tutorial:"Repita a sequência. Ela cresce a cada jogo da campanha.",rounds:1,exclusive:true },
+  { id:"zona-ouro",name:"Zona de ouro",mode:"goldZone",description:"A janela decisiva fica menor no caminho até a final.",tutorial:"Pare o marcador na zona de ouro.",rounds:1,exclusive:true },
+  { id:"rastrear-bola",name:"Rastrear a bola",mode:"ballTrack",description:"A bola corre entre jogadores em uma sequência veloz.",tutorial:"Acompanhe os passes e encontre quem terminou com a bola.",rounds:1,exclusive:true },
+];
+export const minigames=[...generic,...exclusiveMinigames];
+export function miniGameForFinal(seed:number, options?:{access?:boolean;campaign?:boolean}) {
+  if(options?.access)return generic.find(game=>game.id==="marca-vermelha")!;
+  const pool=options?.campaign?exclusiveMinigames:generic;
+  return pool[Math.abs(seed)%pool.length];
 }
+export function miniGameForSeed(seed:number){return miniGameForFinal(seed);}
