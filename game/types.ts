@@ -330,4 +330,6 @@ export interface CareerState {
   evolutionFocusStreak?: number;
   /** Um Mundial escolhe um minigame exclusivo e o mantém até a sua final. */
   campaignMiniGames?: Record<string, import("./minigames").MiniGameId>;
+  /** Evita que a mesma decisão volte em finais imediatamente seguidas. */
+  recentMiniGameIds?: import("./minigames").MiniGameId[];
 }
