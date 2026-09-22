@@ -328,4 +328,6 @@ export interface CareerState {
   pendingEvolution?: SeasonEvolution;
   lastEvolutionFocus?: EvolutionFocus;
   evolutionFocusStreak?: number;
+  /** Um Mundial escolhe um minigame exclusivo e o mantém até a sua final. */
+  campaignMiniGames?: Record<string, import("./minigames").MiniGameId>;
 }

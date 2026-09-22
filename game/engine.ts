@@ -573,8 +573,9 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
     const category = campaignCategory(competition.id);
     if (category === "world") {
       const id = `${state.season}:${competition.id}`;
+      // Super Mundial: três jogos de grupo e quatro eliminatórias = sete partidas.
       const phases = ["Grupo · jogo 1", "Grupo · jogo 2", "Grupo · jogo 3", "Oitavas de final", "Quartas de final", "Semifinal", "Final"];
-      const matches = phases.map((phase, index) => { const opponent = campaignOpponent(club, competition.id, random); return { phase, opponentId: opponent.id, opponentName: opponent.name, result: "pending" as const, playable: true, difficulty: [3,4,4,5,6,7,8][index] }; });
+      const matches = phases.map((phase, index) => { const opponent = campaignOpponent(club, competition.id, random); return { phase, opponentId: opponent.id, opponentName: opponent.name, result: "pending" as const, playable: true, difficulty: index + 1 }; });
       const groupTable = [{ name: club.name, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: 3-index, goalDifference: 1-index, goalsFor: 2-index, position: index+2 }))];
       const campaign: CampaignResult = { id, competitionId: competition.id, competitionName: competition.name, category, qualification: entry.qualification, status: "active", phase: phases[0], matches, prize: competition.prestige * 150_000, groupTable };
       campaigns.push(campaign);
@@ -614,10 +615,11 @@ function nextSeasonQualifications(leagueId: string, position: number, leagueSize
 }
 function buildWorldCupCampaign(state: CareerState, player: Player, random: () => number) {
   const competition = competitions.find((entry) => entry.id === "wc"); if (!competition) return { campaign: undefined, finals: [] as CupFinal[] };
-  const phases = ["Grupo · jogo 1", "Grupo · jogo 2", "Grupo · jogo 3", "Oitavas de final", "Quartas de final", "Semifinal", "Final"];
+  // Copa de 48 seleções: grupos, 16-avos, oitavas, quartas, semi e final = oito jogos.
+  const phases = ["Grupo · jogo 1", "Grupo · jogo 2", "Grupo · jogo 3", "16-avos de final", "Oitavas de final", "Quartas de final", "Semifinal", "Final"];
   const opponents = countries.filter((country) => country.name !== player.nationality);
   const id = `${state.season}:wc`;
-  const matches = phases.map((phase, index) => { const rival = opponents[Math.floor(random() * opponents.length)] ?? countries[0]; return { phase, opponentId: `national-${rival.code}`, opponentName: rival.name, result: "pending" as const, playable: true, difficulty: [3,4,4,5,6,7,8][index] }; });
+  const matches = phases.map((phase, index) => { const rival = opponents[Math.floor(random() * opponents.length)] ?? countries[0]; return { phase, opponentId: `national-${rival.code}`, opponentName: rival.name, result: "pending" as const, playable: true, difficulty: index + 1 }; });
   const groupTable = [{ name: player.nationality, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: 3-index, goalDifference: 1-index, goalsFor: 2-index, position: index+2 }))];
   const campaign: CampaignResult = { id, competitionId: "wc", competitionName: competition.name, category: "national", qualification: { competitionId: "wc", source: "convocação para a seleção" }, status: "active", phase: phases[0], matches, prize: competition.prestige * 180_000, groupTable };
   const finals = matches.map((match, index) => ({ competitionId:"wc", competitionName:competition.name, opponentClubId:match.opponentId!, opponentClubName:match.opponentName, stakes:"campaign" as const, phase:"title" as const, scope:"national" as const, campaignId:id, campaignMatchIndex:index, campaignDifficulty:match.difficulty }));
