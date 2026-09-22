@@ -114,7 +114,7 @@ export default function Home() {
   function begin(data: Parameters<typeof createInitialState>[0]) { setCareer(createInitialState(data)); setLastResult(null); setScreen("career"); }
   function finishSeason() { setEvent(null); setEventQueue([]); setFinalQueue([]); setSeasonSummary(true); setUpgradeReady(false); setScreen("career"); }
   function isWorldCampaign(final: SeasonResult["cupFinal"]) { return final?.stakes === "campaign" && (final.competitionId === "wc" || final.competitionId === "cwc"); }
-  function gameForFinal(final: SeasonResult["cupFinal"], seed: number, lockedGames: Record<string, MiniGameId> = {}, recent: MiniGameId[] = []) { const campaign = isWorldCampaign(final); const lockedId = campaign && final?.campaignId ? lockedGames[final.campaignId] : undefined; const fallback = miniGameForFinal(seed, { access: final?.stakes === "promotion", campaign }); const pool = campaign ? minigames.filter((game) => game.exclusive) : minigames.filter((game) => !game.exclusive); const base = lockedId ? minigames.find((game) => game.id === lockedId) ?? fallback : (final?.stakes === "promotion" ? fallback : pool.filter((game) => !recent.includes(game.id))[Math.abs(seed) % Math.max(1, pool.filter((game) => !recent.includes(game.id)).length)] ?? fallback); return final?.campaignDifficulty ? { ...base, rounds: final.campaignDifficulty } : base; }
+  function gameForFinal(final: SeasonResult["cupFinal"], seed: number, lockedGames: Record<string, MiniGameId> = {}, recent: MiniGameId[] = []) { const campaign = isWorldCampaign(final); const lockedId = campaign && final?.campaignId ? lockedGames[final.campaignId] : undefined; const accessGame = final?.stakes === "promotion" || final?.stakes === "relegation"; const fallback = miniGameForFinal(seed, { access: accessGame, campaign }); const pool = campaign ? minigames.filter((game) => game.exclusive) : minigames.filter((game) => !game.exclusive); const base = lockedId ? minigames.find((game) => game.id === lockedId) ?? fallback : (accessGame ? fallback : pool.filter((game) => !recent.includes(game.id))[Math.abs(seed) % Math.max(1, pool.filter((game) => !recent.includes(game.id)).length)] ?? fallback); return final?.campaignDifficulty ? { ...base, rounds: final.campaignDifficulty } : base; }
   function lockCampaignGame(state: CareerState, final: SeasonResult["cupFinal"], seed: number) { if (!isWorldCampaign(final) || !final?.campaignId || state.campaignMiniGames?.[final.campaignId]) return state; const game = gameForFinal(final, seed, state.campaignMiniGames, state.recentMiniGameIds); return { ...state, campaignMiniGames: { ...(state.campaignMiniGames ?? {}), [final.campaignId]: game.id } }; }
   function rememberGame(state: CareerState, game: MiniGameDefinition) { return { ...state, recentMiniGameIds: [...(state.recentMiniGameIds ?? []), game.id].slice(-3) }; }
   function playSeason() { if (!career) return; const outcome = simulateSeason(career); let nextState = lockCampaignGame(outcome.state, outcome.result.cupFinal, outcome.state.seed + outcome.state.season); const game = gameForFinal(outcome.result.cupFinal, nextState.seed + nextState.season, nextState.campaignMiniGames, nextState.recentMiniGameIds); nextState = rememberGame(nextState, game); setCareer(nextState); setLastResult(outcome.result); setFinalQueue((outcome.result.finals ?? []).slice(1)); setGameScore(0); setActiveGame(game); setSeasonSummary(false); setUpgradeReady(false); setSeasonConsequences([]); if (shouldRetire(nextState.player, nextState.seed)) { saveLocalRanking(nextState, clubs.find((entry) => entry.id === nextState.player.clubId) ?? clubs[0]); return setScreen("legacy"); } if (outcome.result.events.length) { setEvent(outcome.result.events[0]); setEventQueue(outcome.result.events.slice(1)); return; } if (outcome.result.title && !outcome.result.cupFinal) { setCelebration({ title: outcome.result.title }); return setScreen("celebration"); } if (outcome.result.finalOpportunity) return setScreen("minigame"); finishSeason(); }
@@ -170,7 +170,7 @@ export default function Home() {
       const groupTable = campaign.groupTable?.map((row, rowIndex) => rowIndex === 0 ? { ...row, points, goalDifference, goalsFor: groupMatches.reduce((total, match) => total + (match.playerGoals ?? 0), 0), position: points >= 3 ? 1 : 3 } : row);
       return { ...campaign, status: isTitle ? "champion" as const : groupEliminated || (!won && !(isLongCampaign && index < 3)) ? "eliminated" as const : "active" as const, phase: groupEliminated ? "Eliminado na fase de grupos" : nextPhase, title: isTitle ? cupFinal.competitionName : campaign.title, matches, groupTable };
     });
-    const resolved = { ...lastResult, cupFinal, title, titles, campaigns, nationalTeamTitle: titleWon && cupFinal.scope === "national" ? cupFinal.competitionName : lastResult.nationalTeamTitle, access };
+    const resolved = { ...lastResult, cupFinal, title, titles, campaigns, nationalTeamTitle: titleWon && cupFinal.scope === "national" ? cupFinal.competitionName : lastResult.nationalTeamTitle, access, relegated: cupFinal.stakes === "relegation" ? !won : lastResult.relegated };
     const player = { ...career.player, titles: [...career.player.titles], clubIdolatry: { ...career.player.clubIdolatry } };
     if (titleWon && cupFinal.scope !== "national") {
       player.titles.push(cupFinal.competitionName);
@@ -324,7 +324,7 @@ function Career({ career, club, result, event, seasonSummary, seasonConsequences
         <section className="athlete-panel">
           <div className="athlete-head">
             <div className="rating-block"><strong>{ovr}</strong><span>OVERALL</span></div>
-            <div className="athlete-identity"><h1><i>{player.nationality === "Brasil" ? "🇧🇷" : "⚽"}</i> {player.name.toUpperCase()} <b>· {player.position}</b></h1><p>{club.name.toUpperCase()} · {career.currentCompetition.toUpperCase()} · <em>FAMA {player.fame}</em></p></div>
+            <div className="athlete-identity"><h1><i>{player.nationality === "Brasil" ? "🇧🇷" : "⚽"}</i> {player.name.toUpperCase()} <b>· {player.position} · {player.age} ANOS</b></h1><p>{club.name.toUpperCase()} · {(currentLeague?.name ?? career.currentCompetition).toUpperCase()} · <em>FAMA {player.fame}</em></p></div>
             <ClubCrest club={club} />
             <button className="panel-shop" onClick={onShop} aria-label="Abrir loja">🛒</button>
           </div>
@@ -450,9 +450,10 @@ function PressureMapGame({onFinish,length}:{onFinish:(won:boolean)=>void;length:
   useEffect(()=>{ if(preview >= sequence.length){ const ready=setTimeout(()=>setAccepting(true),240); return()=>clearTimeout(ready); } const timer=setTimeout(()=>setPreview((value)=>value+1),620); return()=>clearTimeout(timer); },[preview,sequence.length]);
   function tap(index:number){
     if(!accepting || flash !== null) return;
-    if(index !== sequence[step]) { setFlash(index); setTimeout(()=>onFinish(false),280); return; }
+    if(index !== sequence[step]) { onFinish(false); return; }
     setFlash(index);
-    setTimeout(()=>{ setCompleted((value)=>[...value,index]); if(step + 1 === sequence.length) onFinish(true); else { setFlash(null); setStep((value)=>value+1); } },280);
+    if(step + 1 === sequence.length) { onFinish(true); return; }
+    setCompleted((value)=>[...value,index]); setFlash(null); setStep((value)=>value+1);
   }
   const lit = !accepting ? sequence[Math.min(preview, sequence.length - 1)] : flash;
   return <><div className="scoreboard"><span>Sequência {Math.max(1,length)}</span><b>{accepting ? `Repita ${step + 1}/${sequence.length}` : "Memorize"}</b></div><div className="pressure-board">{Array.from({length:16},(_,index)=><button key={index} aria-label={`quadrado ${index+1}`} onClick={()=>tap(index)} style={{background:pressureColors[index]}} className={`${lit===index?"lit":""} ${completed.includes(index)?"done":""}`}>{completed.includes(index)?"✓":""}</button>)}</div></>;
