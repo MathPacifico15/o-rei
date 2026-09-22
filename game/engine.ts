@@ -533,7 +533,7 @@ function campaignPhases(category: SeasonCampaign["category"]) {
 }
 function campaignOpponent(club: Club, competitionId: string, random: () => number) {
   const competition = competitions.find((entry) => entry.id === competitionId);
-  const pool = clubs.filter((candidate) => candidate.id !== club.id && cupEligible(candidate, competitionId) && (!isSupercup(competitionId) || (candidate.country === competition?.country && competitions.find((entry) => entry.id === candidate.leagueId)?.tier === 1)));
+  const pool = clubs.filter((candidate) => candidate.id !== club.id && cupEligible(candidate, competitionId) && (!isSupercup(competitionId) || (candidate.country === competition?.country && competitions.find((entry) => entry.id === candidate.leagueId)?.tier === 1)) && (competition?.kind !== "continental" || competitions.find((entry) => entry.id === candidate.leagueId)?.tier === 1));
   const credible = pool.filter((candidate) => candidate.strength >= Math.max(45, club.strength - 18));
   const selected = (credible.length ? credible : pool)[Math.floor(random() * Math.max(1, credible.length ? credible.length : pool.length))];
   return selected ?? clubs.find((candidate) => candidate.id !== club.id) ?? club;
@@ -552,14 +552,12 @@ function hasRecentWinner(state: CareerState, competitionId: string, clubId: stri
 function eligibleForSupercup(state: CareerState, club: Club, competitionId: string) {
   const competition = competitions.find((entry) => entry.id === competitionId); if (!competition) return false;
   if (competitions.find((entry) => entry.id === currentLeagueId(state, club))?.tier !== 1) return false;
-  const winners = Object.entries(state.competitionWinners ?? {});
   const wonLastSeason = (id: string) => (state.competitionWinners?.[id] ?? []).some((winner) => winner.clubId === club.id && winner.season === state.season - 1);
   if (competitionId === "recopa-sudamericana") return ["lib", "sula"].some(wonLastSeason);
   if (competitionId === "uefa-super") return ["ucl", "uel"].some(wonLastSeason);
-  return winners.some(([id, rows]) => {
-    const source = competitions.find((entry) => entry.id === id);
-    return source?.country === competition.country && (source.kind === "league" || (source.kind === "cup" && !isSupercup(source.id))) && rows.some((winner) => winner.clubId === club.id && winner.season === state.season - 1);
-  });
+  const mainLeague = competitions.find((entry) => entry.country === competition.country && entry.kind === "league" && entry.tier === 1)?.id;
+  const mainCup = competitions.filter((entry) => entry.country === competition.country && entry.kind === "cup" && !isSupercup(entry.id)).sort((a,b) => b.prestige-a.prestige)[0]?.id;
+  return Boolean(mainLeague && wonLastSeason(mainLeague)) || Boolean(mainCup && wonLastSeason(mainCup));
 }
 function initialQualifications(club: Club, leagueId = club.leagueId): CampaignQualification[] {
   const league = competitions.find((entry) => entry.id === leagueId);
@@ -578,7 +576,8 @@ function campaignEntries(state: CareerState, club: Club): Array<{ competitionId:
     if ((competition.kind === "cup" || competition.kind === "state") && !isSupercup(competition.id) && cupEligible(club, competition.id)) add(competition.id, competition.kind === "state" ? "associação estadual" : "copa nacional");
     if (isSupercup(competition.id) && eligibleForSupercup(state, club, competition.id)) add(competition.id, "campeão na temporada anterior");
   }
-  const qualifications = state.campaignQualifications?.[club.id] ?? initialQualifications(club, currentLeagueId(state, club));
+  const currentLeague = currentLeagueId(state, club);
+  const qualifications = competitions.find((entry) => entry.id === currentLeague)?.tier === 1 ? (state.campaignQualifications?.[club.id] ?? initialQualifications(club, currentLeague)) : [];
   const continentalPriority = ["lib", "sula", "ucl", "uel", "uecl", "concacaf", "afc-cl"];
   const continental = qualifications.filter((qualification) => continentalPriority.includes(qualification.competitionId));
   const nonContinental = qualifications.filter((qualification) => !continentalPriority.includes(qualification.competitionId));
@@ -588,7 +587,8 @@ function campaignEntries(state: CareerState, club: Club): Array<{ competitionId:
   const worldYear = (state.season - 2025) % 4 === 0;
   const continentalTitles = ["lib", "ucl", "concacaf", "afc-cl"];
   if (worldYear && continentalTitles.some((id) => hasRecentWinner(state, id, club.id, state.season) || (state.clubHonors?.[club.id] ?? []).includes(competitions.find((entry) => entry.id === id)?.name ?? ""))) add("cwc", "campeão continental no ciclo");
-  return entries;
+  const order: Record<SeasonCampaign["category"], number> = { supercup: 0, state: 1, cup: 2, continental: 3, world: 4, national: 5, league: 6 };
+  return entries.sort((a,b) => order[campaignCategory(a.competitionId)] - order[campaignCategory(b.competitionId)]);
 }
 function buildCampaigns(state: CareerState, club: Club, ovr: number, form: number, random: () => number) {
   const campaigns: CampaignResult[] = [];
@@ -754,7 +754,8 @@ function simulateFullNationalTeam(player: Player, season: number, ovr: number, r
   const competitionId = competitions.find((entry) => entry.name === competition)?.id;
   const finalChance = competition ? Math.min(.46, .04 + (ovr-78)*.018 + player.form/520) : 0;
   const reachedFinal = Boolean(competition && random() < finalChance);
-  return { competitionId, competition: competition ?? "Eliminatórias", category, phase: reachedFinal ? "Final" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title: undefined, reachedFinal };
+  const opponent = countries.filter((country) => country.name !== player.nationality)[Math.floor(random() * Math.max(1, countries.length - 1))] ?? countries[0];
+  return { competitionId, competition: competition ?? "Eliminatórias", category, phase: reachedFinal ? "Final" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title: undefined, reachedFinal, opponentName: opponent.name, opponentId: `national-${opponent.code}` };
 }
 function clubKey(name: string) { const key=name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); return ({"sporting cp":"sporting","psg":"paris saint-germain","inter":"internazionale","inter milan":"internazionale","bayern munich":"bayern munchen"} as Record<string,string>)[key] ?? key; }
 const SOUTH_AMERICA = new Set(["Brasil","Argentina","Chile","Colômbia","Uruguai","Paraguai","Peru","Bolívia","Equador","Venezuela"]);
@@ -886,7 +887,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
     : worldCupCampaign.finals[0]
       ? worldCupCampaign.finals[0]
       : national?.reachedFinal && national.competitionId
-      ? { competitionId: national.competitionId, competitionName: national.competition, opponentClubId: "selecao-rival", opponentClubName: "Seleção rival", stakes: "cup", phase: "title", scope: "national" }
+      ? { competitionId: national.competitionId, competitionName: national.competition, opponentClubId: national.opponentId, opponentClubName: national.opponentName, stakes: "cup", phase: "title", scope: "national" }
       : generatedCampaigns.finals[0];
   const contract=activeContract ?? {clubId:player.clubId,monthlySalary:16_700,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
   const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
@@ -905,7 +906,8 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const seasonEvents=allSeasonEvents.slice(0,1+Math.floor(random()*3));
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
-  const opensMarket=player.age >= 20 && (player.age - 20) % 3 === 0;
+  // Depois de quatro temporadas completas, abre a cada três anos: 5ª, 8ª, 11ª...
+  const opensMarket=state.history.length >= 4 && (state.history.length - 4) % 3 === 0;
   const generationalBreakthrough=generational && state.history.length===1 && player.age===18 && (goals+assists>=8||ovr>=70);
   const marketState={ ...state, player, contract: nextContract, highestOvr, originCountry: state.originCountry ?? club.country };
   const marketWindow=generationalBreakthrough ? createGenerationalMarketWindow(marketState,random) : opensMarket ? createMarketWindow(marketState,random) : undefined;
