@@ -4,7 +4,7 @@ import "./minigames.css";
 import "./final-tweaks.css";
 
 import { useEffect, useMemo, useState } from "react";
-import { applyCard, applyFinalConsequence, applySeasonEvolution, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, generationalAttributes, legacy, miniGameForFinal, miniGameForSeed, minigames, positionAttributeKeys, shouldRetire, simulateSeason, supabaseCareer, type CareerEvent, type CareerState, type Club, type EvolutionFocus, type MiniGameDefinition, type MiniGameId, type Player, type Position, type SeasonEvolution, type SeasonResult, type UpgradeCard } from "@/game";
+import { applyCard, applyFinalConsequence, applySeasonEvolution, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, createMarketWindow, generationalAttributes, legacy, miniGameForFinal, miniGameForSeed, minigames, mulberry32, positionAttributeKeys, shouldRetire, simulateSeason, supabaseCareer, type CareerEvent, type CareerState, type Club, type EvolutionFocus, type MiniGameDefinition, type MiniGameId, type Player, type Position, type SeasonEvolution, type SeasonResult, type UpgradeCard } from "@/game";
 
 type Screen = "home" | "create" | "career" | "evolution" | "event" | "shop" | "minigame" | "celebration" | "legacy" | "account" | "sync";
 type CloudSession = { userId: string; token: string; email?: string };
@@ -97,7 +97,7 @@ export default function Home() {
       return;
     }
     const saved = localStorage.getItem("o-rei-career");
-    if (saved) { try { const parsed = JSON.parse(saved) as CareerState; const validPosition = ["GOL", "MEI", "ATA"].includes(parsed.player?.position); const validAttributes = positionAttributeKeys[parsed.player?.position as Position]?.every((key) => typeof parsed.player.attributes?.[key] === "number"); if (validPosition && validAttributes && (parsed.saveVersion === 6 || parsed.saveVersion === 7)) window.queueMicrotask(() => setCareer({ ...parsed, saveVersion: 7 })); else { localStorage.removeItem("o-rei-career"); window.queueMicrotask(() => setToast("A atualização exige uma nova carreira.")); } } catch { localStorage.removeItem("o-rei-career"); } }
+    if (saved) { try { const parsed = JSON.parse(saved) as CareerState; const validPosition = ["GOL", "MEI", "ATA"].includes(parsed.player?.position); const validAttributes = positionAttributeKeys[parsed.player?.position as Position]?.every((key) => typeof parsed.player.attributes?.[key] === "number"); if (validPosition && validAttributes && (parsed.saveVersion === 6 || parsed.saveVersion === 7)) { const hydrated={ ...parsed, saveVersion: 7 }; const market = computeOvr(hydrated.player) >= 85 && hydrated.marketWindow ? createMarketWindow(hydrated,mulberry32(hydrated.seed+hydrated.season*37)) : hydrated.marketWindow; window.queueMicrotask(() => setCareer({ ...hydrated, marketWindow: market })); } else { localStorage.removeItem("o-rei-career"); window.queueMicrotask(() => setToast("A atualização exige uma nova carreira.")); } } catch { localStorage.removeItem("o-rei-career"); } }
     // Remove o antigo cache offline: ele podia manter o cliente de desenvolvimento
     // do Vite e abrir um painel de erro sobre o jogo.
     if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then((registrations) => Promise.all(registrations.map((registration) => registration.unregister()))).catch(() => undefined);
