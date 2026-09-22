@@ -384,14 +384,20 @@ const COPA_VERDE_STATE_IDS = [
   "bra-state-23", "bra-state-24", "bra-state-25", "bra-state-26", "bra-state-27", // AC, RO, RR, AP, TO
 ];
 
+function countryCompetitionRules(country: string) {
+  const topLeague = competitions.filter((entry) => entry.country === country && entry.kind === "league" && entry.tier === 1).sort((a,b) => b.prestige-a.prestige)[0];
+  const primaryCup = competitions.filter((entry) => entry.country === country && entry.kind === "cup" && !isSupercup(entry.id)).sort((a,b) => b.prestige-a.prestige)[0];
+  const supercups = competitions.filter((entry) => entry.country === country && isSupercup(entry.id));
+  return { topLeague, primaryCup, supercups };
+}
 function cupEligible(club: Club, competitionId: string) {
   const domestic = competitions.find((entry) => entry.id === competitionId);
   if (!domestic) return false;
   // Each Brazilian club has at most one state championship in its catalogue
   // membership. The state title is seasonal, never a separate starting league.
   if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
-  // A copa nacional principal desta simulação é disputada pela primeira divisão.
-  if (domestic.kind === "cup" && domestic.prestige >= 50) return competitions.find((entry) => entry.id === club.leagueId)?.tier === 1;
+  // Toda copa nacional principal usa apenas clubes da primeira divisão no jogo.
+  if (domestic.kind === "cup" && countryCompetitionRules(domestic.country).primaryCup?.id === competitionId) return competitions.find((entry) => entry.id === club.leagueId)?.tier === 1;
   if (competitionId === "copa-verde") return club.competitionIds?.some((id) => COPA_VERDE_STATE_IDS.includes(id)) === true;
   if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
   if (competitionId === "recopa-sudamericana") return SOUTH_AMERICAN_COUNTRIES.includes(club.country) && club.strength >= 67;
@@ -559,15 +565,23 @@ function eligibleForSupercup(state: CareerState, club: Club, competitionId: stri
   const wonLastSeason = (id: string) => (state.competitionWinners?.[id] ?? []).some((winner) => winner.clubId === club.id && winner.season === state.season - 1);
   if (competitionId === "recopa-sudamericana") return ["lib", "sula"].some(wonLastSeason);
   if (competitionId === "uefa-super") return ["ucl", "uel"].some(wonLastSeason);
-  const mainLeague = competitions.find((entry) => entry.country === competition.country && entry.kind === "league" && entry.tier === 1)?.id;
-  const mainCup = competitions.filter((entry) => entry.country === competition.country && entry.kind === "cup" && !isSupercup(entry.id)).sort((a,b) => b.prestige-a.prestige)[0]?.id;
+  const { topLeague, primaryCup } = countryCompetitionRules(competition.country);
+  const mainLeague = topLeague?.id;
+  const mainCup = primaryCup?.id;
   return Boolean(mainLeague && wonLastSeason(mainLeague)) || Boolean(mainCup && wonLastSeason(mainCup));
 }
 function supercupOpponent(state: CareerState, club: Club, competitionId: string, random: () => number) {
   const competition = competitions.find((entry) => entry.id === competitionId);
   if (!competition) return campaignOpponent(state, club, competitionId, random);
-  const mainLeague = competitions.find((entry) => entry.country === competition.country && entry.kind === "league" && entry.tier === 1)?.id;
-  const mainCup = competitions.filter((entry) => entry.country === competition.country && entry.kind === "cup" && !isSupercup(entry.id)).sort((a,b) => b.prestige-a.prestige)[0]?.id;
+  const continentalSources = competitionId === "recopa-sudamericana" ? ["lib", "sula"] : competitionId === "uefa-super" ? ["ucl", "uel"] : undefined;
+  if (continentalSources) {
+    const continentalWinner = continentalSources.flatMap((id) => state.competitionWinners?.[id] ?? []).find((winner) => winner.season === state.season - 1 && winner.clubId !== club.id);
+    const rival = continentalWinner && clubs.find((candidate) => candidate.id === continentalWinner.clubId);
+    if (rival && competitions.find((entry) => entry.id === currentLeagueId(state, rival))?.tier === 1) return rival;
+  }
+  const { topLeague, primaryCup } = countryCompetitionRules(competition.country);
+  const mainLeague = topLeague?.id;
+  const mainCup = primaryCup?.id;
   const winners = [mainLeague, mainCup].flatMap((id) => id ? state.competitionWinners?.[id] ?? [] : []).filter((winner) => winner.season === state.season - 1 && winner.clubId !== club.id);
   const eligible = winners.map((winner) => clubs.find((candidate) => candidate.id === winner.clubId)).filter((candidate): candidate is Club => Boolean(candidate) && competitions.find((entry) => entry.id === currentLeagueId(state, candidate!))?.tier === 1);
   if (eligible.length) return eligible[Math.floor(random() * eligible.length)];
