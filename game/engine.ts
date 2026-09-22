@@ -471,6 +471,22 @@ export function createSeasonEvolution(player: Player, mode: CareerState["mode"],
   return { season, age: player.age, points, mode: mode === "generational" ? "generational" : "normal", available: ["assinatura", "estilo", "liderancaFisica"] };
 }
 
+/** Evolução automática ao fim do ano, sem interromper o ritmo da carreira. */
+export function applyAutomaticSeasonEvolution(player: Player, mode: CareerState["mode"], season: number, seed: number): { player: Player; evolution?: SeasonEvolution } {
+  const age = player.age;
+  const perAttribute = age <= 18 ? 4 : age <= 22 ? mode === "generational" ? 3 : 2 : age <= 26 ? mode === "generational" ? 3 : 2 : age <= 30 ? 2 : age <= 33 && mode === "generational" ? 1 : 0;
+  const attributes = { ...player.attributes };
+  const gains: Partial<Attributes> = {};
+  const random = mulberry32(seed);
+  for (const key of positionAttributeKeys[player.position]) {
+    const gain = age >= 31 && mode !== "generational" ? (random() < .5 ? 1 : 0) : perAttribute;
+    const applied = Math.max(0, Math.min(gain, 99 - attributes[key]));
+    if (applied) { attributes[key] += applied; gains[key] = applied; }
+  }
+  const points = Object.values(gains).reduce((total, value) => total + (value ?? 0), 0);
+  return { player: { ...player, attributes }, evolution: points ? { season, age, points, mode: mode === "generational" ? "generational" : "normal", available: [], gains } : undefined };
+}
+
 /**
  * Aplica a identidade escolhida no Radar. Depois de 85, cada ponto técnico
  * tem uma chance menor de entrar naquele atributo — o potencial não some,
@@ -806,7 +822,7 @@ export function applyFinalConsequence(state: CareerState, final: CupFinal, won: 
 }
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
   const random = mulberry32(state.seed + state.season * 7919);
-  const player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
+  let player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
   const seasonStartAge = player.age;
   const assignments = { ...state.leagueAssignments };
   let activeContract = state.contract;
@@ -897,7 +913,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[])]};
   if (relegation) assignments[player.clubId] = relegation;
   const rating=Number((5.4 + player.form / 100 * 2.3 + Math.min(1.5,(goals+assists)/Math.max(1,games)*2)).toFixed(1));
-  const evolution = createSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193, rating);
+  const automaticEvolution = applyAutomaticSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193);
+  player = automaticEvolution.player;
+  const evolution = automaticEvolution.evolution;
   // No máximo duas finais normais por ano. Mundial mantém sua cadeia inteira.
   const longCampaigns = generatedCampaigns.finals.filter((final) => final.stakes === "campaign");
   const normalFinals = generatedCampaigns.finals.filter((final) => final.stakes !== "campaign").slice(0, 2);
@@ -909,7 +927,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const competitionWinners={...(state.competitionWinners??{})};
   const clubHonors={...(state.clubHonors??{})};
   if (leagueTitle) { competitionWinners[leagueId]=[...(competitionWinners[leagueId]??[]),{clubId:player.clubId,season:state.season}].slice(-8); clubHonors[player.clubId]=[...(clubHonors[player.clubId]??[]),leagueTitle]; }
-  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:competitions.find((entry)=>entry.id===(assignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveClubDynamics(state,table,random),pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:evolution},result};
+  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:competitions.find((entry)=>entry.id===(assignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:assignments,leagueTables:{...state.leagueTables,[leagueId]:table},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveClubDynamics(state,table,random),pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:undefined},result};
 }
 export function legacy(player: Player) {
   const ovr = computeOvr(player);
