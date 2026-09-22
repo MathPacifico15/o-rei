@@ -390,6 +390,8 @@ function cupEligible(club: Club, competitionId: string) {
   // Each Brazilian club has at most one state championship in its catalogue
   // membership. The state title is seasonal, never a separate starting league.
   if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
+  // A copa nacional principal desta simulação é disputada pela primeira divisão.
+  if (domestic.kind === "cup" && domestic.prestige >= 50) return competitions.find((entry) => entry.id === club.leagueId)?.tier === 1;
   if (competitionId === "copa-verde") return club.competitionIds?.some((id) => COPA_VERDE_STATE_IDS.includes(id)) === true;
   if (competitionId === "lib" || competitionId === "sula") return SOUTH_AMERICAN_COUNTRIES.includes(club.country);
   if (competitionId === "recopa-sudamericana") return SOUTH_AMERICAN_COUNTRIES.includes(club.country) && club.strength >= 67;
@@ -541,7 +543,8 @@ function campaignOpponent(club: Club, competitionId: string, random: () => numbe
 function simulatedCampaignMatch(club: Club, competitionId: string, phase: string, ovr: number, form: number, random: () => number): CampaignMatch {
   const opponent = campaignOpponent(club, competitionId, random);
   const edge = (club.strength + ovr * .18 + form * .08 - opponent.strength - 18) / 35;
-  const advances = random() < Math.max(.18, Math.min(.82, .48 + edge));
+  // Final de copa precisa ser exceção, não rotina anual.
+  const advances = random() < Math.max(.08, Math.min(.68, .32 + edge * .45));
   const goals = advances ? 1 + Math.floor(random() * 3) : Math.floor(random() * 2);
   const opponentGoals = advances ? Math.floor(random() * Math.max(1, goals)) : goals + 1 + Math.floor(random() * 2);
   return { phase, opponentId: opponent.id, opponentName: opponent.name, playerGoals: goals, opponentGoals, result: advances ? "won" : "lost" };
@@ -920,7 +923,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[])]};
   const rating=Number((5.4 + player.form / 100 * 2.3 + Math.min(1.5,(goals+assists)/Math.max(1,games)*2)).toFixed(1));
   const automaticEvolution = applyAutomaticSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193);
-  player = automaticEvolution.player;
+  player = { ...automaticEvolution.player, age: seasonStartAge + 1 };
   const evolution = automaticEvolution.evolution;
   // No máximo duas finais normais por ano. Mundial mantém sua cadeia inteira.
   const longCampaigns = generatedCampaigns.finals.filter((final) => final.stakes === "campaign");
