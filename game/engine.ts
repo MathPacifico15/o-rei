@@ -794,7 +794,7 @@ function weightedPick(pool: Club[], current: Club, random: () => number) {
   return pool[pool.length-1];
 }
 export function createMarketWindow(state: CareerState, random: () => number): MarketWindow {
-  const player=state.player, ovr=computeOvr(player), current=clubs.find((club)=>club.id===player.clubId)??clubs[0];
+  const player=state.player, ovr=Math.max(computeOvr(player), state.highestOvr ?? 0), current=clubs.find((club)=>club.id===player.clubId)??clubs[0];
   const currentCountry=current.country, originCountry=state.originCountry??current.country;
   const pool=clubs.filter((club)=>club.id!==current.id&&offerTier(club,ovr,currentCountry,originCountry)!=="none");
   const remaining=[...pool], offers:ContractOffer[]=[];
