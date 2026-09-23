@@ -131,4 +131,6 @@ export interface CareerState {
   currentCompetition: string;
   /** Como as finais são resolvidas — escolhido na criação e não muda depois. */
   finalStyle?: FinalStyle;
+  /** Arquétipo visual escolhido na apresentação inicial do atleta. Ainda sem efeito de jogo. */
+  archetype?: string;
 }

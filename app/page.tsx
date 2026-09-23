@@ -19,6 +19,23 @@ const playerTypeCards: Array<{ id: FinalStyle; icon: string; label: string; tone
   { id: "misto", icon: "🔀", label: "MISTO", tone: "violet", copy: "Um pouco de cada: habilidade e sorte no mesmo pacote." },
   { id: "habilidoso", icon: "🧠", label: "HABILIDOSO", tone: "green", copy: "Finais com minigames de habilidade — memória, pontaria, timing." },
 ];
+const archetypeCards: Record<Position, Array<{ id: string; label: string; copy: string; watermark: string; bonuses: string[] }>> = {
+  ATA: [
+    { id: "flecha", label: "FLECHA", copy: "Te lançam uma bola no espaço e ninguém te pega mais.", watermark: "VEL", bonuses: ["+8 VELOCIDADE"] },
+    { id: "tanque", label: "TANQUE", copy: "Você ganha tudo pelo alto e segura contra dois zagueiros.", watermark: "POT", bonuses: ["+8 POTÊNCIA"] },
+    { id: "lider-nato", label: "LÍDER NATO", copy: "Nasceu para colocar o time nas costas.", watermark: "LID", bonuses: ["+8 LIDERANÇA", "+2 FINALIZAÇÃO"] },
+  ],
+  MEI: [
+    { id: "maestro", label: "MAESTRO", copy: "Enxerga a jogada antes de todo mundo.", watermark: "PAS", bonuses: ["+8 PASSE"] },
+    { id: "cerebral", label: "CEREBRAL", copy: "Controla o ritmo e encontra sempre a melhor decisão.", watermark: "MEN", bonuses: ["+8 LIDERANÇA", "+2 PASSE"] },
+    { id: "driblador", label: "DRIBLADOR", copy: "A bola fica colada no pé quando o jogo aperta.", watermark: "DRI", bonuses: ["+8 DRIBLE"] },
+  ],
+  GOL: [
+    { id: "muralha", label: "MURALHA", copy: "Reflexo de sobra para buscar qualquer bola no canto.", watermark: "REF", bonuses: ["+8 REFLEXO"] },
+    { id: "libero", label: "LÍBERO", copy: "Sai da área, organiza a defesa e joga com os pés.", watermark: "SAI", bonuses: ["+8 SAÍDA", "+2 LIDERANÇA"] },
+    { id: "elastico", label: "ELÁSTICO", copy: "Vai onde ninguém imagina que um goleiro pode chegar.", watermark: "ELA", bonuses: ["+8 ELASTICIDADE"] },
+  ],
+};
 const attributeLabels: Record<string, string> = { reflexo: "Reflexo", elasticidade: "Elasticidade", posicionamento: "Posicionamento", saida: "Saída", lideranca: "Liderança", fisico: "Físico", velocidade: "Velocidade", passe: "Passe", finalizacao: "Finalização", drible: "Drible", cabecada: "Cabeçada", forca: "Força" };
 
 function crestLetters(name: string) { return name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(); }
@@ -30,7 +47,7 @@ function ClubCrest({ club, small = false }: { club: Club; small?: boolean }) {
 }
 function Brand({ compact = false }: { compact?: boolean }) { return <div className={`brand ${compact ? "brand-compact" : ""}`}><img src="/o-rei-logo.png" alt="O REI — bola de couro e coroa" /></div>; }
 
-function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string; finalStyle: FinalStyle }): CareerState {
+function createInitialState(data: { name: string; position: Position; club: Club; foot: Player["preferredFoot"]; height: number; shirt: number; nationality: string; finalStyle?: FinalStyle }): CareerState {
   const player: Player = { id: `jogador-${Date.now()}`, name: data.name.trim() || "Novo Craque", nationality: data.nationality, position: data.position, preferredFoot: data.foot, heightCm: data.height, shirtNumber: data.position === "MEI" ? 10 : data.position === "ATA" ? 9 : data.shirt, age: 16, clubId: data.club.id, attributes: baseAttributes(), form: 68, fame: 3, salary: 8000, marketValue: 400000, games: 0, goals: 0, assists: 0, cleanSheets: 0, saves: 0, titles: [], awards: [], clubIdolatry: { [data.club.id]: 12 }, judasAt: [], injuries: 0 };
   const league = competitions.find((competition) => competition.id === data.club.leagueId);
   return { seed: 24061940, season: 2026, player, history: [], currentCompetition: league?.name ?? "Brasileirão Série A", finalStyle: data.finalStyle };
@@ -54,6 +71,25 @@ function PlayerTypePicker({ value, onChange, compact = false, locked = false }: 
   );
 }
 
+function ArchetypePicker({ position, value, onChange }: { position: Position; value?: string; onChange: (archetype: string) => void }) {
+  const positionName = position === "ATA" ? "ATACANTE" : position === "MEI" ? "MEIA-ARMADOR" : "GOLEIRO";
+  return (
+    <section className="archetype-section">
+      <h3>QUE TIPO DE {positionName} VOCÊ É?</h3>
+      <p>O dado trouxe três destinos. Escolha um: ele te define pra sempre.</p>
+      <div className="archetype-grid">
+        {archetypeCards[position].map((item) => (
+          <button key={item.id} type="button" data-watermark={item.watermark} className={`archetype-card ${value === item.id ? "selected" : ""}`} onClick={() => onChange(item.id)}>
+            <strong>{item.label}</strong>
+            <small>{item.copy}</small>
+            <span>{item.bonuses.map((bonus) => <b key={bonus}>{bonus}</b>)}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<Screen>("home");
@@ -64,6 +100,7 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [gameScore, setGameScore] = useState(0);
   const [activeGame, setActiveGame] = useState<MiniGameDefinition | null>(null);
+  const [pendingEventChoice, setPendingEventChoice] = useState<{ event: CareerEvent; choiceIndex: number } | null>(null);
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       if (import.meta.env.DEV) navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister())).catch(() => undefined);
@@ -101,15 +138,12 @@ export default function Home() {
     return { state: { ...state, player, history }, result: resolved };
   }
   function routeAfterSeason(state: CareerState, result: SeasonResult) {
-    const style = state.finalStyle ?? "misto";
-    if (!result.finalOpportunity) return "evolution" as const;
-    if (style === "habilidoso") return "minigame" as const;
-    if (style === "supersticioso") return "auto-final" as const;
-    return Math.random() > 0.5 ? "minigame" as const : "evolution" as const;
+    void state;
+    return result.cupFinal ? "minigame" as const : "evolution" as const;
   }
-  function playSeason() {
-    if (!career) return;
-    const outcome = simulateSeason(career);
+  function playSeason(careerToPlay = career) {
+    if (!careerToPlay) return;
+    const outcome = simulateSeason(careerToPlay);
     setCareer(outcome.state);
     setLastResult(outcome.result);
     setGameScore(0);
@@ -140,16 +174,29 @@ export default function Home() {
   }
   function chooseEvent(index: number) {
     if (!career || !event) return;
-    const choice = event.choices[index];
+    setPendingEventChoice({ event, choiceIndex: index });
+    setActiveGame(miniGameForSeed(career.seed + career.season + event.id.length + index));
+    setGameScore(0);
+    setScreen("minigame");
+  }
+  function resolveEventDecision(won: boolean) {
+    if (!career || !pendingEventChoice) return;
+    const choice = pendingEventChoice.event.choices[pendingEventChoice.choiceIndex];
     const player = { ...career.player, clubIdolatry: { ...career.player.clubIdolatry }, titles: [...career.player.titles] };
-    player.fame = Math.max(0, player.fame + (choice.fame ?? 0));
-    player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0)));
-    player.salary += choice.salary ?? 0;
-    player.injuries += choice.injuryWeeks ?? 0;
-    player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0)));
+    if (won) {
+      player.fame = Math.max(0, player.fame + (choice.fame ?? 0));
+      player.form = Math.max(1, Math.min(99, player.form + (choice.form ?? 0)));
+      player.salary += choice.salary ?? 0;
+      player.injuries += choice.injuryWeeks ?? 0;
+      player.clubIdolatry[player.clubId] = Math.max(0, Math.min(100, (player.clubIdolatry[player.clubId] ?? 0) + (choice.idolatry ?? 0)));
+    } else {
+      player.fame = Math.max(0, player.fame - 1);
+      player.form = Math.max(1, player.form - 3);
+      player.clubIdolatry[player.clubId] = Math.max(0, (player.clubIdolatry[player.clubId] ?? 0) - 2);
+    }
+    setPendingEventChoice(null);
 
     if (choice.finalOutcome && lastResult?.cupFinal) {
-      const won = choice.finalOutcome === "win";
       const cupFinal = { ...lastResult.cupFinal, won };
       const resolved = { ...lastResult, cupFinal, title: won ? cupFinal.competitionName : lastResult.title };
       if (won) {
@@ -160,6 +207,7 @@ export default function Home() {
       history[history.length - 1] = resolved;
       setCareer({ ...career, player, history });
       setLastResult(resolved);
+      setEvent(null);
       setEventQueue([]);
       setToast(won ? "DEFESA DECISIVA! A taça é sua." : "A final escapou no último lance.");
       setScreen("evolution");
@@ -173,7 +221,8 @@ export default function Home() {
       setEventQueue(eventQueue.slice(1));
       return;
     }
-    setToast("Decisões registradas. A arquibancada sentiu o impacto.");
+    setEvent(null);
+    setToast(won ? "Decisão vencida. A arquibancada sentiu o impacto." : "A pressão falou mais alto, mas a carreira continua.");
     if (!lastResult) return setScreen("evolution");
     const route = routeAfterSeason(nextCareer, lastResult);
     if (route === "auto-final") {
@@ -185,7 +234,7 @@ export default function Home() {
     }
     setScreen(route === "minigame" ? "minigame" : "evolution");
   }
-  function takeCard(card: UpgradeCard) { if (!career) return; setCareer({ ...career, player: applyCard(career.player, card) }); setToast(`${card.name} aplicada. OVR recalculado.`); setScreen("career"); }
+  function takeCard(card: UpgradeCard) { if (!career) return; const nextCareer = { ...career, player: applyCard(career.player, card) }; setToast(`${card.name} aplicada. OVR recalculado.`); playSeason(nextCareer); }
   function transferTo(club: Club) { if (!career) return; const previous = clubs.find((item) => item.id === career.player.clubId); const rival = Boolean(previous?.rivals.includes(club.id)); const player = { ...career.player, clubId: club.id, clubIdolatry: { ...career.player.clubIdolatry, [club.id]: 5 }, judasAt: [...career.player.judasAt] }; if (rival && previous && !player.judasAt.includes(previous.id)) player.judasAt.push(previous.id); setCareer({ ...career, player }); setToast(rival ? `Transferência selada. Parte da torcida do ${previous?.name} vai chamá-lo de Judas.` : `Contrato assinado com ${club.name}.`); setScreen("career"); }
   const club = career ? clubs.find((item) => item.id === career.player.clubId) ?? clubs[0] : clubs[0];
   if (!ready) return <main className="app-shell start-shell"><div className="stadium-glow" /><nav className="topbar"><Brand compact /><span className="save-chip">◉ Carregando…</span></nav></main>;
@@ -194,12 +243,16 @@ export default function Home() {
   if (!career) return null;
   if (screen === "evolution") return <Evolution player={career.player} seed={career.seed + career.season} onSelect={takeCard} onSkip={() => setScreen("career")} />;
   if (screen === "market") return <Market currentClub={club} player={career.player} onBack={() => setScreen("career")} onSelect={transferTo} />;
-  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={lastResult} score={gameScore} onScore={setGameScore} onFinish={(won) => { resolveFinal(won); setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : "A decisão escapou, mas a carreira continua."); setScreen("evolution"); }} />;
+  if (screen === "minigame") return <MiniGame game={activeGame ?? miniGameForSeed(career.seed + career.season)} result={pendingEventChoice ? null : lastResult} decision={pendingEventChoice?.event ?? null} score={gameScore} onScore={setGameScore} onFinish={(won) => {
+    if (pendingEventChoice) return resolveEventDecision(won);
+    resolveFinal(won);
+    setToast(won ? "Decisão vencida. Seu nome entrou na noite da final." : "A decisão escapou, mas a carreira continua.");
+    setScreen("evolution");
+  }} />;
   if (screen === "legacy") return <Legacy career={career} club={club} onRestart={() => { localStorage.removeItem("o-rei-career"); setCareer(null); setScreen("home"); }} />;
   return (
     <>
-      <Career career={career} club={club} result={lastResult} toast={screen === "career" ? toast : null} dimmed={screen === "event"} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onLegacy={() => setScreen("legacy")} />
-      {screen === "event" && event && <EventModal event={event} onChoose={chooseEvent} />}
+      <Career career={career} club={club} result={lastResult} toast={screen === "career" ? toast : null} event={screen === "event" ? event : null} onChoose={chooseEvent} onDismiss={() => setToast(null)} onPlay={playSeason} onMarket={() => setScreen("market")} onLegacy={() => setScreen("legacy")} onSetFinalStyle={(finalStyle) => setCareer({ ...career, finalStyle })} onSetArchetype={(archetype) => playSeason({ ...career, archetype })} />
     </>
   );
 }
@@ -221,7 +274,6 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
   const [countrySearch, setCountrySearch] = useState("");
   const [leagueCountryOpen, setLeagueCountryOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
-  const [finalStyle, setFinalStyle] = useState<FinalStyle | null>(null);
   const [dailyReset, setDailyReset] = useState("04:00:00");
 
   const playableCompetitions = useMemo(
@@ -438,9 +490,8 @@ function Create({ onBack, onCreate }: { onBack: () => void; onCreate: (data: Par
           </section>
         </article>
 
-        <PlayerTypePicker value={finalStyle} onChange={setFinalStyle} />
         <section className="idolo-start-footer">
-            <button type="button" className="idolo-start-btn" disabled={!finalStyle} onClick={() => finalStyle && onCreate({ name, position, club: selected, foot, height, shirt, nationality, finalStyle })}>▶ COMEÇAR MINHA CARREIRA</button>
+            <button type="button" className="idolo-start-btn" onClick={() => onCreate({ name, position, club: selected, foot, height, shirt, nationality })}>▶ COMEÇAR MINHA CARREIRA</button>
             <div className="idolo-rare locked"><span>✨ JOIA RARA</span><small>🔒 Em breve</small></div>
           </section>
       </div>
@@ -462,8 +513,7 @@ function choiceEffects(choice: CareerEvent["choices"][number]) {
 
 function EventModal({ event, onChoose }: { event: CareerEvent; onChoose: (index: number) => void }) {
   return (
-    <div className="event-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
-      <article className="event-modal">
+      <article className="event-modal" role="region" aria-labelledby="event-modal-title">
         <header className="event-modal-head">
           <span className="eyebrow">FORA DAS QUATRO LINHAS</span>
           <h2 id="event-modal-title">{event.title}</h2>
@@ -491,11 +541,10 @@ function EventModal({ event, onChoose }: { event: CareerEvent; onChoose: (index:
         </div>
         <small className="event-modal-foot">Suas escolhas também viram parte da sua história.</small>
       </article>
-    </div>
   );
 }
 
-function Career({ career, club, result, toast, dimmed = false, onDismiss, onPlay, onMarket, onLegacy }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; dimmed?: boolean; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void }) {
+function Career({ career, club, result, toast, event, onChoose, onDismiss, onPlay, onMarket, onLegacy, onSetFinalStyle, onSetArchetype }: { career: CareerState; club: Club; result: SeasonResult | null; toast: string | null; event: CareerEvent | null; onChoose: (index: number) => void; onDismiss: () => void; onPlay: () => void; onMarket: () => void; onLegacy: () => void; onSetFinalStyle: (style: FinalStyle) => void; onSetArchetype: (archetype: string) => void }) {
   const player = career.player, ovr = computeOvr(player), idolatry = player.clubIdolatry[player.clubId] ?? 0;
   const top = positionAttributeKeys[player.position].map((key) => [key, player.attributes[key]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const seasonGames = result?.games ?? 0, seasonGoals = result?.goals ?? 0;
@@ -506,7 +555,7 @@ function Career({ career, club, result, toast, dimmed = false, onDismiss, onPlay
   const nextIdolatry = Math.min(100, Math.ceil(idolatry / 25) * 25 || 25);
   const selectionStatus = ovr >= 82 ? "CONVOCADO" : ovr >= 72 ? "EM OBSERVAÇÃO" : "SEM CHANCE";
 
-  return <main className={`app-shell career-shell dashboard-shell ${dimmed ? "dashboard-dimmed" : ""}`}>
+  return <main className="app-shell career-shell dashboard-shell">
     <div className="dashboard-grid el-idolo-grid">
       <aside className="gallery-panel">
         <div className="side-label">GALERIA</div>
@@ -541,36 +590,26 @@ function Career({ career, club, result, toast, dimmed = false, onDismiss, onPlay
             </div>
           </div>
           <div className="selection-line"><span><img src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} alt="" /> SELEÇÃO: {selectionStatus}{result?.nationalTeamCompetition && ovr >= 82 ? ` · ${result.nationalTeamTitle ? "CAMPEÃO" : "DISPUTOU"} ${result.nationalTeamCompetition.toUpperCase()}` : ""}</span><span>{career.history.length} TEMPORADAS</span></div>
-        </section>
-
-        <section className="career-action-section">
-          <div className="career-action-grid">
-            <button type="button" className="career-action-card career-action-primary" onClick={onPlay}>
-              <span className="career-action-icon">▶</span>
-              <strong>CONTINUAR</strong>
-              <small>{career.season}/{String(career.season + 1).slice(-2)} · Temporada {career.history.length + 1}</small>
-            </button>
-            {career.season % 2 === 0 && (
-              <button type="button" className="career-action-card" onClick={onMarket}>
-                <span className="career-action-icon">💼</span>
-                <strong>MERCADO</strong>
-                <small>Ver propostas abertas</small>
-              </button>
-            )}
-            <button type="button" className="career-action-card" onClick={onLegacy}>
-              <span className="career-action-icon">☷</span>
-              <strong>VER CARREIRA</strong>
-              <small>Legado e histórico</small>
-            </button>
-            <button type="button" className="career-action-card career-action-locked" disabled>
-              <span className="career-action-icon">🛒</span>
-              <strong>GRÁTIS</strong>
-              <small>Em breve</small>
-            </button>
+          <button type="button" className="career-history" onClick={onLegacy}>☷&nbsp; VER CARREIRA</button>
+          <div className="dashboard-actions" aria-label="Atalhos da carreira">
+            <button type="button" className="action-chip action-play" disabled={!career.finalStyle || !career.archetype} onClick={onPlay} title="Jogar temporada">▶</button>
+            <button type="button" className="action-chip action-market" disabled={!career.finalStyle || !career.archetype} onClick={onMarket} title="Mercado">💼</button>
+            <button type="button" className="action-chip action-free" disabled title="Loja em breve">🛒<small>GRÁTIS</small></button>
           </div>
         </section>
 
-        {career.finalStyle && <PlayerTypePicker value={career.finalStyle} onChange={() => undefined} compact locked />}
+        {!career.finalStyle ? (
+          <section className="dashboard-onboarding">
+            <span className="dashboard-onboarding-kicker">PRIMEIRO PASSO</span>
+            <PlayerTypePicker value={null} onChange={onSetFinalStyle} />
+          </section>
+        ) : !career.archetype ? (
+          <section className="dashboard-onboarding dashboard-archetype-stage">
+            <span className="dashboard-onboarding-kicker">SEU ESTILO ESTÁ DEFINIDO</span>
+            <ArchetypePicker position={player.position} value={career.archetype} onChange={onSetArchetype} />
+          </section>
+        ) : null}
+        {event && <EventModal event={event} onChoose={onChoose} />}
       </div>
       <aside className="trajectory-panel">
         <div className="side-label">TRAJETÓRIA</div>
@@ -586,7 +625,7 @@ function Meter({ label, value, gold = false }: { label: string; value: number; g
 
 function Evolution({ player, seed, onSelect, onSkip }: { player: Player; seed: number; onSelect: (card: UpgradeCard) => void; onSkip: () => void }) { const cards = chooseUpgradeCards(player.position, seed); return <main className="app-shell evolution-shell"><nav className="topbar"><Brand compact /><span className="save-chip">EVOLUÇÃO DE TEMPORADA</span></nav><section className="evolution-wrap"><div className="eyebrow">MOMENTO DE TREINO</div><h1>Escolha o próximo salto.</h1><p>Uma carta por temporada. Ganhos reais, feitos para a posição que você escolheu.</p><div className="card-grid">{cards.map((card) => <button key={card.id} className={`training-card ${card.rarity}`} onClick={() => onSelect(card)}><span className="rarity">{card.rarity}</span><b>{card.name}</b><div>{Object.entries(card.changes).map(([key, value]) => <span key={key}>+{value} {attributeLabels[key]}</span>)}</div><i>ESCOLHER →</i></button>)}</div><button className="text-action" onClick={onSkip}>Pular evolução desta temporada</button></section></main>; }
 function Market({ currentClub, player, onBack, onSelect }: { currentClub: Club; player: Player; onBack: () => void; onSelect: (club: Club) => void }) { const offers = clubs.filter((club) => club.id !== currentClub.id).sort((a, b) => Number(currentClub.rivals.includes(b.id)) - Number(currentClub.rivals.includes(a.id))).slice(0, 4); return <main className="app-shell market-shell"><nav className="topbar"><button className="back-button" onClick={onBack}>← Carreira</button><Brand compact /><span className="step">JANELA DE MERCADO</span></nav><section className="market-wrap"><div className="eyebrow">CONTRATOS E CONSEQUÊNCIAS</div><h1>O mercado está de olho.</h1><p>Trocar de clube não é apenas mudar de camisa. Em clássico, a arquibancada não esquece.</p><div className="offer-list"><article className="offer current"><ClubCrest club={currentClub} /><div><small>CLUBE ATUAL</small><h2>{currentClub.name}</h2><p>Idolatria: {player.clubIdolatry[currentClub.id] ?? 0}/100</p></div><b>FICAR</b></article>{offers.map((club) => { const rival = currentClub.rivals.includes(club.id); return <article className={`offer ${rival ? "rival" : ""}`} key={club.id}><ClubCrest club={club} /><div><small>{rival ? "RIVAL DIRETO · RISCO DE JUDAS" : "PROPOSTA FORMAL"}</small><h2>{club.name}</h2><p>Força {club.strength} · reputação {club.reputation}</p></div><button className="button button-ghost" onClick={() => onSelect(club)}>ANALISAR</button></article>; })}</div></section></main>; }
-function MiniGame({ game, result, score, onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
+function MiniGame({ game, result, decision, score, onScore, onFinish }: { game: MiniGameDefinition; result: SeasonResult | null; decision: CareerEvent | null; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) {
   const body = game.mode === "sequence" ? <SequenceGame game={game} onFinish={onFinish} />
     : game.mode === "timing" ? <TimingGame onFinish={onFinish} />
       : game.mode === "grid" ? <GridGame onFinish={onFinish} />
@@ -594,7 +633,7 @@ function MiniGame({ game, result, score, onScore, onFinish }: { game: MiniGameDe
           : game.mode === "code" ? <CodeGame onFinish={onFinish} />
             : <LaneGame game={game} score={score} onScore={onScore} onFinish={onFinish} />;
   const final = result?.cupFinal;
-  return <main className="app-shell game-shell"><nav className="topbar"><Brand compact /><span className="save-chip">FINAL · MINIGAME RNG</span></nav><section className="game-wrap"><div className="eyebrow">{final ? final.competitionName.toUpperCase() : game.name}</div><h1>{final ? `Final contra ${final.opponentClubName}.` : "Decisão no detalhe."}</h1><p>{final ? `A campanha colocou seu clube diante do ${final.opponentClubName}. O minigame decide a taça.` : result?.title ? "Você pode transformar o título em uma noite inesquecível." : game.description}</p><div className="tutorial">{game.tutorial}</div>{body}</section></main>;
+  return <main className="app-shell game-shell"><nav className="topbar"><Brand compact /><span className="save-chip">{decision ? "DECISÃO · MINIGAME" : "FINAL · MINIGAME"}</span></nav><section className="game-wrap"><div className="eyebrow">{decision ? "A ESCOLHA PRECISA DE AÇÃO" : final ? final.competitionName.toUpperCase() : game.name}</div><h1>{decision ? decision.title : final ? `Final contra ${final.opponentClubName}.` : "Decisão no detalhe."}</h1><p>{decision ? `${decision.copy} Resolva o minigame para confirmar sua decisão.` : final ? `A campanha colocou seu clube diante do ${final.opponentClubName}. O minigame decide a taça.` : result?.title ? "Você pode transformar o título em uma noite inesquecível." : game.description}</p><div className="tutorial">{game.tutorial}</div>{body}</section></main>;
 }
 function LaneGame({ game, score, onScore, onFinish }: { game: MiniGameDefinition; score: number; onScore: (value: number) => void; onFinish: (won: boolean) => void }) { const [round, setRound] = useState(0); const targets = useMemo(() => [2, 0, 3, 1, 2], []); function choose(lane: number) { const next = score + (lane === targets[round] ? 1 : 0); onScore(next); if (round + 1 >= game.rounds) onFinish(next >= Math.ceil(game.rounds * .6)); else setRound(round + 1); } return <><div className="scoreboard"><span>Rodada {round + 1}/{game.rounds}</span><b>{score} acertos</b></div><div className="goal">{[0, 1, 2, 3].map((lane) => <button key={lane} onClick={() => choose(lane)} className={`goal-zone zone-${lane}`} aria-label={`Escolher zona ${lane + 1}`}><i /></button>)}</div><p className="game-hint">Leia o espaço e escolha uma faixa.</p></>; }
 function SequenceGame({ game, onFinish }: { game: MiniGameDefinition; onFinish: (won: boolean) => void }) { const sequence = [1, 3, 0, 2, 1]; const [step, setStep] = useState(0); function tap(value: number) { if (value !== sequence[step]) return onFinish(false); if (step + 1 === game.rounds) return onFinish(true); setStep(step + 1); } return <><div className="scoreboard"><span>Sequência</span><b>{step}/{game.rounds}</b></div><div className="signal-grid">{[0, 1, 2, 3].map((value) => <button key={value} className={`signal signal-${value}`} onClick={() => tap(value)} aria-label={`Sinal ${value + 1}`} />)}</div><p className="game-hint">O padrão: 2 · 4 · 1 · 3 · 2</p></>; }
