@@ -5,3 +5,4 @@ export * from "./engine";
 export * from "./importer";
 export * from "./persistence";
 export * from "./minigames";
+export * from "./supabase";
