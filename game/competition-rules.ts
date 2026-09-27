@@ -1,3 +1,5 @@
+import { countries, type CountryOption } from "./countries";
+
 /** Regulamento explícito de cada país presente no catálogo. */
 export interface CountryCompetitionRule {
   topLeague: string;
@@ -51,3 +53,60 @@ export const COUNTRY_COMPETITION_RULES: Record<string, CountryCompetitionRule> =
 };
 
 export function competitionRuleFor(country: string) { return COUNTRY_COMPETITION_RULES[country]; }
+
+/**
+ * Copa do Mundo: seleções fortes entram em todos os ciclos, seleções
+ * competitivas disputam uma vaga simulada e as seleções sem estrutura no
+ * catálogo não entram. Assim Brunei, por exemplo, nunca cai em um grupo.
+ */
+export type WorldCupEligibility = "core" | "conditional" | "ineligible";
+
+export const WORLD_CUP_CORE_CODES = new Set([
+  "AR", "BR", "UY", "CO", "EC", // América do Sul
+  "US", "MX", "CA", // CONCACAF
+  "DE", "ES", "FR", "GB", "IT", "PT", "NL", "BE", "HR", "CH", "DK", "AT", "TR", "RS", "PL", "UA", // Europa
+  "JP", "KR", "IR", "AU", "SA", "QA", // Ásia/Oceania
+  "MA", "SN", "NG", "DZ", "EG", "TN", "CI", "CM", "GH", "ZA", // África
+  "NZ",
+]);
+
+/** Países que não têm vaga possível na simulação atual. */
+export const WORLD_CUP_INELIGIBLE_CODES = new Set([
+  "AF", "AG", "AD", "BS", "BH", "BB", "BZ", "BT", "BN", "CV", "KH", "CF", "TD", "KM", "CG", "DJ", "DM", "GQ", "ER", "SZ", "FJ", "GD", "GW", "GY", "KI", "LA", "LS", "LR", "LY", "LI", "LU", "MV", "MH", "FM", "MD", "MC", "MN", "ME", "MM", "NA", "NR", "NP", "NI", "KP", "OM", "PW", "PG", "KN", "LC", "VC", "WS", "SM", "ST", "SC", "SL", "SB", "SO", "SR", "TL", "TO", "TV", "VU", "YE", "PS", "VA",
+]);
+
+export function worldCupEligibilityFor(nationality: string): WorldCupEligibility {
+  const code = countries.find((country) => country.name === nationality)?.code;
+  if (!code || WORLD_CUP_INELIGIBLE_CODES.has(code)) return "ineligible";
+  return WORLD_CUP_CORE_CODES.has(code) ? "core" : "conditional";
+}
+
+function countryCycleSeed(country: CountryOption, season: number) {
+  return [...country.code].reduce((seed, letter) => seed * 31 + letter.charCodeAt(0), season * 101);
+}
+function worldCupRoll(country: CountryOption, season: number) {
+  return Math.abs(Math.sin(countryCycleSeed(country, season))) % 1;
+}
+
+export function worldCupParticipants(season: number) {
+  const core = countries.filter((country) => worldCupEligibilityFor(country.name) === "core");
+  const conditional = countries
+    .filter((country) => worldCupEligibilityFor(country.name) === "conditional")
+    .sort((a, b) => worldCupRoll(a, season) - worldCupRoll(b, season));
+  // A edição tem 48 vagas: as potências ocupam as permanentes e o resto vem das eliminatórias.
+  return [...core, ...conditional].slice(0, 48);
+}
+
+/** Resultado determinístico das eliminatórias para toda a edição. */
+export function qualifiesForWorldCup(nationality: string, season: number) {
+  return worldCupParticipants(season).some((country) => country.name === nationality);
+}
+
+/** Vagas do Super Mundial: campeões continentais do ciclo + ranking mundial. */
+export const SUPER_MUNDIAL_CONTINENTAL_SOURCES = ["lib", "ucl", "concacaf", "afc-cl"] as const;
+export const SUPER_MUNDIAL_RANKING_SLOTS = {
+  europe: 12,
+  southAmerica: 8,
+  northAmerica: 6,
+  asia: 6,
+} as const;
