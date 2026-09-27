@@ -54,31 +54,44 @@ export const COUNTRY_COMPETITION_RULES: Record<string, CountryCompetitionRule> =
 
 export function competitionRuleFor(country: string) { return COUNTRY_COMPETITION_RULES[country]; }
 
-/**
- * Copa do Mundo: seleções fortes entram em todos os ciclos, seleções
- * competitivas disputam uma vaga simulada e as seleções sem estrutura no
- * catálogo não entram. Assim Brunei, por exemplo, nunca cai em um grupo.
- */
-export type WorldCupEligibility = "core" | "conditional" | "ineligible";
+/** Grupos de classificação e dificuldade de Copa do Mundo. */
+export type WorldCupEligibility = "group1" | "group2" | "group3" | "group4";
+export type WorldCupMiniGameDifficulty = "easy" | "standard" | "hard" | "veryHard";
 
-export const WORLD_CUP_CORE_CODES = new Set([
-  "AR", "BR", "UY", "CO", "EC", // América do Sul
+/** 100%: tradicionais em toda edição. */
+export const WORLD_CUP_GROUP_1_CODES = new Set([
+  "BR", "AR", "UY", "CO", "EC", // América do Sul
   "US", "MX", "CA", // CONCACAF
-  "DE", "ES", "FR", "GB", "IT", "PT", "NL", "BE", "HR", "CH", "DK", "AT", "TR", "RS", "PL", "UA", // Europa
-  "JP", "KR", "IR", "AU", "SA", "QA", // Ásia/Oceania
-  "MA", "SN", "NG", "DZ", "EG", "TN", "CI", "CM", "GH", "ZA", // África
-  "NZ",
+  "DE", "ES", "FR", "GB", "IT", "PT", "NL", "BE", "HR", "CH", "SE", "NO", // Europa
+  "JP", "KR", "IR", "AU", "SA", "NZ", // Ásia/Oceania
+  "MA", "SN", "NG", "EG", // África
 ]);
-
-/** Países que não têm vaga possível na simulação atual. */
-export const WORLD_CUP_INELIGIBLE_CODES = new Set([
-  "AF", "AG", "AD", "BS", "BH", "BB", "BZ", "BT", "BN", "CV", "KH", "CF", "TD", "KM", "CG", "DJ", "DM", "GQ", "ER", "SZ", "FJ", "GD", "GW", "GY", "KI", "LA", "LS", "LR", "LY", "LI", "LU", "MV", "MH", "FM", "MD", "MC", "MN", "ME", "MM", "NA", "NR", "NP", "NI", "KP", "OM", "PW", "PG", "KN", "LC", "VC", "WS", "SM", "ST", "SC", "SL", "SB", "SO", "SR", "TL", "TO", "TV", "VU", "YE", "PS", "VA",
+/** 65%: seleções competitivas que costumam ter eliminatórias duras. */
+export const WORLD_CUP_GROUP_2_CODES = new Set([
+  "CL", "PY", "PE", "CR", "PA", "JM", "HN", "SV", "GT", "HT", "TT",
+  "DK", "AT", "TR", "RS", "PL", "UA", "GR", "RO", "CZ", "HU", "SK", "SI", "BG", "BA", "AL", "GE",
+  "DZ", "TN", "CM", "CI", "GH", "ZA", "ML", "CD", "BF", "CV", "GN",
+  "QA", "AE", "IQ", "UZ", "OM", "JO",
+]);
+/** 25%: zebras possíveis. */
+export const WORLD_CUP_GROUP_3_CODES = new Set([
+  "BO", "VE", "CU", "DO", "FI", "IE", "IS", "ME", "MK", "AM",
+  "CN", "IN", "VN", "TH", "ID", "MY", "GA", "UG", "ZM", "ZW", "KE", "TZ",
+  "FJ", "PG", "SB", "VU",
 ]);
 
 export function worldCupEligibilityFor(nationality: string): WorldCupEligibility {
   const code = countries.find((country) => country.name === nationality)?.code;
-  if (!code || WORLD_CUP_INELIGIBLE_CODES.has(code)) return "ineligible";
-  return WORLD_CUP_CORE_CODES.has(code) ? "core" : "conditional";
+  if (code && WORLD_CUP_GROUP_1_CODES.has(code)) return "group1";
+  if (code && WORLD_CUP_GROUP_2_CODES.has(code)) return "group2";
+  if (code && WORLD_CUP_GROUP_3_CODES.has(code)) return "group3";
+  return "group4";
+}
+export function worldCupQualificationChance(nationality: string) {
+  return ({ group1: 1, group2: .65, group3: .25, group4: .02 } as const)[worldCupEligibilityFor(nationality)];
+}
+export function worldCupMiniGameDifficulty(nationality: string): WorldCupMiniGameDifficulty {
+  return ({ group1: "easy", group2: "standard", group3: "hard", group4: "veryHard" } as const)[worldCupEligibilityFor(nationality)];
 }
 
 function countryCycleSeed(country: CountryOption, season: number) {
@@ -89,12 +102,13 @@ function worldCupRoll(country: CountryOption, season: number) {
 }
 
 export function worldCupParticipants(season: number) {
-  const core = countries.filter((country) => worldCupEligibilityFor(country.name) === "core");
-  const conditional = countries
-    .filter((country) => worldCupEligibilityFor(country.name) === "conditional")
-    .sort((a, b) => worldCupRoll(a, season) - worldCupRoll(b, season));
-  // A edição tem 48 vagas: as potências ocupam as permanentes e o resto vem das eliminatórias.
-  return [...core, ...conditional].slice(0, 48);
+  const guaranteed = countries.filter((country) => worldCupEligibilityFor(country.name) === "group1");
+  const drawn = countries.filter((country) => worldCupEligibilityFor(country.name) !== "group1")
+    .map((country) => ({ country, roll: worldCupRoll(country, season), chance: worldCupQualificationChance(country.name) }))
+    .sort((a, b) => (a.roll / a.chance) - (b.roll / b.chance));
+  // A edição tem 48 vagas. O sorteio ponderado mantém 100/65/25/2 como força
+  // de classificação, mas nunca estoura o formato da Copa.
+  return [...guaranteed, ...drawn.map((entry) => entry.country)].slice(0, 48);
 }
 
 /** Resultado determinístico das eliminatórias para toda a edição. */

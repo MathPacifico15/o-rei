@@ -7,7 +7,7 @@ function assert(condition, message) {
 const vite = await createServer({ root: process.cwd(), configFile: false, server: { middlewareMode: true } });
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
-  const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupParticipants } = await vite.ssrLoadModule("/game/competition-rules.ts");
+  const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
   const { baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs } = await vite.ssrLoadModule("/game/engine.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
@@ -51,20 +51,19 @@ try {
   assert(!netherlands.result.campaigns?.some((campaign) => campaign.competitionId === "ned-super"), "Supercopa holandesa liberada sem título anterior");
 
   // Copa do Mundo: potências entram sempre; Brunei não pode aparecer nem como classificado.
-  assert(worldCupEligibilityFor("Brasil") === "core" && qualifiesForWorldCup("Brasil", 2026), "Brasil deveria estar garantido na Copa do Mundo");
-  assert(worldCupEligibilityFor("Brunei") === "ineligible" && !qualifiesForWorldCup("Brunei", 2026), "Brunei não pode disputar a Copa do Mundo");
+  assert(worldCupEligibilityFor("Brasil") === "group1" && qualifiesForWorldCup("Brasil", 2026), "Brasil deveria estar garantido na Copa do Mundo");
+  assert(worldCupEligibilityFor("Equador") === "group1" && worldCupMiniGameDifficulty("Equador") === "easy", "Equador deveria ser Grupo 1 com minigame fácil");
+  assert(worldCupEligibilityFor("Polônia") === "group2" && worldCupMiniGameDifficulty("Polônia") === "standard", "Polônia deveria ser Grupo 2");
+  assert(worldCupEligibilityFor("Índia") === "group3" && worldCupMiniGameDifficulty("Índia") === "hard", "Índia deveria ser Grupo 3");
+  assert(worldCupEligibilityFor("Brunei") === "group4" && worldCupMiniGameDifficulty("Brunei") === "veryHard", "Brunei deveria ser Grupo 4 com minigame muito difícil");
   assert(worldCupParticipants(2026).length === 48, "A Copa do Mundo deve ter exatamente 48 seleções");
   const brazilWorldCupState = makeState(flamengo);
   brazilWorldCupState.player.attributes = { ...brazilWorldCupState.player.attributes, finalizacao: 95, cabecada: 94, velocidade: 94, forca: 92, lideranca: 90, fisico: 92 };
   brazilWorldCupState.highestOvr = computeOvr(brazilWorldCupState.player);
   const brazilWorldCup = simulateSeason(brazilWorldCupState);
   assert(brazilWorldCup.result.campaigns?.some((campaign) => campaign.competitionId === "wc" && campaign.matches.length === 8), "Brasil qualificado não recebeu campanha completa de Copa do Mundo");
-  const bruneiWorldCupState = makeState(flamengo);
-  bruneiWorldCupState.player.nationality = "Brunei";
-  bruneiWorldCupState.player.attributes = { ...brazilWorldCupState.player.attributes };
-  bruneiWorldCupState.highestOvr = computeOvr(bruneiWorldCupState.player);
-  const bruneiWorldCup = simulateSeason(bruneiWorldCupState);
-  assert(!bruneiWorldCup.result.campaigns?.some((campaign) => campaign.competitionId === "wc"), "Brunei recebeu campanha indevida de Copa do Mundo");
+  assert((brazilWorldCup.result.finals ?? []).filter((final) => final.competitionId === "wc").every((final) => final.worldCupDifficulty === "easy"), "Grupo 1 não aplicou dificuldade fácil na Copa");
+  assert(worldCupQualificationChance("Brunei") === .02, "Brunei deveria manter 2% de chance no Grupo 4");
 
   // Super Mundial: campeão continental do ciclo entra; clube de divisão inferior não entra pelo ranking.
   const mundialState = makeState(flamengo);

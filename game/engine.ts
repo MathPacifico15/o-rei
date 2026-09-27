@@ -1,6 +1,6 @@
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
-import { competitionRuleFor, qualifiesForWorldCup, SUPER_MUNDIAL_CONTINENTAL_SOURCES, SUPER_MUNDIAL_RANKING_SLOTS, worldCupParticipants } from "./competition-rules";
+import { competitionRuleFor, qualifiesForWorldCup, SUPER_MUNDIAL_CONTINENTAL_SOURCES, SUPER_MUNDIAL_RANKING_SLOTS, worldCupMiniGameDifficulty, worldCupParticipants } from "./competition-rules";
 import type { AttributeKey, Attributes, CampaignMatch, CampaignQualification, CampaignResult, CareerEvent, CareerState, Club, ClubCareerRecord, ClubDynamics, ContractOffer, ContractRole, CupFinal, EvolutionFocus, LeagueTable, LeagueTableEntry, MarketWindow, Player, Position, RandomCareerStart, SeasonCampaign, SeasonEvolution, SeasonResult, UpgradeCard } from "./types";
 
 export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
@@ -761,7 +761,8 @@ function buildWorldCupCampaign(state: CareerState, player: Player, random: () =>
   const matches = phases.map((phase, index) => { const rival = opponents[Math.floor(random() * opponents.length)] ?? countries[0]; return { phase, opponentId: `national-${rival.code}`, opponentName: rival.name, result: "pending" as const, playable: true, difficulty: index + 1 }; });
   const groupTable = [{ name: player.nationality, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: 3-index, goalDifference: 1-index, goalsFor: 2-index, position: index+2 }))];
   const campaign: CampaignResult = { id, competitionId: "wc", competitionName: competition.name, category: "national", qualification: { competitionId: "wc", source: "convocação para a seleção" }, status: "active", phase: phases[0], matches, prize: competition.prestige * 180_000, groupTable };
-  const finals = matches.map((match, index) => ({ competitionId:"wc", competitionName:competition.name, opponentClubId:match.opponentId!, opponentClubName:match.opponentName, stakes:"campaign" as const, phase:"title" as const, scope:"national" as const, campaignId:id, campaignMatchIndex:index, campaignDifficulty:match.difficulty }));
+  const worldCupDifficulty = worldCupMiniGameDifficulty(player.nationality);
+  const finals = matches.map((match, index) => ({ competitionId:"wc", competitionName:competition.name, opponentClubId:match.opponentId!, opponentClubName:match.opponentName, stakes:"campaign" as const, phase:"title" as const, scope:"national" as const, campaignId:id, campaignMatchIndex:index, campaignDifficulty:match.difficulty, worldCupDifficulty }));
   return { campaign, finals };
 }
 

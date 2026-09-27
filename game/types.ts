@@ -196,6 +196,8 @@ export interface CupFinal {
   /** Partida de uma campanha longa, como Copa do Mundo ou Super Mundial. */
   campaignMatchIndex?: number;
   campaignDifficulty?: number;
+  /** A seleção define a dificuldade base dos minigames da Copa do Mundo. */
+  worldCupDifficulty?: "easy" | "standard" | "hard" | "veryHard";
 }
 
 /** Escolha anual de evolução natural, separada das cartas de treino. */
