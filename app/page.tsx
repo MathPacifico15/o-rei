@@ -250,6 +250,8 @@ export default function Home() {
     setCareer({ ...career, player, history });
     setLastResult(history[history.length - 1] ?? lastResult);
     setSeasonConsequences((items) => [...items, consequence]);
+    // The resolved event must leave the panel before a pending final can start.
+    setEvent(null);
     if (eventQueue.length && !lastResult?.finalOpportunity) {
       setEvent(eventQueue[0]);
       setEventQueue(eventQueue.slice(1));
