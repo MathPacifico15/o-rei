@@ -8,7 +8,7 @@ const vite = await createServer({ root: process.cwd(), configFile: false, server
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
-  const { baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs } = await vite.ssrLoadModule("/game/engine.ts");
+  const { applyAutomaticSeasonEvolution, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs } = await vite.ssrLoadModule("/game/engine.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
     assert(result, `Competição inexistente no regulamento: ${id}`);
@@ -29,6 +29,7 @@ try {
   const america = clubs.find((club) => club.id === "america-mg" || club.name === "América Mineiro" || club.name === "América-MG");
   assert(america, "América-MG não encontrado");
   const serieB = simulateSeason(makeState(america));
+  assert(serieB.result.leagueId === "bra-b" && serieB.result.leagueName === "Brasileirão Série B", "Resumo da Série B trocou a liga disputada");
   assert(!serieB.result.campaigns?.some((campaign) => ["copa-br", "bra-super"].includes(campaign.competitionId)), "Série B entrou em copa/supercopa indevida");
   for (const row of serieB.state.leagueTables["bra-b"].entries) assert(row.points === row.wins * 3 + row.draws, "Tabela com pontos inválidos");
 
@@ -37,6 +38,20 @@ try {
   const serieA = simulateSeason(makeState(flamengo));
   assert(serieA.result.campaigns?.some((campaign) => campaign.competitionId === "copa-br"), "Série A não entrou na Copa do Brasil");
   assert(!serieA.result.campaigns?.some((campaign) => campaign.competitionId === "bra-super"), "Supercopa liberada sem título anterior");
+  const supercupState = makeState(flamengo);
+  supercupState.season = 2027;
+  supercupState.competitionWinners = { "bra-a": [{ clubId: flamengo.id, season: 2026 }] };
+  const supercupSeason = simulateSeason(supercupState);
+  assert(supercupSeason.result.campaigns?.some((campaign) => campaign.competitionId === "bra-super"), "Campeão não recebeu a Supercopa na temporada seguinte");
+  assert(supercupSeason.result.finals?.some((final) => final.competitionId === "bra-super"), "Final da Supercopa não foi disponibilizada para minigame");
+  const santos = clubs.find((club) => club.name === "Santos");
+  assert(santos, "Santos não encontrado");
+  const santosSeason = simulateSeason(makeState(santos));
+  assert(!santosSeason.result.campaigns?.some((campaign) => campaign.competitionId === "copa-verde"), "Santos entrou indevidamente na Copa Verde");
+  const goias = clubs.find((club) => club.name === "Goiás");
+  assert(goias, "Goiás não encontrado");
+  const goiasSeason = simulateSeason(makeState(goias));
+  assert(goiasSeason.result.campaigns?.some((campaign) => campaign.competitionId === "copa-verde"), "Clube elegível de Goiás ficou fora da Copa Verde");
 
   // Inglaterra e Holanda: mesmas garantias, sem regras exclusivas do Brasil.
   const championshipClub = clubs.find((club) => club.leagueId === "eng-c");
@@ -63,6 +78,9 @@ try {
   const brazilWorldCup = simulateSeason(brazilWorldCupState);
   assert(brazilWorldCup.result.campaigns?.some((campaign) => campaign.competitionId === "wc" && campaign.matches.length === 8), "Brasil qualificado não recebeu campanha completa de Copa do Mundo");
   assert((brazilWorldCup.result.finals ?? []).filter((final) => final.competitionId === "wc").every((final) => final.worldCupDifficulty === "easy"), "Grupo 1 não aplicou dificuldade fácil na Copa");
+  const worldCampaign = brazilWorldCup.result.campaigns?.find((campaign) => campaign.competitionId === "wc");
+  assert(new Set(worldCampaign.matches.map((match) => match.opponentId)).size === worldCampaign.matches.length, "Copa do Mundo repetiu adversário na mesma campanha");
+  assert(worldCampaign.matches.slice(-2).every((match) => worldCupEligibilityFor(match.opponentName) === "group1"), "Semifinal/final da Copa não usaram seleções do Grupo 1");
   assert(worldCupQualificationChance("Brunei") === .02, "Brunei deveria manter 2% de chance no Grupo 4");
 
   // Super Mundial: campeão continental do ciclo entra; clube de divisão inferior não entra pelo ranking.
@@ -78,6 +96,10 @@ try {
   // A agenda não pode despejar finais normais: no máximo duas por temporada para a elite.
   const normalFinals = (mundial.result.finals ?? []).filter((final) => final.stakes !== "campaign");
   assert(normalFinals.length <= 2, "Quantidade de finais normais acima do limite anual");
+
+  const veteran = { ...brazilWorldCupState.player, age: 36, attributes: { ...brazilWorldCupState.player.attributes } };
+  const decline = applyAutomaticSeasonEvolution(veteran, "generational", 2046, 99);
+  assert(Object.values(decline.evolution?.gains ?? {}).some((value) => value < 0), "Jogador veterano não perdeu atributos após os 30");
 
   console.log(`OK: ${Object.keys(COUNTRY_COMPETITION_RULES).length} regulamentos; Brasil, Inglaterra, Holanda, Copa do Mundo e Super Mundial validados.`);
 } finally {
