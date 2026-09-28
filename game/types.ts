@@ -142,6 +142,13 @@ export interface ClubCareerRecord {
   titles: string[];
 }
 
+/** Movimento anual aguardando a decisão do minigame do jogador. */
+export interface PendingDivisionSettlement {
+  country: string;
+  playerClubId: string;
+  playerLeagueId: string;
+}
+
 /** Valores que evoluem somente dentro da carreira, sem mudar o catálogo base. */
 export interface ClubDynamics {
   strength: number;
@@ -305,6 +312,8 @@ export interface CareerState {
   /** Divisão atual de cada clube dentro desta carreira. */
   leagueAssignments: Record<string, string>;
   leagueTables: Record<string, LeagueTable>;
+  /** A pirâmide do país do jogador só fecha após acesso/permanência. */
+  pendingDivisionSettlement?: PendingDivisionSettlement;
   shop: ShopState;
   nationalTeam: { games: number; goals: number; assists: number; titles: string[] };
   originCountry: string;
