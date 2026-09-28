@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./catalog";
+export * from "./competition-rules";
 export * from "./countries";
 export * from "./engine";
 export * from "./importer";

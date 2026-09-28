@@ -5,6 +5,8 @@ export interface MiniGameDefinition {
   name: string;
   mode: "code" | "cups" | "timing" | "maze" | "ticTacToe" | "pairs" | "puzzle" | "pressureMap" | "goldZone" | "ballTrack";
   description: string; tutorial: string; rounds: number; exclusive?: boolean;
+  /** Dificuldade contextual; usada nas campanhas de Copa do Mundo. */
+  difficulty?: "easy" | "standard" | "hard" | "veryHard";
 }
 const generic: MiniGameDefinition[] = [
   { id:"codigo-prancheta",name:"Código da prancheta",mode:"code",description:"O auxiliar protegeu a jogada decisiva com um código.",tutorial:"Memorize cinco números de 1 a 9. A terceira fase desaparece mais rápido.",rounds:3 },
