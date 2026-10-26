@@ -1,0 +1,428 @@
+{
+  "evidence_id": "ev_6c4408b009244144c677e2f352e7816d8d821c57204e4201402a844b68b6fd76",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "https://www.potrerofutbol.ar/el-idolo",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "duration_ms": 2000
+      },
+      {
+        "step_id": "privacy-options",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"MORE OPTIONS\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "privacy-reject",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"REJECT ALL\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "cup-final",
+        "timeout_ms": 7000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"Clubs Cup\")"
+        },
+        "button": "left",
+        "click_count": 1
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [],
+      "at_end": [
+        "accessibility"
+      ],
+      "events": [],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "761fc26cb45d1dcae12ffa36f73aee56127efb7f8e03be717b9688a6c78a3640"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    "scenario": {
+      "start_origin": "https://www.potrerofutbol.ar",
+      "action_count": 4,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 4527,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1643,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2014,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "privacy-options",
+        "action": "click",
+        "elapsed_ms": 294,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "privacy-reject",
+        "action": "click",
+        "elapsed_ms": 142,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "cup-final",
+        "action": "click",
+        "elapsed_ms": 220,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo/clubes",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7700d6eebc4ef3e69c022be29b818d88317e0eed102380eac335e243e7ff53b2",
+              "bytes": 1684,
+              "text": "- document:\n  - banner:\n    - link \"Potrero\":\n      - /url: /\n      - img \"Potrero\"\n    - link \"Watch live football on Potrero\":\n      - /url: /\n      - text: Live football\n    - button \"Español\"\n    - button \"Português\"\n    - button \"English\" [pressed]\n    - button \"Français\"\n    - button \"Italiano\"\n    - button \"Search\":\n      - img\n    - button \"Open competitions\":\n      - img\n  - main:\n    - link \"El Ídolo\":\n      - /url: /el-idolo\n      - heading \"El Ídolo\" [level=1]\n    - paragraph: The Clubs Cup\n    - tablist:\n      - tab \"Clubs\" [selected]\n      - tab \"National teams\"\n    - paragraph: \"Every finished run splits its glory between the clubs where it happened: the titles you won there, each season goals and the idolatry. This is everyone added up. It starts from zero every season.\"\n    - paragraph: Cup prize · 12 days left\n    - paragraph: \"Play with your club and help it become champion: on Monday 11/2, the 50 who added the most get up to 100 coins.\"\n    - text: Country\n    - button \"Whole world\":\n      - text: Whole world\n      - img\n    - img\n    - link \"← Back to El Ídolo\":\n      - /url: /el-idolo\n  - contentinfo:\n    - paragraph: POTRERO\n    - paragraph: Datos. Pasión. Fútbol.\n    - navigation \"Enlaces del sitio\":\n      - link \"About Potrero\":\n        - /url: /sobre-potrero\n      - link \"How to play El Ídolo\":\n        - /url: /el-idolo/guia\n      - link \"Privacy\":\n        - /url: /privacidad\n      - link \"Terms\":\n        - /url: /terminos\n      - link \"Advertising\":\n        - /url: /publicidad\n      - link \"Contact\":\n        - /url: /contacto\n    - link \"Arg FutQuiz · Trivia de fútbol argentino\":\n      - /url: https://argfutquiz.app"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.8059.85",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

@@ -6,4 +6,6 @@ export * from "./engine";
 export * from "./importer";
 export * from "./persistence";
 export * from "./minigames";
+export * from "./minigame-context";
+export * from "./world-tournaments";
 export * from "./supabase";

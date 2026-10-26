@@ -1,0 +1,828 @@
+{
+  "evidence_id": "ev_d21b9bb6e00b80ea351be23f1521e8eab64df1aa24f9a731afbe4a7a7329841f",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "https://www.potrerofutbol.ar/el-idolo",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "duration_ms": 2000
+      },
+      {
+        "step_id": "privacy-options",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"MORE OPTIONS\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "privacy-reject",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"REJECT ALL\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "random-start",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"🎲 Random\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "begin",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:text-is(\"Play\")"
+        },
+        "button": "left",
+        "click_count": 1
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [],
+      "at_end": [
+        "accessibility",
+        "storage",
+        "url"
+      ],
+      "events": [],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "ce980e2c4182c3f03cfe45116bba42a32732005b907dbd08cf713670f3498691"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    "scenario": {
+      "start_origin": "https://www.potrerofutbol.ar",
+      "action_count": 5,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 7824,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1748,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2001,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "privacy-options",
+        "action": "click",
+        "elapsed_ms": 319,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "privacy-reject",
+        "action": "click",
+        "elapsed_ms": 178,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "random-start",
+        "action": "click",
+        "elapsed_ms": 146,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 5,
+        "step_id": "begin",
+        "action": "click",
+        "elapsed_ms": 3198,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "4afc83070faecc2548c42a432b7714e5b92410c5c03dfc30771a63ad8d637529",
+              "bytes": 6255,
+              "text": "- document:\n  - banner:\n    - link \"Potrero\":\n      - /url: /\n      - img \"Potrero\"\n    - link \"Follow Potrero on X\":\n      - /url: https://x.com/potrero_app\n      - text: Follow us\n    - link \"Descargar Potrero Fútbol en el App Store\":\n      - /url: https://apps.apple.com/ar/app/potrero-f%C3%BAtbol-en-vivo/id6775603816\n      - text: Consíguelo en el App Store\n    - link \"Descargar Potrero Fútbol en Google Play\":\n      - /url: https://play.google.com/store/apps/details?id=ar.potrerofutbol.app\n      - text: Disponible en Google Play\n    - button \"Español\": es\n    - button \"Português\": pt\n    - button \"English\" [pressed]: en\n    - button \"Français\": fr\n    - button \"Italiano\": it\n  - main:\n    - complementary:\n      - img\n      - textbox \"Search team, player or tournament\"\n      - heading \"Favorites\" [level=3]\n      - paragraph:\n        - img\n        - text: Marcá equipos y ligas para verlos acá.\n      - button \"Daily Run Changes in 23:39:03 Playmaker Borussia M'gladbach Play now\"\n      - button \"South America\" [expanded]:\n        - text: South America\n        - img\n      - button \"Brazil 4\":\n        - text: Brazil 4\n        - img\n      - button \"Argentina 10\" [expanded]:\n        - text: Argentina 10\n        - img\n      - button \"Liga Profesional\"\n      - button \"Agregar Liga Profesional a favoritos\":\n        - img\n      - button \"Primera Nacional\"\n      - button \"Agregar Primera Nacional a favoritos\":\n        - img\n      - button \"Primera B\"\n      - button \"Agregar Primera B a favoritos\":\n        - img\n      - button \"Primera C\"\n      - button \"Agregar Primera C a favoritos\":\n        - img\n      - button \"Copa Argentina\"\n      - button \"Agregar Copa Argentina a favoritos\":\n        - img\n      - button \"Supercopa Argentina\"\n      - button \"Agregar Supercopa Argentina a favoritos\":\n        - img\n      - button \"Trofeo de Campeones\"\n      - button \"Agregar Trofeo de Campeones a favoritos\":\n        - img\n      - button \"Liga de Reserva\"\n      - button \"Agregar Liga de Reserva a favoritos\":\n        - img\n      - button \"Federal A\"\n      - button \"Agregar Federal A a favoritos\":\n        - img\n      - button \"Promocional Amateur\"\n      - button \"Agregar Promocional Amateur a favoritos\":\n        - img\n      - button \"CONMEBOL 2\":\n        - text: CONMEBOL 2\n        - img\n      - button \"Chile 6\":\n        - text: Chile 6\n        - img\n      - button \"Colombia 1\":\n        - text: Colombia 1\n        - img\n      - button \"Uruguay 1\":\n        - text: Uruguay 1\n        - img\n      - button \"Paraguay 1\":\n        - text: Paraguay 1\n        - img\n      - button \"Peru 3\":\n        - text: Peru 3\n        - img\n      - button \"Bolivia 1\":\n        - text: Bolivia 1\n        - img\n      - button \"Ecuador 1\":\n        - text: Ecuador 1\n        - img\n      - button \"Venezuela 3\":\n        - text: Venezuela 3\n        - img\n      - button \"Europe\":\n        - text: Europe\n        - img\n      - button \"North America\":\n        - text: North America\n        - img\n      - button \"Asia\":\n        - text: Asia\n        - img\n      - button \"Oceania\":\n        - text: Oceania\n        - img\n      - button \"International\":\n        - text: International\n        - img\n    - text: 56 Overall\n    - paragraph:\n      - img \"Camerún\"\n      - text: Souaibou Nkoulou · THE 9\n    - paragraph: 2026 · 16 yrs\n    - paragraph: Fame 8\n    - text: Jutiapa Primera División\n    - img \"Jutiapa\"\n    - img \"Camerún\"\n    - text: \"National team: No chance\"\n    - paragraph: One of us\n    - paragraph: 0/100 · → Beloved 25\n    - meter \"Idolatry\"\n    - paragraph: \"0\"\n    - paragraph: Apps\n    - paragraph: \"0\"\n    - paragraph: Goals\n    - paragraph: \"0\"\n    - paragraph: Assists\n    - paragraph: \"0\"\n    - paragraph: Trophies\n    - 'button \"Finishing: what it does\"':\n      - paragraph: \"54\"\n      - paragraph: Finishing\n    - 'button \"Pace: what it does\"':\n      - paragraph: \"64\"\n      - paragraph: Pace\n    - 'button \"Power: what it does\"':\n      - paragraph: \"58\"\n      - paragraph: Power\n    - 'button \"Leadership: what it does\"':\n      - paragraph: \"45\"\n      - paragraph: Leadership\n    - 'button \"Stamina: what it does\"':\n      - paragraph: \"62\"\n      - paragraph: Stamina\n    - paragraph: Value\n    - paragraph: US$ 300K\n    - paragraph: Earnings\n    - paragraph: US$ 0\n    - paragraph: Glory\n    - paragraph: \"0\"\n    - button \"Open the shop\": Shop\n    - button \"Ask your agent for a club\": Ask for a club\n    - button \"View career\"\n    - button \"Retire\"\n    - paragraph: What kind of player are you?\n    - paragraph: Defines how EVERY final of your career is played. It can't be changed later.\n    - 'button \"🎲 Superstitious The classic El Ídolo: finals come down to pure luck and superstition.\"':\n      - text: 🎲 Superstitious\n      - strong: The classic El Ídolo\n      - text: \": finals come down to pure luck and superstition.\"\n    - 'button \"🔀 Mixed A bit of both: because in football skill alone is not enough: sometimes you need a bit of luck.\"':\n      - text: 🔀 Mixed\n      - strong: A bit of both\n      - text: \": because in football skill alone is not enough: sometimes you need a bit of luck.\"\n    - 'button \"🧠 Skilled All on you: finals are played through skill minigames — memory, aim, timing.\"':\n      - text: 🧠 Skilled\n      - strong: All on you\n      - text: \": finals are played through skill minigames — memory, aim, timing.\"\n    - paragraph: Club and national-team names and crests appear only to identify them inside the game. El Ídolo is a work of fiction and is not affiliated with, sponsored by or endorsed by any of the entities mentioned.\n    - paragraph: Version 2.6\n  - contentinfo:\n    - link \"Potrero en X\":\n      - /url: https://x.com/potrero_app\n    - paragraph: POTRERO\n    - paragraph: Datos. Pasión. Fútbol.\n    - navigation \"Enlaces del sitio\":\n      - link \"About Potrero\":\n        - /url: /sobre-potrero\n      - link \"How to play El Ídolo\":\n        - /url: /el-idolo/guia\n      - link \"Privacy\":\n        - /url: /privacidad\n      - link \"Terms\":\n        - /url: /terminos\n      - link \"Advertising\":\n        - /url: /publicidad\n      - link \"Contact\":\n        - /url: /contacto\n    - link \"Arg FutQuiz · Trivia de fútbol argentino\":\n      - /url: https://argfutquiz.app"
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "https://www.potrerofutbol.ar/el-idolo",
+              "origin": "https://www.potrerofutbol.ar",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "captured",
+            "value": {
+              "cookies": [
+                {
+                  "name": "cf_clearance",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": true,
+                  "same_site": "None",
+                  "value_state": "hashed",
+                  "value_sha256": "25dce7057bbecad0401595ec1668c11d8a0807963f52b0368496c61cc3cea69d"
+                },
+                {
+                  "name": "_twpid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Strict",
+                  "value_state": "hashed",
+                  "value_sha256": "264234f073d43e493fb2ded0528eff270edd80650a223b2005388b32b8748954"
+                },
+                {
+                  "name": "_iiq_fdata",
+                  "domain": "www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "bbd6baa890dd0ad7c351a6f66f9faec57c8efca9e7eb757fc02b5f7c0ace09f5"
+                },
+                {
+                  "name": "_ga",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "d9f3f1a013fcd05bc07a982286c15550f15c929c02e41bf25dc62c40c7bf283f"
+                },
+                {
+                  "name": "_ga_XCS4L8C551",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "f3d9ad1acd326629b687ccef2f8164ecad3f9b948eb29b32669b3e3492a49c6d"
+                },
+                {
+                  "name": "usprivacy",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "25aac2ffae800aa5cd629fff52b595fd939fd1ae05487d3f75d98b0f63308431"
+                },
+                {
+                  "name": "euconsent-v2",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "cc28ed80f02b040d4ba20a75ee337af6760bc44dc464b26e43c33be48aee4eb6"
+                },
+                {
+                  "name": "addtl_consent",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "c07c752475e1892148dd72a76554eb23976dbb238a1e182085f3e2a2c9a23a28"
+                },
+                {
+                  "name": "IABGPP_HDR_GppString",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "e8a56129b9b3cb8839af02510c0d1baae02cad846b820c79c3f6c1d1baac570c"
+                },
+                {
+                  "name": "_sharedID",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "aea95393a145f05d7fe9712a44fe91ff92d360940c3e801b1ad92d24d0b9ddc6"
+                },
+                {
+                  "name": "_sharedID_cst",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "c33f56120d7c6defc84e7271717f6ad15b984e190eac6409236d0d134be87fca"
+                },
+                {
+                  "name": "hb_insticator_uid",
+                  "domain": "www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "b058a31c2da89033d3532d60c6b5f91a250ed5a5b5d827ad58f19cd31a395734"
+                },
+                {
+                  "name": "cto_bundle",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "a25306b1288e423358483b197acf5913aecbddf9a9a91b04d3a3dc07500d0dfb"
+                },
+                {
+                  "name": "cto_bidid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "20d90a75a247a1e5135ab0621175af1867a2558df87f6bb197eeea70e641f5fd"
+                },
+                {
+                  "name": "__eoi",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "None",
+                  "value_state": "hashed",
+                  "value_sha256": "9f8e4a9aae19f56a3d21a7d6af2fd18b217c06346ababdc9508ed7862e01028b"
+                },
+                {
+                  "name": "_twsid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Strict",
+                  "value_state": "hashed",
+                  "value_sha256": "f554f6c2804fc650a1a352b8b1a0fec5d89234d82df0c309cdd65a9515a445e4"
+                }
+              ],
+              "local_storage": [
+                {
+                  "name": "potrero_v3_fixtures_all_v18_argentina-primera_128_2026",
+                  "value_state": "hashed",
+                  "value_sha256": "f3d1b32f8ef5ef3cdfe240572ef080cabe54e12678000154ee9abba08c5a2450"
+                },
+                {
+                  "name": "_iiq_fdata",
+                  "value_state": "hashed",
+                  "value_sha256": "b85d90fbdda77f2550b911b675672594a1fadc13f57b05e7416cc81777490252"
+                },
+                {
+                  "name": "gbc_consent",
+                  "value_state": "hashed",
+                  "value_sha256": "da0110b9b3ac96b9625d9951df6c76c61de39937f6b68639da767e6c41c3fe98"
+                },
+                {
+                  "name": "cto_bidid",
+                  "value_state": "hashed",
+                  "value_sha256": "20d90a75a247a1e5135ab0621175af1867a2558df87f6bb197eeea70e641f5fd"
+                },
+                {
+                  "name": "BT_tpc",
+                  "value_state": "hashed",
+                  "value_sha256": "5b31ad6ceda3093c7664ac4fb5df9d37cc2d2b5939da9b1eb49f361e60137c93"
+                },
+                {
+                  "name": "BT_AA_DETECTION",
+                  "value_state": "hashed",
+                  "value_sha256": "95112d8c96495c2daa394b149d93151a9aab0abd540964d1ea25a58dc82cd0b2"
+                },
+                {
+                  "name": "potrero_v3_raw_fixtures_v8_argentina-primera_128_2026",
+                  "value_state": "hashed",
+                  "value_sha256": "c6da7350592dce8e141b8a00d7e4068dba857c36fe4264f2a010454fbd0640c0"
+                },
+                {
+                  "name": "elidolo_locale",
+                  "value_state": "hashed",
+                  "value_sha256": "dbd3a49d0d906b4ed9216b73330d2fb080ef2f758c12f3885068222e5e17151c"
+                },
+                {
+                  "name": "aps:8b48e249-e9e6-4a52-8b48-396ea93403e8:idVendors/enabled",
+                  "value_state": "hashed",
+                  "value_sha256": "47065c288f198637349e051608c835670f3351ab63303c6394ab4d8060e01398"
+                },
+                {
+                  "name": "_acceptanceState",
+                  "value_state": "hashed",
+                  "value_sha256": "ab604a360777735fe2993aec7d4ffae415f1515b0a4c989269603fd3d5c07b61"
+                },
+                {
+                  "name": "_cmpRepromptHash",
+                  "value_state": "hashed",
+                  "value_sha256": "789f7c082e1682d00e922cc62fc83b8ad46641be468d7a66095d13f75f6d3678"
+                },
+                {
+                  "name": "cto_bundle",
+                  "value_state": "hashed",
+                  "value_sha256": "a25306b1288e423358483b197acf5913aecbddf9a9a91b04d3a3dc07500d0dfb"
+                },
+                {
+                  "name": "_iiq_ch",
+                  "value_state": "hashed",
+                  "value_sha256": "30ff087a0053d1084c78e04e97a5277e48b4356c57ea11393204426ad2b9c045"
+                },
+                {
+                  "name": "potrero_geo_v1",
+                  "value_state": "hashed",
+                  "value_sha256": "d984eca27b72677f870d1b4e6453fad0f90f4b79e3734e61ad75e31b2131a783"
+                },
+                {
+                  "name": "elidolo:perfil-en-cuenta",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "_cmpShown",
+                  "value_state": "hashed",
+                  "value_sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+                },
+                {
+                  "name": "visitTimestamp",
+                  "value_state": "hashed",
+                  "value_sha256": "760d28fed91b3b1b555410a894387c4a08bad90cb2ba6799c50cd9a1a85fc9da"
+                },
+                {
+                  "name": "gdpr_encoding_modes",
+                  "value_state": "hashed",
+                  "value_sha256": "eb8c4208e5e5c3e610d4457bfa3f526b53ea68c2cd3ec4f02df071a21c9fe611"
+                },
+                {
+                  "name": "elidolo:daily-preview",
+                  "value_state": "hashed",
+                  "value_sha256": "140ee672bdc85a15c0ea21bf9e9982d909d97e9c67db476426034dcd0f7c4989"
+                },
+                {
+                  "name": "aps:8b48e249-e9e6-4a52-8b48-396ea93403e8:deviceSignal/sua",
+                  "value_state": "hashed",
+                  "value_sha256": "4c55cac41dfb8b8a8ba57858ddee0fece99265fce09636588c335508d4613766"
+                },
+                {
+                  "name": "potrero:diaria-hoy",
+                  "value_state": "hashed",
+                  "value_sha256": "7a19bfe509182f7ef3515d2f39802488489db116b438a6a282b9acb9e960e573"
+                },
+                {
+                  "name": "_iiq_sync_768420746",
+                  "value_state": "hashed",
+                  "value_sha256": "8bfe1c27ebabcbeec81ec96a9d2c7f64517baaed8ae03470990f93be0544e539"
+                },
+                {
+                  "name": "potrero_v3_today_fixture_overlay_v3_2026-10-20_UTC_128",
+                  "value_state": "hashed",
+                  "value_sha256": "3743af74332a630c95e71c60c6ee9604677c0c3ed9b99fc28f322f2f9fd4c9cc"
+                },
+                {
+                  "name": "elidolo:seed-tokens",
+                  "value_state": "hashed",
+                  "value_sha256": "d8861f7e57682d09fc332d0e131effa9740fbad9882fb09a4baecc6f64725347"
+                },
+                {
+                  "name": "CMPList",
+                  "value_state": "hashed",
+                  "value_sha256": "af2d7a85e9d373c4db7586f8830704bac02063d2ef9be06cd0b016f84d2b6b53"
+                },
+                {
+                  "name": "potrero_v3_competition_argentina-primera_season_v2",
+                  "value_state": "hashed",
+                  "value_sha256": "1ec5cd662c70588295185e0eb864577ebefacade905d4cbef70bccab1e66d416"
+                },
+                {
+                  "name": "noniabvendorconsent",
+                  "value_state": "hashed",
+                  "value_sha256": "111f66999dd7f3b2f549b4c57c6422923d7f5f36b8c640ce9ef1ef318ed34563"
+                },
+                {
+                  "name": "elidolo-device-id",
+                  "value_state": "hashed",
+                  "value_sha256": "295863509033d8b9927fd860a573c2943936e19397f57f60f0b6c0620ff42518"
+                },
+                {
+                  "name": "_iiq_fdata_768420746",
+                  "value_state": "hashed",
+                  "value_sha256": "d2749fc9fa679f6764800427b4d8f1155f2f19089b13812c6cc1f920d00153ce"
+                }
+              ],
+              "session_storage": [
+                {
+                  "name": "fuse-page-views-mob_sticky_footer",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "BT_sid",
+                  "value_state": "hashed",
+                  "value_sha256": "54d85fb38f42badfc7fb98ff5f84f73a0d28a1f135af674291508d0bc84ff8a3"
+                },
+                {
+                  "name": "fuse-page-views-anchor_bottom",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "potrero:bloqueador:medido",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                }
+              ]
+            }
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.8059.85",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

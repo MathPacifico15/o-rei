@@ -109,6 +109,8 @@ export interface LeagueTableEntry {
   goalsAgainst: number;
   points: number;
   position: number;
+  /** Sorteio técnico persistente usado somente após todos os desempates esportivos. */
+  tieBreaker?: number;
 }
 
 export interface LeagueTable {
@@ -117,6 +119,7 @@ export interface LeagueTable {
   entries: LeagueTableEntry[];
   promotionPlaces: number;
   relegationPlaces: number;
+  promotionPlayoff?: { from: number; to: number };
 }
 
 export interface NationalTeamCampaign {
@@ -132,6 +135,7 @@ export interface NationalTeamCampaign {
 }
 
 export interface ShopState {
+  expires?: Partial<Record<ShopItemId, number>>;
   ownedPermanent: ShopItemId[];
   activeSeasonal: ShopItemId[];
   freeUses: ShopItemId[];
@@ -203,7 +207,14 @@ export interface CupFinal {
   /** Partida de uma campanha longa, como Copa do Mundo ou Super Mundial. */
   campaignMatchIndex?: number;
   campaignDifficulty?: number;
-  /** A seleção define a dificuldade base dos minigames da Copa do Mundo. */
+  /** Identidade estável da decisão; impede conclusão e recompensa duplicadas. */
+  decisionId?: string;
+  /** Mundiais usam a mesma modalidade em toda a edição. */
+  worldStage?: "group" | "knockout";
+  attempt?: "regulation" | "penalties";
+  /** Sorteio de 50% congelado quando a campanha é criada. */
+  rescueAvailable?: boolean;
+  /** Legado de saves anteriores; a pressão atual é calculada pelo contexto da decisão. */
   worldCupDifficulty?: "easy" | "standard" | "hard" | "veryHard";
 }
 
@@ -223,6 +234,7 @@ export interface SeasonEvolution {
 export type CampaignStatus = "scheduled" | "active" | "eliminated" | "final" | "champion";
 export type CampaignMatchResult = "pending" | "won" | "drawn" | "lost";
 export interface CampaignMatch {
+  id?: string;
   phase: string;
   opponentId?: string;
   opponentName: string;
@@ -231,6 +243,7 @@ export interface CampaignMatch {
   result: CampaignMatchResult;
   playable?: boolean;
   difficulty?: number;
+  penaltyShootout?: "pending" | "won" | "lost";
 }
 export interface CampaignQualification {
   competitionId: string;
@@ -248,6 +261,10 @@ export interface SeasonCampaign {
   prize: number;
   title?: string;
   groupTable?: Array<{ name: string; points: number; goalDifference: number; goalsFor: number; position: number }>;
+  groupName?: string;
+  format?: "world-48" | "club-world-32";
+  participants?: Array<{ id: string; name: string; qualification: string; group?: string }>;
+  groups?: Array<{ name: string; participantIds: string[] }>;
 }
 export interface CampaignResult extends SeasonCampaign {
   consequence?: string;
@@ -296,6 +313,11 @@ export interface SeasonResult {
 }
 
 export interface CareerState {
+  /** Maior vínculo atingido: homenagens permanecem após uma transferência. */
+  clubMilestones?: Record<string, number>;
+  financialLedger?: Array<{season:number;label:string;amount:number}>;
+  negotiatedOffers?: string[];
+  exitRequests?: number;
   seed: number;
   season: number;
   player: Player;
@@ -343,4 +365,8 @@ export interface CareerState {
   campaignMiniGames?: Record<string, import("./minigames").MiniGameId>;
   /** Evita que a mesma decisão volte em finais imediatamente seguidas. */
   recentMiniGameIds?: import("./minigames").MiniGameId[];
+  /** Decisões já consumidas continuam bloqueadas mesmo após recarregar o save. */
+  resolvedDecisionIds?: string[];
+  /** Última modalidade usada em cada tipo de Mundial, para variar a edição seguinte. */
+  lastWorldMiniGames?: Partial<Record<"wc" | "cwc", import("./minigames").MiniGameId>>;
 }

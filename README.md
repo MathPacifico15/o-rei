@@ -1,5 +1,7 @@
 # O REI
 
+**Entrega local de carreira:** veja [README-LOCAL.md](README-LOCAL.md) para executar em `http://127.0.0.1:4183/`, testar e consultar o relatório atualizado. A documentação abaixo descreve também a base anterior do projeto.
+
 Jogo web/PWA mobile-first de carreira rápida no futebol. O jogador cria um atleta aos 16 anos, escolhe clube e posição, disputa temporadas aceleradas e constrói um legado até a aposentadoria natural.
 
 ## Documentação do projeto

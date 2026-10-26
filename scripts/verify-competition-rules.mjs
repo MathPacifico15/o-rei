@@ -9,6 +9,7 @@ try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
   const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs } = await vite.ssrLoadModule("/game/engine.ts");
+  const { resolveWorldMatch, rescueForDecision, worldMatchDifficulty } = await vite.ssrLoadModule("/game/world-tournaments.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
     assert(result, `Competição inexistente no regulamento: ${id}`);
@@ -66,19 +67,26 @@ try {
 
   const flamengo = clubs.find((club) => club.id === "flamengo");
   assert(flamengo, "Flamengo não encontrado");
-  // Primeira divisão: a permanência ganha mantém a divisão; a derrota cai e
-  // também preserva a quantidade de clubes nas duas divisões envolvidas.
+  // Primeira divisão: a zona de queda fica pendente até a final de
+  // permanência; só a derrota pode transferir o clube à divisão abaixo.
   const weakTopDivisionState = makeState(flamengo);
   weakTopDivisionState.player.attributes = Object.fromEntries(Object.keys(weakTopDivisionState.player.attributes).map((key) => [key, 20]));
   weakTopDivisionState.player.form = 0;
   const weakTopDivision = simulateSeason(weakTopDivisionState);
-  assert(weakTopDivision.result.cupFinal?.stakes === "relegation", "Lanterna da primeira divisão não recebeu Jogo da Permanência");
-  const survived = applyFinalConsequence(weakTopDivision.state, weakTopDivision.result.cupFinal, true);
-  assert(survived.leagueAssignments[flamengo.id] === "bra-a", "Vitória no Jogo da Permanência não manteve o clube na primeira divisão");
-  assertStablePyramid(weakTopDivisionState, survived, "Brasil", "vitória no Jogo da Permanência");
-  const relegated = applyFinalConsequence(weakTopDivision.state, weakTopDivision.result.cupFinal, false);
-  assert(relegated.leagueAssignments[flamengo.id] === "bra-b", "Derrota no Jogo da Permanência não rebaixou o clube");
-  assertStablePyramid(weakTopDivisionState, relegated, "Brasil", "derrota no Jogo da Permanência");
+  const weakTable=weakTopDivision.state.leagueTables["bra-a"];
+  const weakRow=weakTable.entries.find(row=>row.clubId===flamengo.id);
+  const shouldDrop=weakRow.position>weakTable.entries.length-weakTable.relegationPlaces;
+  if (shouldDrop) {
+    const survivalFinal=weakTopDivision.result.finals?.find(f=>f.stakes==="relegation");
+    assert(survivalFinal, "Zona de rebaixamento da Série A deve abrir final de permanência");
+    assert(weakTopDivision.state.leagueAssignments[flamengo.id]==="bra-a", "O clube fica na Série A até resolver a permanência");
+    const saved=applyFinalConsequence(weakTopDivision.state,survivalFinal,true);
+    const relegated=applyFinalConsequence(weakTopDivision.state,survivalFinal,false);
+    assert(saved.leagueAssignments[flamengo.id]==="bra-a", "Vitória na permanência mantém o clube na Série A");
+    assert(relegated.leagueAssignments[flamengo.id]==="bra-b", "Derrota na permanência rebaixa apenas uma divisão");
+    assertStablePyramid(weakTopDivisionState,saved,"Brasil","permanência vencida");
+    assertStablePyramid(weakTopDivisionState,relegated,"Brasil","permanência perdida");
+  } else assert(weakTopDivision.state.leagueAssignments[flamengo.id]==="bra-a", "Fora da zona de queda, o clube permanece na Série A");
   const serieA = simulateSeason(makeState(flamengo));
   assert(serieA.result.campaigns?.some((campaign) => campaign.competitionId === "copa-br"), "Série A não entrou na Copa do Brasil");
   assert(!serieA.result.campaigns?.some((campaign) => campaign.competitionId === "bra-super"), "Supercopa liberada sem título anterior");
@@ -121,25 +129,45 @@ try {
   brazilWorldCupState.highestOvr = computeOvr(brazilWorldCupState.player);
   const brazilWorldCup = simulateSeason(brazilWorldCupState);
   assert(brazilWorldCup.result.campaigns?.some((campaign) => campaign.competitionId === "wc" && campaign.matches.length === 8), "Brasil qualificado não recebeu campanha completa de Copa do Mundo");
+  assert((brazilWorldCup.result.finals ?? []).filter((final) => final.competitionId === "wc").length === 8, "As oito partidas da Copa precisam ser jogáveis");
   assert((brazilWorldCup.result.finals ?? []).filter((final) => final.competitionId === "wc").every((final) => final.worldCupDifficulty === "easy"), "Grupo 1 não aplicou dificuldade fácil na Copa");
   const worldCampaign = brazilWorldCup.result.campaigns?.find((campaign) => campaign.competitionId === "wc");
+  assert(worldCampaign.groups.length === 12 && worldCampaign.participants.length === 48, "Copa não congelou 12 grupos e 48 participantes");
+  assert(worldCampaign.groups.every((group) => group.participantIds.length === 4), "Grupo da Copa fora do formato de quatro seleções");
   assert(new Set(worldCampaign.matches.map((match) => match.opponentId)).size === worldCampaign.matches.length, "Copa do Mundo repetiu adversário na mesma campanha");
   assert(worldCampaign.matches.slice(-2).every((match) => worldCupEligibilityFor(match.opponentName) === "group1"), "Semifinal/final da Copa não usaram seleções do Grupo 1");
   assert(worldCupQualificationChance("Brunei") === .02, "Brunei deveria manter 2% de chance no Grupo 4");
+  const under82 = makeState(flamengo); under82.player.attributes = Object.fromEntries(Object.keys(under82.player.attributes).map((key) => [key, 81]));
+  assert(!simulateSeason(under82).result.campaigns?.some((campaign) => campaign.competitionId === "wc"), "OVR 81 não pode disputar a Copa principal");
+  const exact82 = makeState(flamengo); exact82.player.attributes = Object.fromEntries(Object.keys(exact82.player.attributes).map((key) => [key, 82]));
+  assert(simulateSeason(exact82).result.campaigns?.some((campaign) => campaign.competitionId === "wc"), "OVR 82 e seleção classificada devem liberar a Copa");
+
+  const groupFinal = brazilWorldCup.result.finals.find((final) => final.competitionId === "wc");
+  const rescuedGroup = resolveWorldMatch(worldCampaign, { ...groupFinal, rescueAvailable: true }, false);
+  assert(rescuedGroup.outcome === "drawn", "Derrota resgatada nos grupos precisa virar empate");
+  const lostGroup = resolveWorldMatch(worldCampaign, { ...groupFinal, rescueAvailable: false }, false);
+  assert(lostGroup.outcome === "lost", "Derrota sem resgate nos grupos precisa continuar derrota");
+  const knockoutFinal = brazilWorldCup.result.finals.find((final) => final.competitionId === "wc" && final.campaignMatchIndex === 3);
+  const penalties = resolveWorldMatch(worldCampaign, { ...knockoutFinal, rescueAvailable: true }, false);
+  assert(penalties.outcome === "penalties", "Derrota resgatada no mata-mata precisa abrir pênaltis");
+  const eliminated = resolveWorldMatch(penalties.campaign, { ...knockoutFinal, attempt: "penalties", rescueAvailable: false }, false);
+  assert(eliminated.outcome === "lost" && eliminated.campaign.status === "eliminated", "Derrota nos pênaltis precisa ser definitiva");
+  assert(rescueForDecision("2026:wc", 3) === rescueForDecision("2026:wc", 3), "Sorteio de resgate não é determinístico");
+  assert(worldMatchDifficulty("easy", 0) === "easy" && worldMatchDifficulty("easy", 7) === "hard" && worldMatchDifficulty("standard", 3, true) === "hard", "Pressão dos Mundiais não cresce por fase/pênaltis");
 
   // Super Mundial: campeão continental do ciclo entra; clube de divisão inferior não entra pelo ranking.
   const mundialState = makeState(flamengo);
   mundialState.season = 2029;
   mundialState.competitionWinners = { lib: [{ clubId: flamengo.id, season: 2027 }] };
   const mundialEligible = superMundialEligibleClubs(mundialState);
+  assert(mundialEligible.length === 32, `Super Mundial deveria congelar 32 clubes, recebeu ${mundialEligible.length}`);
   assert(mundialEligible.some((club) => club.id === flamengo.id), "Campeão da Libertadores no ciclo ficou fora do Super Mundial");
   assert(!mundialEligible.some((club) => club.id === america.id), "Clube fora da primeira divisão entrou no Super Mundial");
   const mundial = simulateSeason(mundialState);
   assert(mundial.result.campaigns?.some((campaign) => campaign.competitionId === "cwc"), "Campeão continental não recebeu campanha do Super Mundial");
-
-  // A agenda não pode despejar finais normais: no máximo duas por temporada para a elite.
-  const normalFinals = (mundial.result.finals ?? []).filter((final) => final.stakes !== "campaign");
-  assert(normalFinals.length <= 2, "Quantidade de finais normais acima do limite anual");
+  const mundialCampaign = mundial.result.campaigns.find((campaign) => campaign.competitionId === "cwc");
+  assert(mundialCampaign.matches.length === 7 && mundialCampaign.groups.length === 8 && mundialCampaign.participants.length === 32, "Super Mundial não congelou sete jogos, oito grupos e 32 clubes");
+  assert(mundial.result.finals.filter((final) => final.competitionId === "cwc").length === 7, "As sete partidas do Super Mundial precisam ser jogáveis");
 
   const veteran = { ...brazilWorldCupState.player, age: 36, attributes: { ...brazilWorldCupState.player.attributes } };
   const decline = applyAutomaticSeasonEvolution(veteran, "generational", 2046, 99);

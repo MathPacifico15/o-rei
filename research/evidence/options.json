@@ -1,0 +1,310 @@
+{
+  "evidence_id": "ev_699df44bb9040a9c0c80fb43b9aacdfed6816f70e7ddaccf324d182622cf86fe",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "https://www.potrerofutbol.ar/el-idolo",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "duration_ms": 2000
+      },
+      {
+        "step_id": "privacy-options",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"MORE OPTIONS\")"
+        },
+        "button": "left",
+        "click_count": 1
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [],
+      "at_end": [
+        "accessibility"
+      ],
+      "events": [],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "dc446558611a2b1c9c053634c08a0ec0858c4ecda36d69044bfd9a1696bb5f1e"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    "scenario": {
+      "start_origin": "https://www.potrerofutbol.ar",
+      "action_count": 2,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 4704,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 2047,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2012,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "privacy-options",
+        "action": "click",
+        "elapsed_ms": 389,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "c32579ee60f197072e25b4def348cc8195f012ec12ae9f54b0b3b2db459b5fa8",
+              "bytes": 10381,
+              "text": "- document:\n  - dialog \"Privacy\":\n    - figure:\n      - heading \"We value your privacy\" [level=2]\n    - text: We and our partners store and/or access information on a device, such as cookies and process personal data, such as unique identifiers and standard information sent by a device for personalised advertising and content, advertising and content measurement, audience research and services development. With your permission we and our partners may use precise geolocation data and identification through device scanning. You may click to consent to our and our 1752 partners’ processing as described above. Alternatively you may click to refuse to consent or access more detailed information and change your preferences before consenting. Please note that some processing of your personal data may not require your consent, but you have a right to object to such processing. Your preferences will apply to this website only and will be stored in IABGPP_HDR_GppString cookie for 13 months. You can change your preferences or withdraw your consent at any time by returning to this site and clicking the \"Privacy\" button at the bottom of the webpage.\n    - button \"REJECT ALL\"\n    - button \"ACCEPT ALL\"\n    - text: Purposes (948 partners)\n    - list:\n      - listitem:\n        - listitem \"Store and/or access information on a device\":\n          - paragraph: Store and/or access information on a device (858 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Use limited data to select advertising\":\n          - paragraph: Use limited data to select advertising (580 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Create profiles for personalised advertising\":\n          - paragraph: Create profiles for personalised advertising (644 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Use profiles to select personalised advertising\":\n          - paragraph: Use profiles to select personalised advertising (647 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Create profiles to personalise content\":\n          - paragraph: Create profiles to personalise content (265 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Use profiles to select personalised content\":\n          - paragraph: Use profiles to select personalised content (238 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Measure advertising performance\":\n          - paragraph: Measure advertising performance (624 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Measure content performance\":\n          - paragraph: Measure content performance (297 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Understand audiences through statistics or combinations of data from different sources\":\n          - paragraph: Understand audiences through statistics or combinations of data from different sources (430 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Develop and improve services\":\n          - paragraph: Develop and improve services (437 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Use limited data to select content\":\n          - paragraph: Use limited data to select content (132 partners)\n          - paragraph: \"OFF\"\n          - img\n    - text: Special Features (374 partners)\n    - list:\n      - listitem:\n        - listitem \"Use precise geolocation data\":\n          - paragraph: Use precise geolocation data (287 partners)\n          - paragraph: \"OFF\"\n          - img\n      - listitem:\n        - listitem \"Identify devices based on information actively requested\":\n          - paragraph: Identify devices based on information actively requested (168 partners)\n          - paragraph: \"OFF\"\n          - img\n    - list:\n      - list:\n        - listitem \"Special Purposes (693 partners)\":\n          - listitem:\n            - paragraph: Special Purposes (693 partners)\n          - img\n    - list:\n      - list:\n        - listitem \"Features (706 partners)\":\n          - listitem:\n            - paragraph: Features (706 partners)\n          - img\n    - button \"PARTNERS\"\n    - button \"LEGITIMATE INTEREST\"\n    - button \"SAVE & EXIT\"\n  - banner:\n    - link \"Potrero\":\n      - /url: /\n      - img \"Potrero\"\n    - link \"Follow Potrero on X\":\n      - /url: https://x.com/potrero_app\n      - text: Follow us\n    - link \"Descargar Potrero Fútbol en el App Store\":\n      - /url: https://apps.apple.com/ar/app/potrero-f%C3%BAtbol-en-vivo/id6775603816\n      - text: Consíguelo en el App Store\n    - link \"Descargar Potrero Fútbol en Google Play\":\n      - /url: https://play.google.com/store/apps/details?id=ar.potrerofutbol.app\n      - text: Disponible en Google Play\n    - button \"Español\": es\n    - button \"Português\": pt\n    - button \"English\" [pressed]: en\n    - button \"Français\": fr\n    - button \"Italiano\": it\n  - main:\n    - complementary:\n      - img\n      - textbox \"Search team, player or tournament\"\n      - heading \"Favorites\" [level=3]\n      - paragraph:\n        - img\n        - text: Marcá equipos y ligas para verlos acá.\n      - button \"Daily Run Changes in 23:39:29 Playmaker Borussia M'gladbach Play now\"\n      - button \"South America\" [expanded]:\n        - text: South America\n        - img\n      - button \"Brazil 4\":\n        - text: Brazil 4\n        - img\n      - button \"Argentina 10\" [expanded]:\n        - text: Argentina 10\n        - img\n      - button \"Liga Profesional\"\n      - button \"Agregar Liga Profesional a favoritos\":\n        - img\n      - button \"Primera Nacional\"\n      - button \"Agregar Primera Nacional a favoritos\":\n        - img\n      - button \"Primera B\"\n      - button \"Agregar Primera B a favoritos\":\n        - img\n      - button \"Primera C\"\n      - button \"Agregar Primera C a favoritos\":\n        - img\n      - button \"Copa Argentina\"\n      - button \"Agregar Copa Argentina a favoritos\":\n        - img\n      - button \"Supercopa Argentina\"\n      - button \"Agregar Supercopa Argentina a favoritos\":\n        - img\n      - button \"Trofeo de Campeones\"\n      - button \"Agregar Trofeo de Campeones a favoritos\":\n        - img\n      - button \"Liga de Reserva\"\n      - button \"Agregar Liga de Reserva a favoritos\":\n        - img\n      - button \"Federal A\"\n      - button \"Agregar Federal A a favoritos\":\n        - img\n      - button \"Promocional Amateur\"\n      - button \"Agregar Promocional Amateur a favoritos\":\n        - img\n      - button \"CONMEBOL 2\":\n        - text: CONMEBOL 2\n        - img\n      - button \"Chile 6\":\n        - text: Chile 6\n        - img\n      - button \"Colombia 1\":\n        - text: Colombia 1\n        - img\n      - button \"Uruguay 1\":\n        - text: Uruguay 1\n        - img\n      - button \"Paraguay 1\":\n        - text: Paraguay 1\n        - img\n      - button \"Peru 3\":\n        - text: Peru 3\n        - img\n      - button \"Bolivia 1\":\n        - text: Bolivia 1\n        - img\n      - button \"Ecuador 1\":\n        - text: Ecuador 1\n        - img\n      - button \"Venezuela 3\":\n        - text: Venezuela 3\n        - img\n      - button \"Europe\":\n        - text: Europe\n        - img\n      - button \"North America\":\n        - text: North America\n        - img\n      - button \"Asia\":\n        - text: Asia\n        - img\n      - button \"Oceania\":\n        - text: Oceania\n        - img\n      - button \"International\":\n        - text: International\n        - img\n    - button \"Sign in\"\n    - button \"Sign in\"\n    - button \"English\"\n    - button \"Career\"\n    - button \"Ultra\"\n    - button \"Duel 🔒\" [disabled]\n    - button \"No Rules\"\n    - heading \"El Ídolo\" [level=1]\n    - paragraph: Daily Run\n    - text: Changes in 23:39:29 Playmaker Borussia M'gladbach\n    - paragraph: Today's goals\n    - text: \"1\"\n    - paragraph: Finish the career\n    - text: 5 2\n    - paragraph: Score 469 goals\n    - text: 10 3\n    - paragraph: Win 3 or more continental cups\n    - text: \"15\"\n    - paragraph: Sign in to earn coins\n    - button \"Play today's\"\n    - paragraph: Free career\n    - paragraph: Your start\n    - button \"🎲 Random\"\n    - text: Nationality\n    - button \"Pick…\":\n      - text: Pick…\n      - img\n    - text: League country\n    - button \"Pick…\":\n      - text: Pick…\n      - img\n    - text: League\n    - button \"—\" [disabled]:\n      - text: —\n      - img\n    - text: Team\n    - button \"Pick the country\" [disabled]:\n      - text: Pick the country\n      - img\n    - textbox \"Your name (optional)\"\n    - button \"9 Striker\" [pressed]\n    - button \"10 Playmaker\"\n    - button \"1 Goalkeeper\"\n    - button \"Play\" [disabled]:\n      - img\n      - text: Play\n    - checkbox \"✨ Wonderkid Mode You start out as an exceptional player.\"\n    - button \"Play Pollo Vignolo's career Debut at 51 in Uruguay's fourth division with Real Montevideo\"\n    - button \"Play Scarso's career At 22, from the phone to Real Montevideo\"\n    - paragraph: Story Mode\n    - button \"Messi Play his career\"\n    - button \"Maradona Play his career\"\n    - button \"Cristiano Ronaldo Play his career\"\n    - button \"Ronaldinho Play his career\"\n    - button \"Zidane Play his career\"\n    - button \"Buffon Play his career\"\n    - button \"Rankings\"\n    - button \"Clubs Cup\"\n    - link \"Practice\":\n      - /url: /el-idolo/entrenamiento\n    - link \"Shop\":\n      - /url: /el-idolo/tienda\n    - paragraph: Club and national-team names and crests appear only to identify them inside the game. El Ídolo is a work of fiction and is not affiliated with, sponsored by or endorsed by any of the entities mentioned.\n    - paragraph: Version 2.6\n  - contentinfo:\n    - link \"Potrero en X\":\n      - /url: https://x.com/potrero_app\n    - paragraph: POTRERO\n    - paragraph: Datos. Pasión. Fútbol.\n    - navigation \"Enlaces del sitio\":\n      - link \"About Potrero\":\n        - /url: /sobre-potrero\n      - link \"How to play El Ídolo\":\n        - /url: /el-idolo/guia\n      - link \"Privacy\":\n        - /url: /privacidad\n      - link \"Terms\":\n        - /url: /terminos\n      - link \"Advertising\":\n        - /url: /publicidad\n      - link \"Contact\":\n        - /url: /contacto\n    - link \"Arg FutQuiz · Trivia de fútbol argentino\":\n      - /url: https://argfutquiz.app"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.8059.85",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

@@ -1,0 +1,933 @@
+{
+  "evidence_id": "ev_a6480255f3f671df1c338afa384630bdffcc9f07b6de8d24f3780852df2dc3e2",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "https://www.potrerofutbol.ar/el-idolo",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "duration_ms": 2000
+      },
+      {
+        "step_id": "privacy-options",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"MORE OPTIONS\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "privacy-reject",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"REJECT ALL\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "random-start",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"🎲 Random\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "begin",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:text-is(\"Play\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "skill-profile",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"🧠 Skilled\")"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "origin-card",
+        "timeout_ms": 5000,
+        "action": "click",
+        "locator": {
+          "kind": "css",
+          "selector": "button:has-text(\"+\") >> nth=0"
+        },
+        "button": "left",
+        "click_count": 1
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [],
+      "at_end": [
+        "accessibility",
+        "screenshot",
+        "url",
+        "storage"
+      ],
+      "events": [],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "4b028adcdcc6df0aa70aa39ef7551cfdd70fabe21b531f84f23283159fb025a1"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    "scenario": {
+      "start_origin": "https://www.potrerofutbol.ar",
+      "action_count": 7,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 7507,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1669,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "load",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2005,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "privacy-options",
+        "action": "click",
+        "elapsed_ms": 274,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "privacy-reject",
+        "action": "click",
+        "elapsed_ms": 16,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "random-start",
+        "action": "click",
+        "elapsed_ms": 164,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 5,
+        "step_id": "begin",
+        "action": "click",
+        "elapsed_ms": 2999,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 6,
+        "step_id": "skill-profile",
+        "action": "click",
+        "elapsed_ms": 35,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 7,
+        "step_id": "origin-card",
+        "action": "click",
+        "elapsed_ms": 130,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "9288b8798f2f34ecfbcd48701cf0a24f860d2a6449eba8690c04439d6b6e9a96",
+              "bytes": 25876,
+              "media_type": "image/png",
+              "data_base64": "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SQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAESAwn0AAAEgUlEQVQARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMARRBIAcASRBAAcQSQBAEcQSQDAEUQSAHAEkQQAHEEkAQBHEEkAwBFEEgBwBJEEABxBJAEARxBJAMCR/w8AAP//eY8V1AAAAAZJREFUAwAUl/lPslgDJgAAAABJRU5ErkJggg=="
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "3e9b508d9fa376f38b4e004ae7e8e17d49c58068f3c5a099fbce66362dae4e04",
+              "bytes": 2516,
+              "text": "- document:\n  - banner:\n    - link \"Potrero\":\n      - /url: /\n      - img \"Potrero\"\n    - link \"Watch live football on Potrero\":\n      - /url: /\n      - text: Live football\n    - button \"Español\"\n    - button \"Português\"\n    - button \"English\" [pressed]\n    - button \"Français\"\n    - button \"Italiano\"\n    - button \"Search\":\n      - img\n    - button \"Open competitions\":\n      - img\n  - main:\n    - text: 58 Overall\n    - paragraph:\n      - img \"El Salvador\"\n      - text: Mágico Pacheco · THE 9\n    - paragraph: 2026 · 16 yrs\n    - paragraph: Fame 8\n    - text: Daegu FC K League 2\n    - img \"Daegu FC\"\n    - img \"El Salvador\"\n    - text: \"National team: No chance\"\n    - button \"Retire\"\n    - paragraph: One of us\n    - paragraph: 0/100 · → Beloved 25\n    - meter \"Idolatry\"\n    - paragraph: \"0\"\n    - paragraph: Apps\n    - paragraph: \"0\"\n    - paragraph: Goals\n    - paragraph: \"0\"\n    - paragraph: Assists\n    - paragraph: \"0\"\n    - paragraph: Trophies\n    - 'button \"Finishing: what it does\"':\n      - paragraph: \"56\"\n      - paragraph: Finishing\n    - 'button \"Pace: what it does\"':\n      - paragraph: 72▲\n      - paragraph: Pace\n    - 'button \"Power: what it does\"':\n      - paragraph: \"58\"\n      - paragraph: Power\n    - 'button \"Leadership: what it does\"':\n      - paragraph: \"43\"\n      - paragraph: Leadership\n    - 'button \"Stamina: what it does\"':\n      - paragraph: \"62\"\n      - paragraph: Stamina\n    - paragraph: Value\n    - paragraph: US$ 500K\n    - paragraph: Earnings\n    - paragraph: US$ 0\n    - paragraph: Glory\n    - paragraph: \"0\"\n    - button \"Open the shop\": Shop\n    - button \"Ask your agent for a club\"\n    - button \"View career\"\n    - button \"Skip animation\": Things happen...\n    - paragraph: Club and national-team names and crests appear only to identify them inside the game. El Ídolo is a work of fiction and is not affiliated with, sponsored by or endorsed by any of the entities mentioned.\n    - paragraph: Version 2.6\n  - contentinfo:\n    - paragraph: POTRERO\n    - paragraph: Datos. Pasión. Fútbol.\n    - navigation \"Enlaces del sitio\":\n      - link \"About Potrero\":\n        - /url: /sobre-potrero\n      - link \"How to play El Ídolo\":\n        - /url: /el-idolo/guia\n      - link \"Privacy\":\n        - /url: /privacidad\n      - link \"Terms\":\n        - /url: /terminos\n      - link \"Advertising\":\n        - /url: /publicidad\n      - link \"Contact\":\n        - /url: /contacto\n    - link \"Arg FutQuiz · Trivia de fútbol argentino\":\n      - /url: https://argfutquiz.app"
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "https://www.potrerofutbol.ar/el-idolo",
+              "origin": "https://www.potrerofutbol.ar",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "captured",
+            "value": {
+              "cookies": [
+                {
+                  "name": "cf_clearance",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": true,
+                  "same_site": "None",
+                  "value_state": "hashed",
+                  "value_sha256": "2accccbda45f9ce6bcbec8ce2e09a47884d5040b8a6cf1368162c5b31ba4e0c2"
+                },
+                {
+                  "name": "_iiq_fdata",
+                  "domain": "www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "47daeaca8da287e45394c4a0af812085de5bcb44c83d47a91930404fd1891a7d"
+                },
+                {
+                  "name": "_ga",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "931d259e077eee77ab7c6dccb5d3464b58f585aed6dd667dfef6efbe79b0a25e"
+                },
+                {
+                  "name": "_ga_XCS4L8C551",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "cf183f6b197e8d64422d4aeef2b0c4168e71bccbe7b7d888dcc685b75d90a17a"
+                },
+                {
+                  "name": "_twpid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Strict",
+                  "value_state": "hashed",
+                  "value_sha256": "9c34cf5dd145258fb046a2c2cda7a5c92212a2ee5f80a26a157c50b61db5f7b7"
+                },
+                {
+                  "name": "usprivacy",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "25aac2ffae800aa5cd629fff52b595fd939fd1ae05487d3f75d98b0f63308431"
+                },
+                {
+                  "name": "euconsent-v2",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "cc28ed80f02b040d4ba20a75ee337af6760bc44dc464b26e43c33be48aee4eb6"
+                },
+                {
+                  "name": "addtl_consent",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "c07c752475e1892148dd72a76554eb23976dbb238a1e182085f3e2a2c9a23a28"
+                },
+                {
+                  "name": "IABGPP_HDR_GppString",
+                  "domain": ".www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "e8a56129b9b3cb8839af02510c0d1baae02cad846b820c79c3f6c1d1baac570c"
+                },
+                {
+                  "name": "_sharedID",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "87368a137f1b50a42997fa6c364aa0b10afd095a299b281749feb8ee999c6dff"
+                },
+                {
+                  "name": "_sharedID_cst",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "c33f56120d7c6defc84e7271717f6ad15b984e190eac6409236d0d134be87fca"
+                },
+                {
+                  "name": "cto_bundle",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "879ab91570d882347553e61c6a9e712f44a2555c34d545b09beabc235d2c2027"
+                },
+                {
+                  "name": "cto_bidid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "effca4f16e9099092831699b18a80b0c570243dd3c81d385f67dcbc7b68d62ba"
+                },
+                {
+                  "name": "_twsid",
+                  "domain": ".potrerofutbol.ar",
+                  "path": "/",
+                  "secure": true,
+                  "http_only": false,
+                  "same_site": "Strict",
+                  "value_state": "hashed",
+                  "value_sha256": "e56bef40526f5490b9f92b690072856421b1cd9eb7594a6a5cbc2c6f6394dc00"
+                },
+                {
+                  "name": "hb_insticator_uid",
+                  "domain": "www.potrerofutbol.ar",
+                  "path": "/",
+                  "secure": false,
+                  "http_only": false,
+                  "same_site": "Lax",
+                  "value_state": "hashed",
+                  "value_sha256": "afeb126df5f0b7729333700d42c954ca40ac96669c0a52f8687022be19a37e1b"
+                }
+              ],
+              "local_storage": [
+                {
+                  "name": "potrero_v3_fixtures_all_v18_argentina-primera_128_2026",
+                  "value_state": "hashed",
+                  "value_sha256": "d9c2ecab0ef7f429d16fb336a99f8566cad4954178a5dd4b19758ee4fbf2bcfa"
+                },
+                {
+                  "name": "_iiq_fdata",
+                  "value_state": "hashed",
+                  "value_sha256": "99ba40bcb599b02a71afc7529f32b4b3ef65c49cd24909907cede1923a444e97"
+                },
+                {
+                  "name": "gbc_consent",
+                  "value_state": "hashed",
+                  "value_sha256": "da0110b9b3ac96b9625d9951df6c76c61de39937f6b68639da767e6c41c3fe98"
+                },
+                {
+                  "name": "cto_bidid",
+                  "value_state": "hashed",
+                  "value_sha256": "effca4f16e9099092831699b18a80b0c570243dd3c81d385f67dcbc7b68d62ba"
+                },
+                {
+                  "name": "potrero_v3_raw_fixtures_v8_argentina-primera_128_2026",
+                  "value_state": "hashed",
+                  "value_sha256": "839d4f257f7d2d20c8cce2dd98d7b2b5009e2c103c3d31140a6417b0b482e57a"
+                },
+                {
+                  "name": "elidolo_locale",
+                  "value_state": "hashed",
+                  "value_sha256": "dbd3a49d0d906b4ed9216b73330d2fb080ef2f758c12f3885068222e5e17151c"
+                },
+                {
+                  "name": "aps:8b48e249-e9e6-4a52-8b48-396ea93403e8:idVendors/enabled",
+                  "value_state": "hashed",
+                  "value_sha256": "47065c288f198637349e051608c835670f3351ab63303c6394ab4d8060e01398"
+                },
+                {
+                  "name": "_acceptanceState",
+                  "value_state": "hashed",
+                  "value_sha256": "ab604a360777735fe2993aec7d4ffae415f1515b0a4c989269603fd3d5c07b61"
+                },
+                {
+                  "name": "_cmpRepromptHash",
+                  "value_state": "hashed",
+                  "value_sha256": "e373b73478f6385a4b1fcdfeec8feba27b0a027e4e2723f065883a485d93a97f"
+                },
+                {
+                  "name": "cto_bundle",
+                  "value_state": "hashed",
+                  "value_sha256": "879ab91570d882347553e61c6a9e712f44a2555c34d545b09beabc235d2c2027"
+                },
+                {
+                  "name": "_iiq_ch",
+                  "value_state": "hashed",
+                  "value_sha256": "30ff087a0053d1084c78e04e97a5277e48b4356c57ea11393204426ad2b9c045"
+                },
+                {
+                  "name": "elidolo:perfil-en-cuenta",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "potrero_geo_v1",
+                  "value_state": "hashed",
+                  "value_sha256": "f268ab11dd5f364e505928f158abaeec47bb2401ef79c58065c21b66f285b5d2"
+                },
+                {
+                  "name": "_cmpShown",
+                  "value_state": "hashed",
+                  "value_sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+                },
+                {
+                  "name": "visitTimestamp",
+                  "value_state": "hashed",
+                  "value_sha256": "fff6a4c1b8305a5b201880bcc54f58a768d4108dc4ad3ae31eb97486f9d296f9"
+                },
+                {
+                  "name": "gdpr_encoding_modes",
+                  "value_state": "hashed",
+                  "value_sha256": "eb8c4208e5e5c3e610d4457bfa3f526b53ea68c2cd3ec4f02df071a21c9fe611"
+                },
+                {
+                  "name": "elidolo:daily-preview",
+                  "value_state": "hashed",
+                  "value_sha256": "140ee672bdc85a15c0ea21bf9e9982d909d97e9c67db476426034dcd0f7c4989"
+                },
+                {
+                  "name": "aps:8b48e249-e9e6-4a52-8b48-396ea93403e8:deviceSignal/sua",
+                  "value_state": "hashed",
+                  "value_sha256": "4c55cac41dfb8b8a8ba57858ddee0fece99265fce09636588c335508d4613766"
+                },
+                {
+                  "name": "potrero:diaria-hoy",
+                  "value_state": "hashed",
+                  "value_sha256": "7a19bfe509182f7ef3515d2f39802488489db116b438a6a282b9acb9e960e573"
+                },
+                {
+                  "name": "_iiq_sync_768420746",
+                  "value_state": "hashed",
+                  "value_sha256": "afdf10c4f3d9e83af310d0481b696a8b0f415f3c58e775bfb7951cfaa9b14bd3"
+                },
+                {
+                  "name": "potrero_v3_today_fixture_overlay_v3_2026-10-20_UTC_128",
+                  "value_state": "hashed",
+                  "value_sha256": "6bdd13cd28fee1e0d1188f38e54d72485d5096078f8422501caf44efea8f23a8"
+                },
+                {
+                  "name": "elidolo:seed-tokens",
+                  "value_state": "hashed",
+                  "value_sha256": "754993fa27933f01329bce0c2dadc71b9cde4ba0baa93d1458863f3e5b0fc82f"
+                },
+                {
+                  "name": "CMPList",
+                  "value_state": "hashed",
+                  "value_sha256": "829629f5900231f8c59ee7ce3a44971e14f20996da3c021121052d6f01766f3b"
+                },
+                {
+                  "name": "potrero_v3_competition_argentina-primera_season_v2",
+                  "value_state": "hashed",
+                  "value_sha256": "0e05cc789f1512d4f062ec32bc32f635fd58354a54de44ebd18524cdf5d40157"
+                },
+                {
+                  "name": "noniabvendorconsent",
+                  "value_state": "hashed",
+                  "value_sha256": "aebf496b14a2de6a727cc77ac5e6f4372cb7776315189f760d8c887d6cb087a9"
+                },
+                {
+                  "name": "elidolo-device-id",
+                  "value_state": "hashed",
+                  "value_sha256": "a6b1ac78432bc66112605025a8299b33292b7cd65e69f8375371bda6531d7a7c"
+                },
+                {
+                  "name": "_iiq_fdata_768420746",
+                  "value_state": "hashed",
+                  "value_sha256": "f3164820b2514057b7115cba77e19909d07b544ca8f447e02ea507458a1c6754"
+                },
+                {
+                  "name": "elidolo:encurso",
+                  "value_state": "hashed",
+                  "value_sha256": "4df768eda8e7b270beaba70e39dc367228f9e27a086cacd4892fbc16a8d62109"
+                }
+              ],
+              "session_storage": [
+                {
+                  "name": "potrero:bloqueador:medido",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "fuse-page-views-mob_sticky_footer",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                },
+                {
+                  "name": "fuse-page-views-anchor_bottom",
+                  "value_state": "hashed",
+                  "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+                }
+              ]
+            }
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.8059.85",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

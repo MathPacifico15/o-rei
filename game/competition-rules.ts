@@ -11,10 +11,13 @@ export interface CountryCompetitionRule {
   /** Quantidade de vagas usada na simulação anual de cada divisão. */
   promotionPlaces?: Record<string, number>;
   relegationPlaces?: Record<string, number>;
+  promotionPlayoffs?: Record<string, { from: number; to: number }>;
+  pointsForWin?: number;
+  tiebreakers?: Array<"points" | "goalDifference" | "goalsFor" | "wins" | "draw">;
   continent: "southAmerica" | "europe" | "northAmerica" | "asia" | "other";
 }
 
-const rule = (topLeague: string, divisions: string[], continent: CountryCompetitionRule["continent"], primaryCup?: string, supercups: string[] = [], secondaryCups: string[] = [], hasStateChampionship = false, movement: Pick<CountryCompetitionRule, "promotionPlaces" | "relegationPlaces"> = {}): CountryCompetitionRule => ({ topLeague, divisions, primaryCup, supercups, secondaryCups, hasStateChampionship, continent, ...movement });
+const rule = (topLeague: string, divisions: string[], continent: CountryCompetitionRule["continent"], primaryCup?: string, supercups: string[] = [], secondaryCups: string[] = [], hasStateChampionship = false, movement: Pick<CountryCompetitionRule, "promotionPlaces" | "relegationPlaces" | "promotionPlayoffs"> = {}): CountryCompetitionRule => ({ topLeague, divisions, primaryCup, supercups, secondaryCups, hasStateChampionship, continent, pointsForWin: 3, tiebreakers: ["points", "goalDifference", "goalsFor", "wins", "draw"], ...movement });
 
 export const COUNTRY_COMPETITION_RULES: Record<string, CountryCompetitionRule> = {
   "Brasil": rule("bra-a", ["bra-a", "bra-b", "bra-c", "bra-d"], "southAmerica", "copa-br", ["bra-super"], ["copa-verde"], true, { promotionPlaces: { "bra-b": 4, "bra-c": 4, "bra-d": 4 }, relegationPlaces: { "bra-a": 4, "bra-b": 4, "bra-c": 4 } }),
@@ -27,7 +30,7 @@ export const COUNTRY_COMPETITION_RULES: Record<string, CountryCompetitionRule> =
   "Bolívia": rule("bol-a", ["bol-a"], "southAmerica"),
   "Equador": rule("ecu-a", ["ecu-a"], "southAmerica", "ecu-cup", ["ecu-super"]),
   "Venezuela": rule("ven-a", ["ven-a", "ven-b"], "southAmerica", "ven-cup", ["ven-super"], [], false, { promotionPlaces: { "ven-b": 2 }, relegationPlaces: { "ven-a": 2 } }),
-  "Inglaterra": rule("eng-pl", ["eng-pl", "eng-c", "eng-l1", "eng-l2"], "europe", "eng-fa", ["eng-cs"], ["eng-lcup"], false, { promotionPlaces: { "eng-c": 3, "eng-l1": 3, "eng-l2": 3 }, relegationPlaces: { "eng-pl": 3, "eng-c": 3, "eng-l1": 3 } }),
+  "Inglaterra": rule("eng-pl", ["eng-pl", "eng-c", "eng-l1", "eng-l2"], "europe", "eng-fa", ["eng-cs"], ["eng-lcup"], false, { promotionPlaces: { "eng-c": 3, "eng-l1": 3, "eng-l2": 4 }, promotionPlayoffs: { "eng-c": { from: 3, to: 6 }, "eng-l1": { from: 3, to: 6 }, "eng-l2": { from: 4, to: 7 } }, relegationPlaces: { "eng-pl": 3, "eng-c": 3, "eng-l1": 4 } }),
   "Espanha": rule("esp-ll", ["esp-ll"], "europe", "esp-cup", ["esp-super"]),
   "Itália": rule("ita-sa", ["ita-sa"], "europe", "ita-cup", ["ita-super"]),
   "Alemanha": rule("ger-bl", ["ger-bl"], "europe", "ger-cup", ["ger-super"]),

@@ -1,0 +1,8 @@
+{
+  "games": 10,
+  "pause": "passed",
+  "keyboardCode": "won",
+  "touch": "passed",
+  "overflow": false,
+  "errors": []
+}

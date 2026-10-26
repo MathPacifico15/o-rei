@@ -1,7 +1,10 @@
+import { rememberClubMilestones } from "./career-history";
+import { selectCareerEvents } from "./career-events";
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
 import { COUNTRY_COMPETITION_RULES, competitionRuleFor, qualifiesForWorldCup, SUPER_MUNDIAL_CONTINENTAL_SOURCES, SUPER_MUNDIAL_RANKING_SLOTS, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants } from "./competition-rules";
 import type { AttributeKey, Attributes, CampaignMatch, CampaignQualification, CampaignResult, CareerEvent, CareerState, Club, ClubCareerRecord, ClubDynamics, ContractOffer, ContractRole, CupFinal, EvolutionFocus, LeagueTable, LeagueTableEntry, MarketWindow, Player, Position, RandomCareerStart, SeasonCampaign, SeasonEvolution, SeasonResult, UpgradeCard } from "./types";
+import { rescueForDecision } from "./world-tournaments";
 
 export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
   GOL: ["reflexo", "elasticidade", "posicionamento", "saida", "lideranca", "fisico"],
@@ -586,7 +589,11 @@ function superMundialRegion(state: CareerState, club: Club): SuperMundialRegion 
 }
 function superMundialRank(state: CareerState, club: Club) {
   const current = effectiveClub(state, club);
-  return current.strength * .62 + current.reputation * .3 + Math.min(100, current.budget) * .08;
+  const cycleStart = state.season - 4;
+  const continental = SUPER_MUNDIAL_CONTINENTAL_SOURCES.reduce((total, competitionId) => total + (state.competitionWinners?.[competitionId] ?? []).filter((winner) => winner.clubId === club.id && winner.season >= cycleStart).length, 0);
+  const domestic = Object.entries(state.competitionWinners ?? {}).reduce((total, [competitionId, winners]) => total + (competitionId === currentLeagueId(state, club) ? winners.filter((winner) => winner.clubId === club.id && winner.season >= cycleStart).length : 0), 0);
+  const history = continental * 24 + domestic * 7 + (state.clubDynamics?.[club.id]?.titles ?? 0) * 2;
+  return history + current.strength * .48 + current.reputation * .24 + Math.min(100, current.budget) * .05;
 }
 function wonContinentalInCycle(state: CareerState, clubId: string) {
   const cycleStart = state.season - 4;
@@ -602,21 +609,23 @@ function wonContinentalInCycle(state: CareerState, clubId: string) {
  */
 export function superMundialEligibleClubs(state: CareerState) {
   const elite = clubs.filter((club) => Boolean(superMundialRegion(state, club)));
-  const selected = new Set(elite.filter((club) => wonContinentalInCycle(state, club)).map((club) => club.id));
+  const selected = new Set(elite.filter((club) => wonContinentalInCycle(state, club.id)).map((club) => club.id));
+  const countryCounts = new Map<string, number>();
+  for (const club of elite.filter((entry) => selected.has(entry.id))) countryCounts.set(club.country, (countryCounts.get(club.country) ?? 0) + 1);
   for (const [region, slots] of Object.entries(SUPER_MUNDIAL_RANKING_SLOTS) as Array<[SuperMundialRegion, number]>) {
     const regional = elite.filter((club) => superMundialRegion(state, club) === region).sort((a, b) => superMundialRank(state, b) - superMundialRank(state, a));
     let taken = regional.filter((club) => selected.has(club.id)).length;
     for (const club of regional) {
       if (taken >= slots) break;
-      if (!selected.has(club.id)) { selected.add(club.id); taken += 1; }
+      if (!selected.has(club.id) && (countryCounts.get(club.country) ?? 0) < 2) { selected.add(club.id); countryCounts.set(club.country, (countryCounts.get(club.country) ?? 0) + 1); taken += 1; }
     }
   }
-  // Caso alguma região não tenha clubes suficientes no catálogo, fecha 32 com o ranking global.
+  // Redistribuição global preserva o limite de dois por país para vagas de ranking.
   for (const club of [...elite].sort((a, b) => superMundialRank(state, b) - superMundialRank(state, a))) {
     if (selected.size >= 32) break;
-    selected.add(club.id);
+    if (!selected.has(club.id) && (countryCounts.get(club.country) ?? 0) < 2) { selected.add(club.id); countryCounts.set(club.country, (countryCounts.get(club.country) ?? 0) + 1); }
   }
-  return elite.filter((club) => selected.has(club.id));
+  return elite.filter((club) => selected.has(club.id)).slice(0, 32);
 }
 function superMundialQualificationSource(state: CareerState, club: Club) {
   return wonContinentalInCycle(state, club.id) ? "campeão continental no ciclo" : "ranking mundial de clubes";
@@ -708,12 +717,17 @@ function campaignEntries(state: CareerState, club: Club): Array<{ competitionId:
   const order: Record<SeasonCampaign["category"], number> = { supercup: 0, state: 1, cup: 2, continental: 3, world: 4, national: 5, league: 6 };
   return entries.sort((a,b) => order[campaignCategory(a.competitionId)] - order[campaignCategory(b.competitionId)]);
 }
+function frozenTournamentGroups(participants: Array<{ id: string; name: string; qualification: string }>, playerId: string, groupOpponentIds: string[], groupCount: number) {
+  const groupNames = Array.from({ length: groupCount }, (_, index) => `Grupo ${String.fromCharCode(65 + index)}`);
+  const playerGroup = [playerId, ...groupOpponentIds].filter((id, index, all) => all.indexOf(id) === index);
+  const remaining = participants.map((participant) => participant.id).filter((id) => !playerGroup.includes(id));
+  const groups = groupNames.map((name, index) => ({ name, participantIds: index === 0 ? playerGroup : remaining.slice((index - 1) * 4, index * 4) }));
+  const groupFor = new Map(groups.flatMap((group) => group.participantIds.map((id) => [id, group.name] as const)));
+  return { participants: participants.map((participant) => ({ ...participant, group: groupFor.get(participant.id) })), groups };
+}
 function buildCampaigns(state: CareerState, club: Club, ovr: number, form: number, random: () => number) {
   const campaigns: CampaignResult[] = [];
   const finals: CupFinal[] = [];
-  // Evita a maratona de finais: elite pode ter duas, os demais só uma decisão por ano.
-  const finalBudget = club.strength >= 84 ? 2 : club.strength >= 72 && random() < .28 ? 2 : 1;
-  let bookedFinals = 0;
   for (const entry of campaignEntries(state, club)) {
     const competition = competitions.find((item) => item.id === entry.competitionId);
     if (!competition) continue;
@@ -724,10 +738,12 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
       const phases = ["Grupo · jogo 1", "Grupo · jogo 2", "Grupo · jogo 3", "Oitavas de final", "Quartas de final", "Semifinal", "Final"];
       const usedOpponents = new Set<string>();
       const matches = phases.map((phase, index) => { const opponent = campaignOpponent(state, club, competition.id, random, usedOpponents); usedOpponents.add(opponent.id); return { phase, opponentId: opponent.id, opponentName: opponent.name, result: "pending" as const, playable: true, difficulty: index + 1 }; });
-      const groupTable = [{ name: club.name, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: 3-index, goalDifference: 1-index, goalsFor: 2-index, position: index+2 }))];
-      const campaign: CampaignResult = { id, competitionId: competition.id, competitionName: competition.name, category, qualification: entry.qualification, status: "active", phase: phases[0], matches, prize: competition.prestige * 150_000, groupTable };
+      const groupTable = [{ name: club.name, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: [6, 3, 0][index], goalDifference: [3, 0, -3][index], goalsFor: [5, 3, 1][index], position: index+2 }))];
+      const field = superMundialEligibleClubs(state).map((participant) => ({ id: participant.id, name: participant.name, qualification: superMundialQualificationSource(state, participant) }));
+      const frozen = frozenTournamentGroups(field, club.id, matches.slice(0, 3).map((match) => match.opponentId!), 8);
+      const campaign: CampaignResult = { id, competitionId: competition.id, competitionName: competition.name, category, qualification: entry.qualification, status: "active", phase: phases[0], matches, prize: competition.prestige * 150_000, groupTable, groupName: "Grupo A", format: "club-world-32", participants: frozen.participants, groups: frozen.groups };
       campaigns.push(campaign);
-      matches.forEach((match, index) => finals.push({ competitionId: competition.id, competitionName: competition.name, opponentClubId: match.opponentId ?? "mundial-rival", opponentClubName: match.opponentName, stakes: "campaign", phase: "title", scope: "club", campaignId: id, campaignMatchIndex: index, campaignDifficulty: match.difficulty }));
+      matches.forEach((match, index) => finals.push({ competitionId: competition.id, competitionName: competition.name, opponentClubId: match.opponentId ?? "mundial-rival", opponentClubName: match.opponentName, stakes: "campaign", phase: index === matches.length - 1 ? "title" : "access", scope: "club", campaignId: id, campaignMatchIndex: index, campaignDifficulty: match.difficulty, worldStage: index < 3 ? "group" : "knockout", attempt: "regulation", rescueAvailable: rescueForDecision(id, index), decisionId: `${id}:match:${index}:regulation` }));
       continue;
     }
     const id = `${state.season}:${competition.id}`;
@@ -738,22 +754,11 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
     for (const currentPhase of campaignPhases(category)) {
       phase = currentPhase;
       if (currentPhase === "Final") {
-        if (bookedFinals >= finalBudget) {
-          const semifinal = matches.at(-1);
-          if (semifinal) {
-            semifinal.result = "lost";
-            semifinal.opponentGoals = Math.max((semifinal.playerGoals ?? 0) + 1, semifinal.opponentGoals ?? 0);
-          }
-          status = "eliminated";
-          phase = semifinal?.phase ?? "Semifinal";
-          break;
-        }
         const opponent = category === "supercup" ? supercupOpponent(state, club, competition.id, random) : campaignOpponent(state, club, competition.id, random, usedOpponents);
         usedOpponents.add(opponent.id);
         matches.push({ phase: currentPhase, opponentId: opponent.id, opponentName: opponent.name, result: "pending", playable: true });
         status = "final";
-        bookedFinals += 1;
-        finals.push({ competitionId: competition.id, competitionName: competition.name, opponentClubId: opponent.id, opponentClubName: opponent.name, stakes: "cup", phase: "title", scope: "club", campaignId: id, campaignMatchIndex: matches.length - 1 });
+        finals.push({ competitionId: competition.id, competitionName: competition.name, opponentClubId: opponent.id, opponentClubName: opponent.name, stakes: "cup", phase: "title", scope: "club", campaignId: id, campaignMatchIndex: matches.length - 1, decisionId: `${id}:final` });
         break;
       }
       const match = simulatedCampaignMatch(state, club, competition.id, currentPhase, ovr, form, random, usedOpponents);
@@ -797,9 +802,11 @@ function buildWorldCupCampaign(state: CareerState, player: Player, random: () =>
   const id = `${state.season}:wc`;
   const matches = phases.map((phase, index) => { const rival = opponentForPhase(index); return { phase, opponentId: `national-${rival.code}`, opponentName: rival.name, result: "pending" as const, playable: true, difficulty: index + 1 }; });
   const groupTable = [{ name: player.nationality, points: 0, goalDifference: 0, goalsFor: 0, position: 1 }, ...matches.slice(0,3).map((match,index) => ({ name: match.opponentName, points: 3-index, goalDifference: 1-index, goalsFor: 2-index, position: index+2 }))];
-  const campaign: CampaignResult = { id, competitionId: "wc", competitionName: competition.name, category: "national", qualification: { competitionId: "wc", source: "convocação para a seleção" }, status: "active", phase: phases[0], matches, prize: competition.prestige * 180_000, groupTable };
+  const field = worldCupParticipants(state.season).map((country) => ({ id: `national-${country.code}`, name: country.name, qualification: `eliminatórias · ${worldCupEligibilityFor(country.name)}` }));
+  const frozen = frozenTournamentGroups(field, `national-${countries.find((country) => country.name === player.nationality)?.code ?? "PLAYER"}`, matches.slice(0, 3).map((match) => match.opponentId!), 12);
+  const campaign: CampaignResult = { id, competitionId: "wc", competitionName: competition.name, category: "national", qualification: { competitionId: "wc", source: "seleção classificada e atleta com OVR mínimo 82" }, status: "active", phase: phases[0], matches, prize: competition.prestige * 180_000, groupTable, groupName: "Grupo A", format: "world-48", participants: frozen.participants, groups: frozen.groups };
   const worldCupDifficulty = worldCupMiniGameDifficulty(player.nationality);
-  const finals = matches.map((match, index) => ({ competitionId:"wc", competitionName:competition.name, opponentClubId:match.opponentId!, opponentClubName:match.opponentName, stakes:"campaign" as const, phase:"title" as const, scope:"national" as const, campaignId:id, campaignMatchIndex:index, campaignDifficulty:match.difficulty, worldCupDifficulty }));
+  const finals: CupFinal[] = matches.map((match, index) => ({ competitionId:"wc", competitionName:competition.name, opponentClubId:match.opponentId!, opponentClubName:match.opponentName, stakes:"campaign", phase:index === matches.length - 1 ? "title" : "access", scope:"national", campaignId:id, campaignMatchIndex:index, campaignDifficulty:match.difficulty, worldCupDifficulty, worldStage:index < 3 ? "group" : "knockout", attempt:"regulation", rescueAvailable:rescueForDecision(id,index), decisionId:`${id}:match:${index}:regulation` }));
   return { campaign, finals };
 }
 
@@ -845,7 +852,7 @@ function buildLeagueTable(state: CareerState, leagueId: string, playerClubId: st
   for (const baseClub of leagueClubs) {
     const club = effectiveClub(state, baseClub);
     quality.set(club.id, Math.max(25, club.strength + (club.id === playerClubId ? playerBoost : 0)));
-    entriesById.set(club.id, { clubId: club.id, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, position: 0 });
+    entriesById.set(club.id, { clubId: club.id, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0, position: 0, tieBreaker: random() });
   }
   const play = (homeId: string, awayId: string) => {
     const home = entriesById.get(homeId)!; const away = entriesById.get(awayId)!;
@@ -863,11 +870,12 @@ function buildLeagueTable(state: CareerState, leagueId: string, playerClubId: st
     else { away.wins++; away.points += 3; home.losses++; }
   };
   for (let i = 0; i < leagueClubs.length; i++) for (let j = i + 1; j < leagueClubs.length; j++) { play(leagueClubs[i].id, leagueClubs[j].id); play(leagueClubs[j].id, leagueClubs[i].id); }
-  const entries = [...entriesById.values()].map((entry) => ({ ...entry, points: entry.wins * 3 + entry.draws })).sort((a,b) => b.points-a.points || (b.goalsFor-b.goalsAgainst)-(a.goalsFor-a.goalsAgainst) || b.goalsFor-a.goalsFor)
+  const pointsForWin = competitionRuleFor(competition.country)?.pointsForWin ?? 3;
+  const entries = [...entriesById.values()].map((entry) => ({ ...entry, points: entry.wins * pointsForWin + entry.draws })).sort((a,b) => b.points-a.points || (b.goalsFor-b.goalsAgainst)-(a.goalsFor-a.goalsAgainst) || b.goalsFor-a.goalsFor || b.wins-a.wins || (b.tieBreaker ?? 0)-(a.tieBreaker ?? 0))
     .map((entry,index) => ({ ...entry, position:index+1 }));
   const divisions = countryDivisions(competition.country);
   const index = divisions.findIndex((entry) => entry.id === leagueId);
-  return { competitionId: leagueId, season: state.season, entries, promotionPlaces: index > 0 ? movementPlaces(leagueId, "up") : 0, relegationPlaces: index >= 0 && index < divisions.length-1 ? movementPlaces(leagueId, "down") : 0 };
+  return { competitionId: leagueId, season: state.season, entries, promotionPlaces: index > 0 ? movementPlaces(leagueId, "up") : 0, relegationPlaces: index >= 0 && index < divisions.length-1 ? movementPlaces(leagueId, "down") : 0, promotionPlayoff: competitionRuleFor(competition.country)?.promotionPlayoffs?.[leagueId] };
 }
 function leagueTarget(state: CareerState, leagueId: string, direction: "up" | "down") {
   const competition = competitions.find((entry) => entry.id === leagueId);
@@ -958,16 +966,17 @@ function simulateFullNationalTeam(player: Player, season: number, ovr: number, r
   if (ovr < 82 && !youth && !olympic) return undefined;
   const category: "senior" | "olympic" | "sub20" = ovr >= 82 ? "senior" : olympic ? "olympic" : "sub20";
   const competition = category === "sub20" ? "Copa do Mundo Sub-20" : category === "olympic" ? "Jogos Olímpicos" : selectionTournamentFor(player.nationality, season);
-  const games = competition ? 3 + Math.floor(random()*5) : 2 + Math.floor(random()*4);
+  const playableWorldCup = competition === "Copa do Mundo";
+  const games = playableWorldCup ? 0 : competition ? 3 + Math.floor(random()*5) : 2 + Math.floor(random()*4);
   const attacking = player.position === "ATA" ? .42 : player.position === "MEI" ? .25 : .04;
   const goals = Math.max(0, Math.round(games * attacking * (ovr/88) * random()));
   const assists = player.position === "MEI" ? Math.max(0, Math.round(games*.28*random())) : player.position === "ATA" ? Math.max(0, Math.round(games*.12*random())) : 0;
   const competitionId = competitions.find((entry) => entry.name === competition)?.id;
   const finalChance = competition ? Math.min(.46, .04 + (ovr-78)*.018 + player.form/520) : 0;
-  const reachedFinal = Boolean(competition && random() < finalChance);
+  const reachedFinal = Boolean(competition && !playableWorldCup && random() < finalChance);
   const opponents = nationalOpponents(competitionId, player.nationality, season);
   const opponent = opponents[Math.floor(random() * Math.max(1, opponents.length))] ?? countries[0];
-  return { competitionId, competition: competition ?? "Eliminatórias", category, phase: reachedFinal ? "Final" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title: undefined, reachedFinal, opponentName: opponent.name, opponentId: `national-${opponent.code}` };
+  return { competitionId, competition: competition ?? "Eliminatórias", category, phase: reachedFinal ? "Final" : playableWorldCup ? "Fase de grupos" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title: undefined, reachedFinal, opponentName: opponent.name, opponentId: `national-${opponent.code}` };
 }
 function clubKey(name: string) { const key=name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); return ({"sporting cp":"sporting","psg":"paris saint-germain","inter":"internazionale","inter milan":"internazionale","bayern munich":"bayern munchen"} as Record<string,string>)[key] ?? key; }
 const SOUTH_AMERICA = new Set(["Brasil","Argentina","Chile","Colômbia","Uruguai","Paraguai","Peru","Bolívia","Equador","Venezuela"]);
@@ -1007,8 +1016,8 @@ export function createMarketWindow(state: CareerState, random: () => number): Ma
   const currentCountry=current.country, originCountry=state.originCountry??current.country;
   const pool=clubs.filter((club)=>club.id!==current.id&&offerTier(club,ovr,currentCountry,originCountry)!=="none");
   const remaining=[...pool], offers:ContractOffer[]=[];
-  const agentBonus = state.shop?.activeSeasonal.includes("empresario") ? 1.25 : 1;
-  const academyBonus = state.shop?.ownedPermanent.includes("academia") ? 1.15 : 1;
+  const agentBonus = state.shop?.ownedPermanent.includes("empresario") ? 1.15 : 1;
+  const academyBonus = state.shop?.ownedPermanent.includes("academia") ? 1.2 : 1;
   while(offers.length<4&&remaining.length){ const club=weightedPick(remaining,current,random); const index=remaining.findIndex((entry)=>entry.id===club.id); remaining.splice(index,1); const salary=Math.max(Math.round(state.contract.monthlySalary * 1.05 / 100) * 100, Math.round(proposalSalary(club,ovr,random)*agentBonus*academyBonus/100)*100); const role=proposalRole(ovr,club); offers.push({clubId:club.id,monthlySalary:salary,seasons:2+Math.floor(random()*4),role,expectedMinutes:expectedMinutes(role),idolatryChange:current.rivals.includes(club.id)?-18:-Math.max(2,Math.round((player.clubIdolatry[current.id]??0)/16))}); }
   // O catálogo pode não conter quatro opções em uma faixa inicial rara; completa com clubes do país atual.
   const fallback=clubs.filter((club)=>club.id!==current.id&&!offers.some((offer)=>offer.clubId===club.id)&&offerTier(club,ovr,currentCountry,originCountry)!=="none");
@@ -1048,6 +1057,7 @@ export function applyFinalConsequence(state: CareerState, final: CupFinal, won: 
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
   const random = mulberry32(state.seed + state.season * 7919);
   let player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
+  state = rememberClubMilestones(state);
   const seasonStartAge = player.age;
   const assignments = { ...state.leagueAssignments };
   let activeContract = state.contract;
@@ -1055,6 +1065,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   if (state.pendingTransfer) {
     const offer = state.pendingTransfer;
     const previousClub = player.clubId;
+    player.clubIdolatry[previousClub] = Math.max(0, (player.clubIdolatry[previousClub] ?? 0) + offer.idolatryChange);
     player.clubId = offer.clubId; player.salary = offer.monthlySalary;
     player.clubIdolatry[offer.clubId] = player.clubIdolatry[offer.clubId] ?? Math.max(3, 8 + offer.idolatryChange);
     if (clubs.find((club) => club.id === previousClub)?.rivals.includes(offer.clubId) && !player.judasAt.includes(previousClub)) player.judasAt.push(previousClub);
@@ -1069,7 +1080,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   let clubRecord = clubHistory.find((entry) => entry.clubId === player.clubId); if (!clubRecord) { clubRecord={clubId:player.clubId,titles:[]}; clubHistory.push(clubRecord); }
   const ovr=computeOvr(player), generational=state.mode==="generational", agePerformance=agePerformanceMultiplier(player.age,player.attributes.fisico);
   const rolePower = { promessa:.42, rotacao:.58, titular:.78, estrela:.92 }[activeContract?.role ?? "promessa"];
-  const seasonal=state.shop?.activeSeasonal ?? [], permanent=state.shop?.ownedPermanent ?? [];
+  const permanent=state.shop?.ownedPermanent ?? [], seasonal=[...(state.shop?.activeSeasonal ?? []), ...permanent];
   const physicalBonus=(seasonal.includes("preparador")?4:0)+(seasonal.includes("suplementacao")?2:0)+(permanent.includes("mansao")?3:0);
   const seasonOvr=(ovr+physicalBonus)*agePerformance;
   const role=Math.max(.12,Math.min(.96,(seasonOvr-club.strength+18+(generational ? 5 : 0))/30*rolePower));
@@ -1079,9 +1090,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const creative=player.position==="MEI"?(player.attributes.passe+player.attributes.drible+player.attributes.velocidade)/300:0;
   const defensive=player.position==="GOL"?(player.attributes.reflexo+player.attributes.elasticidade+player.attributes.posicionamento+player.attributes.saida)/400:0;
   const eliteStrikerBonus = player.position === "ATA" ? Math.max(0, ovr - 86) * .045 : 0;
-  const goals=["ATA","MEI"].includes(player.position)?Math.max(0,Math.round(games*attacking*(player.position === "ATA" ? .16 + random() * .24 + eliteStrikerBonus : .18 + random()*.28))):0;
-  const assists=player.position==="MEI"?Math.max(0,Math.round(games*creative*(.18+random()*.25))):player.position==="ATA"?Math.max(0,Math.round(games*(.06+random()*.14)*(player.attributes.velocidade+player.attributes.finalizacao)/180)):0;
-  const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45)):0;
+  const goals=["ATA","MEI"].includes(player.position)?Math.max(0,Math.round(games*attacking*(seasonal.includes("chuteiras")?1.08:1)*(player.position === "ATA" ? .16 + random() * .24 + eliteStrikerBonus : .18 + random()*.28))):0;
+  const assists=player.position==="MEI"?Math.max(0,Math.round(games*creative*(seasonal.includes("analista")?1.1:1)*(.18+random()*.25))):player.position==="ATA"?Math.max(0,Math.round(games*(.06+random()*.14)*(player.attributes.velocidade+player.attributes.finalizacao)/180)):0;
+  const cleanSheets=player.position==="GOL"?Math.max(0,Math.round(games*defensive*.45*(seasonal.includes("chuteiras")?1.08:1)*(seasonal.includes("analista")?1.1:1))):0;
   const injuryRisk=Math.max(.035,.2-(player.attributes.fisico+physicalBonus)/700)*(seasonal.includes("fisio") ? .65 : 1);
   const injuryWeeks=random()<injuryRisk?Math.round(1+random()*7):0;
   const leagueOpponents = clubs.filter((entry) => (assignments[entry.id] ?? entry.leagueId) === leagueId && entry.id !== player.clubId);
@@ -1102,22 +1113,35 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const table=allTables[leagueId];
   const row=table.entries.find((entry)=>entry.clubId===player.clubId) ?? table.entries[0];
   const league=competitions.find((entry)=>entry.id===leagueId);
-  // Para o clube do jogador, toda divisão que permite subir termina em uma decisão de acesso.
-  // A tabela segue apenas como registro da temporada, sem zona de promoção.
-  const promotion=leagueTarget({...state,leagueAssignments:assignments},leagueId,"up");
-  const titleAndPromotion=Boolean(promotion);
-  // Em toda divisão com acesso, a primeira decisão vale título e subida.
-  const leagueTitle=row.position===1 && !titleAndPromotion ? league?.name : undefined;
-  // Copa do Acesso é um torneio paralelo: nunca coexistem queda e subida no mesmo resumo.
-  const relegation=!promotion && row.position>table.entries.length-table.relegationPlaces ? leagueTarget({...state,leagueAssignments:assignments},leagueId,"down") : undefined;
-  const playerNeedsDivisionDecision = Boolean(promotion || relegation);
+  const countryRule = competitionRuleFor(club.country);
+  const isTopDivision = countryRule?.topLeague === leagueId;
+  const playoffRange = table.promotionPlayoff;
+  const directPromotionPlaces = playoffRange ? playoffRange.from - 1 : table.promotionPlaces;
+  const inPromotionZone = directPromotionPlaces > 0 && row.position <= directPromotionPlaces;
+  const inPromotionPlayoff = Boolean(playoffRange && row.position >= playoffRange.from && row.position <= playoffRange.to);
+  const inRelegationZone = table.relegationPlaces > 0 && row.position > table.entries.length - table.relegationPlaces;
+  /*
+   * O REI keeps the league table as the source of the champion and direct
+   * promotion. The player never changes division as a side effect of the table:
+   * a first-division relegation is held for a one-off survival decision. This
+   * is our documented version of the public "final de permanência" behavior.
+   */
+  const promotion = inPromotionZone ? leagueTarget(seasonState, leagueId, "up") : undefined;
+  const relegation = isTopDivision && inRelegationZone ? leagueTarget(seasonState, leagueId, "down") : undefined;
+  const playerNeedsDivisionDecision = Boolean(relegation || inPromotionPlayoff);
+  const playerDivisionOutcome: PlayerDivisionOutcome = promotion ? "promoted" : "stayed";
+  const leagueTitle=row.position===1 ? league?.name : undefined;
   let settledAssignments = { ...assignments };
   let automaticMovements: DivisionMovement[] = [];
   const playerCountry = club.country;
   for (const country of Object.keys(COUNTRY_COMPETITION_RULES)) {
     if (country === playerCountry && playerNeedsDivisionDecision) continue;
-    const settled = settleCountryDivisions(seasonState, allTables, country, country === playerCountry ? player.clubId : undefined);
-    settledAssignments = { ...settledAssignments, ...settled.assignments };
+    const settled = country === playerCountry
+      ? settleCountryDivisions(seasonState, allTables, country, player.clubId, playerDivisionOutcome)
+      : settleCountryDivisions(seasonState, allTables, country, undefined);
+    // Each country's result contains the original assignments for every other
+    // country. Only merge actual movements, or later countries undo earlier ones.
+    for (const movement of settled.movements) settledAssignments[movement.clubId] = movement.to;
     automaticMovements = [...automaticMovements, ...settled.movements];
   }
   const pendingDivisionSettlement = playerNeedsDivisionDecision ? { country: playerCountry, playerClubId: player.clubId, playerLeagueId: leagueId } : undefined;
@@ -1125,34 +1149,34 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const national=simulateFullNationalTeam(player,state.season,ovr,random);
   const worldCupCampaign = national?.competitionId === "wc" ? buildWorldCupCampaign(state, player, random) : { campaign: undefined, finals: [] as CupFinal[] };
   if (worldCupCampaign.campaign) generatedCampaigns.campaigns.push(worldCupCampaign.campaign);
-  const cupFinal: CupFinal | undefined = promotion
-    ? { competitionId: leagueId, competitionName: league?.name ?? "Campeonato Nacional", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: "titleAndPromotion", targetLeagueId: promotion, phase: "title", scope: "club" }
-    : relegation
-      ? { competitionId: leagueId, competitionName: "Jogo da Permanência", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: "relegation", targetLeagueId: relegation, phase: "access", scope: "club" }
+  const promotionTarget = inPromotionPlayoff ? leagueTarget(seasonState, leagueId, "up") : undefined;
+  const divisionFinal: CupFinal | undefined = relegation
+      ? { competitionId: leagueId, competitionName: "Jogo da Permanência", opponentClubId: "decisao", opponentClubName: "Rival direto", stakes: "relegation", targetLeagueId: relegation, phase: "access", scope: "club", decisionId: `${state.season}:${leagueId}:permanencia` }
+      : promotionTarget
+        ? { competitionId: leagueId, competitionName: "Playoff de Acesso", opponentClubId: "decisao-acesso", opponentClubName: "Rival do playoff", stakes: "promotion", targetLeagueId: promotionTarget, phase: "access", scope: "club", decisionId: `${state.season}:${leagueId}:playoff-acesso` }
+        : undefined;
+  const cupFinal: CupFinal | undefined = divisionFinal
+      ? divisionFinal
     : worldCupCampaign.finals[0]
       ? worldCupCampaign.finals[0]
       : national?.reachedFinal && national.competitionId
       ? { competitionId: national.competitionId, competitionName: national.competition, opponentClubId: national.opponentId, opponentClubName: national.opponentName, stakes: "cup", phase: "title", scope: "national" }
       : generatedCampaigns.finals[0];
   const contract=activeContract ?? {clubId:player.clubId,monthlySalary:16_700,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
-  const monthlySalary=contract.monthlySalary*(seasonal.includes("empresario")?1.25:1);
+  const monthlySalary=contract.monthlySalary*1;
   const prize=(leagueTitle?league?.prestige??0:0)*50_000;
   const balance=(state.balance??0)+monthlySalary*12+prize;
   player.games+=games; player.goals+=goals; player.assists+=assists; player.cleanSheets+=cleanSheets; player.saves+=player.position==="GOL"?Math.round(games*(2.4+random()*1.6)):0; player.benchAppearances=(player.benchAppearances??0)+benchAppearances;
   player.nationalTeamGames=(player.nationalTeamGames??0)+(national?.games??0); player.nationalTeamGoals=(player.nationalTeamGoals??0)+(national?.goals??0); player.nationalTeamAssists=(player.nationalTeamAssists??0)+(national?.assists??0);
-  player.injuries=injuryWeeks; player.age+=1; player.form=clamp((52+random()*42)*agePerformance-injuryWeeks*2+(seasonal.includes("chef")?5:0)+(seasonal.includes("ferias")?5:0)+(permanent.includes("casa")?2:0)); player.marketValue=Math.max(50_000,Math.round(player.marketValue*(1+(seasonOvr-62)/380)));
-  player.clubIdolatry[player.clubId]=clamp((player.clubIdolatry[player.clubId]??25)+games/12+(leagueTitle?9:0)+goals/9);
+  player.injuries=injuryWeeks; player.age+=1; player.form=clamp((52+random()*42)*agePerformance-injuryWeeks*2+(seasonal.includes("chef")?5:0)+(permanent.includes("psicologo")?6:0)+(seasonal.includes("familia")?4:0)+(seasonal.includes("ferias")?5:0)+(permanent.includes("casa")?2:0)); player.marketValue=Math.max(50_000,Math.round(player.marketValue*(1+(seasonOvr-62)/380)));
+  player.clubIdolatry[player.clubId]=clamp((player.clubIdolatry[player.clubId]??25)+games/12+(leagueTitle?9:0)+goals/9+(permanent.includes("bairro")?1:0));
   if(leagueTitle){player.titles.push(leagueTitle);clubRecord.titles.push(leagueTitle);}
   const award=goals>=24?"Chuteira de Ouro":player.position==="GOL"&&cleanSheets>=16?"Melhor Goleiro da Liga":goals>=18?"Artilheiro da temporada":undefined; if(award) player.awards.push(award);
-  const contextual=contextualEvents(player,contract.seasonsRemaining,table,club,random,{ firstLoanWindow: state.history.length === 1 && !loan && player.age <= 18, title: leagueTitle, nationalCalled: Boolean(national), goals, games });
-  const blockedEvents = new Set(state.recentEventIds ?? []);
-  const allSeasonEvents=[...contextual,...pickSeasonEvents(random,player.fame,player.position)].filter((event) => !blockedEvents.has(event.id));
-  // Cada temporada tem somente 1 a 3 decisões narrativas.
-  const seasonEvents=allSeasonEvents.slice(0,1+Math.floor(random()*3));
+  const seasonEvents=selectCareerEvents(state,player,random);
   const nextContract={...contract,seasonsRemaining:Math.max(0,contract.seasonsRemaining-1)};
   const highestOvr=Math.max(state.highestOvr ?? ovr,ovr);
   // Depois de quatro temporadas completas, abre a cada três anos: 5ª, 8ª, 11ª...
-  const opensMarket=state.history.length >= 4 && (state.history.length - 4) % 3 === 0;
+  const opensMarket=nextContract.seasonsRemaining <= 1 || (state.history.length >= 2 && state.history.length % 3 === 0);
   const generationalBreakthrough=generational && state.history.length===1 && player.age===18 && (goals+assists>=8||ovr>=70);
   const marketState={ ...state, player, contract: nextContract, highestOvr, originCountry: state.originCountry ?? club.country };
   const marketWindow=generationalBreakthrough ? createGenerationalMarketWindow(marketState,random) : opensMarket ? createMarketWindow(marketState,random) : undefined;
@@ -1161,14 +1185,14 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const automaticEvolution = applyAutomaticSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193);
   player = { ...automaticEvolution.player, age: seasonStartAge + 1 };
   const evolution = automaticEvolution.evolution;
-  // No máximo duas finais normais por ano. Mundial mantém sua cadeia inteira.
+  // Todas as decisões legitimamente alcançadas entram no calendário.
   const longCampaigns = generatedCampaigns.finals.filter((final) => final.stakes === "campaign");
-  const normalFinals = generatedCampaigns.finals.filter((final) => final.stakes !== "campaign").slice(0, 2);
+  const normalFinals = generatedCampaigns.finals.filter((final) => final.stakes !== "campaign");
   // Calendário: supercopa/estadual/copa antes de campanhas internacionais.
   const allCampaignFinals = [...normalFinals, ...worldCupCampaign.finals, ...longCampaigns];
-  const campaignFinals = promotion ? [cupFinal!, ...allCampaignFinals] : worldCupCampaign.finals[0] ? allCampaignFinals : national?.reachedFinal && national.competitionId ? [cupFinal!, ...allCampaignFinals] : allCampaignFinals;
+  const campaignFinals = divisionFinal ? [divisionFinal, ...allCampaignFinals] : worldCupCampaign.finals[0] ? allCampaignFinals : national?.reachedFinal && national.competitionId ? [cupFinal!, ...allCampaignFinals] : allCampaignFinals;
   const calendar=[{competition:league?.name??"Liga",phase:`${row.position}º lugar`},...generatedCampaigns.campaigns.map((campaign)=>({competition:campaign.competitionName,phase:campaign.phase,opponent:campaign.matches.at(-1)?.opponentName})),...(national?[{competition:national.competition,phase:national.phase}]:[])];
-  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal,nationalTeamCompetition:national?.competition,nationalTeamTitle:undefined,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:Boolean(cupFinal),leagueId,leagueName:league?.name,clubId:player.clubId,division:league?.tier,contractRole:contract.role,contractMonthlySalary:contract.monthlySalary,rating,annualEarnings:monthlySalary*12+prize,titles:[leagueTitle].filter((value): value is string => Boolean(value)),access:promotion ? "pending" : undefined,relegated:Boolean(relegation),phaseReached:cupFinal ? "Final" : national?.phase,opponentName:cupFinal?.opponentClubName,calendar,campaigns:generatedCampaigns.campaigns,finals:campaignFinals,evolution};
+  const result:SeasonResult={season:state.season,games,goals,assists,cleanSheets,title:leagueTitle,award,injuryWeeks,event:seasonEvents[0],events:seasonEvents,cupFinal:campaignFinals[0],nationalTeamCompetition:national?.competition,nationalTeamTitle:undefined,nationalTeamCampaign:national,leaguePosition:row.position,leaguePoints:row.points,benchAppearances,finalOpportunity:campaignFinals.length>0,leagueId,leagueName:league?.name,clubId:player.clubId,division:league?.tier,contractRole:contract.role,contractMonthlySalary:contract.monthlySalary,rating,annualEarnings:monthlySalary*12+prize,titles:[leagueTitle].filter((value): value is string => Boolean(value)),access:settledAssignments[player.clubId] !== leagueId && (competitions.find(c=>c.id===settledAssignments[player.clubId])?.tier ?? 1) < (league?.tier ?? 1) ? "promoted" : undefined,relegated:settledAssignments[player.clubId] !== leagueId && (competitions.find(c=>c.id===settledAssignments[player.clubId])?.tier ?? 1) > (league?.tier ?? 1),phaseReached:cupFinal ? "Final" : national?.phase,opponentName:campaignFinals[0]?.opponentClubName,calendar,campaigns:generatedCampaigns.campaigns,finals:campaignFinals,evolution};
   const campaignQualifications={...(state.campaignQualifications??{}),[player.clubId]:nextSeasonQualifications(leagueId,row.position,table.entries.length)};
   const competitionWinners={...(state.competitionWinners??{})};
   const clubHonors={...(state.clubHonors??{})};
@@ -1188,7 +1212,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
     clubHonors[player.clubId] = [...(clubHonors[player.clubId] ?? []), leagueTitle];
   }
   const clubStrengthAdjustments = applyMovementDynamics(state, automaticMovements);
-  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],currentCompetition:competitions.find((entry)=>entry.id===(settledAssignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:settledAssignments,leagueTables:{...state.leagueTables,...allTables},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:[],freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveAllClubDynamics(state,allTables,random),clubStrengthAdjustments,pendingDivisionSettlement,pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:undefined},result};
+  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],financialLedger:[...(state.financialLedger??[]),{season:state.season,label:"Salários e premiações",amount:monthlySalary*12+prize}],currentCompetition:competitions.find((entry)=>entry.id===(settledAssignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:settledAssignments,leagueTables:{...state.leagueTables,...allTables},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:(state.shop.activeSeasonal??[]).filter(id=>id==="imprensa"||(state.shop.expires?.[id]??0)>state.season+1),expires:state.shop.expires,freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveAllClubDynamics(state,allTables,random),clubStrengthAdjustments,pendingDivisionSettlement,pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:undefined},result};
 }
 export function legacy(player: Player) {
   const ovr = computeOvr(player);

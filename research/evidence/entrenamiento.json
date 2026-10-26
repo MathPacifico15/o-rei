@@ -1,0 +1,258 @@
+{
+  "evidence_id": "ev_397d7ae19c02213cd3db3d2dbb12b8e7c14769508f71205a5b51aac1a2a319da",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "https://www.potrerofutbol.ar/el-idolo/entrenamiento",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "pt-BR",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "entrenamiento",
+        "action": "wait_for_timeout",
+        "duration_ms": 2500
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [],
+      "at_end": [
+        "accessibility",
+        "url"
+      ],
+      "events": [],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "9d59b05544486e45e914009bb07a41e9f1be8517f9cb82391ddf4a3479a8d0a5"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.8059.85"
+    },
+    "scenario": {
+      "start_origin": "https://www.potrerofutbol.ar",
+      "action_count": 1,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 4204,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1453,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo/entrenamiento",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "not_requested"
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "entrenamiento",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2543,
+        "before_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo/entrenamiento",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "https://www.potrerofutbol.ar/el-idolo/entrenamiento",
+          "origin": "https://www.potrerofutbol.ar",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7660c7b38e2fb5bb87441b97f9127cfa7fa9a5cc5ee01155ca28c16b6b203b00",
+              "bytes": 6633,
+              "text": "- document:\n  - dialog \"Privacy\":\n    - figure:\n      - heading \"Damos valor à sua privacidade\" [level=2]\n    - text: Nós e os nossos\n    - button \"parceiros\"\n    - text: armazenamos e/ou acedemos a informações num dispositivo, como cookies, e processamos dados pessoais, como identificadores únicos e informações padrão enviadas por um dispositivo para publicidade e conteúdos personalizados, medição de publicidade e conteúdos, pesquisa de audiências e desenvolvimento de serviços.Com a sua permissão, nós e os nossos parceiros poderemos usar identificação e dados de geolocalização precisos através da procura de dispositivos. Poderá clicar para consentir o processamento por nossa parte e pela parte dos nossos 1752 parceiros, conforme descrito acima. Em alternativa, poderá clicar para recusar o consentimento ou para aceder a informações mais pormenorizadas e alterar as suas preferências antes de dar consentimento.Tenha em atenção que algum processamento dos seus dados pessoais poderá não exigir o seu consentimento, mas que tem o direito de se opor a esse processamento. As suas preferências aplicam-se apenas a este site e serão guardadas durante 13 meses em IABGPP_HDR_GppString cookie. Você pode alterar suas preferências ou retirar seu consentimento a qualquer momento voltando a este site e clicando no botão \"Privacidade\" na parte inferior da página.\n    - button \"MAIS OPÇÕES\"\n    - button \"CONCORDO\"\n  - banner:\n    - link \"Potrero\":\n      - /url: /\n      - img \"Potrero\"\n    - link \"Veja futebol ao vivo no Potrero\":\n      - /url: /\n      - text: Futebol ao vivo\n    - button \"Español\"\n    - button \"Português\" [pressed]\n    - button \"English\"\n    - button \"Français\"\n    - button \"Italiano\"\n    - button \"Buscar\":\n      - img\n    - button \"Abrir competições\":\n      - img\n  - main:\n    - link \"El Ídolo\":\n      - /url: /el-idolo\n      - heading \"El Ídolo\" [level=1]\n    - paragraph: Campo de treino\n    - paragraph: Dificuldade\n    - button \"Fácil Jogador de 99 e regras leves\" [pressed]:\n      - img\n      - text: Fácil Jogador de 99 e regras leves\n    - button \"Normal Jogador de 80 e regras de carreira\"\n    - button \"Difícil Jogador de 60, clube pequeno e seleção pequena\"\n    - paragraph: As barrinhas marcam os jogos que mudam com a dificuldade. Os outros são sempre iguais, na carreira também.\n    - text: 🧠\n    - heading \"Os de habilidade\" [level=2]\n    - text: \"19\"\n    - paragraph: ⚽ Atacante e meia\n    - button \"A prancheta do técnico Memorize as jogadas ensaiadas e feche os pares. ›\"\n    - button \"A jogada individual Mude de faixa e aguente a arrancada inteira. ›\"\n    - button \"A arrancada Pare a barra na zona certa. ›\"\n    - 'button \"Jogo da velha A jogada ensaiada: quatro em linha contra o rival. ›\"'\n    - button \"Os gandulas Siga a bola nos cruzamentos da reposição rápida. ›\"\n    - 'button \"O Código O canto da bola parada: memorize a senha e digite igual. ›\"'\n    - 'button \"O passe em profundidade O Intercontinental do habilidoso: solte o passe quando abrir o espaço entre os zagueiros. ›\"'\n    - 'button \"O bobinho A final de base do habilidoso: toque no companheiro livre antes que o fechem. ›\"'\n    - paragraph: 🧤 Goleiro\n    - 'button \"O Voo Oito chutes no gol: toque na bola antes de cruzar a linha. ›\"'\n    - button \"As Três Traves Nove chutes em três zonas. Um perdão só. ›\"\n    - button \"O Desvio Toque no canto pra onde vai o chute e corrija se bater num zagueiro. ›\"\n    - button \"A Marcação Memorize a ordem de perigo do escanteio e marque do 1 ao 6. ›\"\n    - button \"A Saída de Bola Arraste o dedo pela saída sem pisar em rivais. ›\"\n    - 'button \"A reposição longa O Intercontinental do goleiro: reponha longe quando seu 9 escapar da pressão. ›\"'\n    - 'button \"A saída sob pressão A final de base do goleiro habilidoso: saia jogando tocando no companheiro livre. ›\"'\n    - paragraph: 🏆 Os do Mundial\n    - button \"O sinal do técnico Memorize a sequência e repita sem errar. ›\"\n    - button \"A definição no limite Pare o ponteiro no momento exato. ›\"\n    - 'button \"Bater com o goleiro O goleiro varre o gol: toque no espaço livre. ›\"'\n    - button \"O Buraco Os rivais tapam toda a frente menos um espaço. Você vê por um instante, cobre, e marca onde estava. ›\"\n    - text: 🎲\n    - heading \"Os de intuição\" [level=2]\n    - text: \"14\"\n    - paragraph: ⚽ Atacante e meia\n    - button \"A Bola Perdida Escolha por qual buraco mandar e veja ela quicar até a linha. Fé pura. ›\"\n    - 'button \"O general A final de base do supersticioso: cinco dados, três jogadas, e você guarda os que quiser. ›\"'\n    - 'button \"O Palpite Maior ou menor, cartas de 1 a 12: três seguidas e a final é sua. ›\"'\n    - button \"A bomba Carregue a força e solte quando sentir. O resto é fé. ›\"\n    - 'button \"A roleta da pelada Quatro jogadas para o gol: carregue força, solte e deixe a roda decidir. ›\"'\n    - button \"A grade intercontinental Descubra os gols escondidos antes de acabarem os chutes. ›\"\n    - paragraph: 🧤 Goleiro\n    - 'button \"O Passo à Frente Ele vem sozinho: saia para diminuir o ângulo ou fique. Cada passo tapa mais gol... e mais risco. ›\"'\n    - button \"A Simpatia Três rituais de seis. Dois são da sorte e ninguém sabe quais. Fé pura. ›\"\n    - 'button \"O Voo Vem o chute do título: escolha para que lado você voa. ›\"'\n    - button \"A Bola Perdida Você tira e ela volta. Escolha por onde mandar e reze para bater em alguém. ›\"\n    - button \"As Travas Chove ou não chove? Escolha as chuteiras na noite anterior. ›\"\n    - 'button \"A Torre A chave como torre: a cada rodada você escolhe como para, e uma já estudaram. ›\"'\n    - paragraph: 🏆 Os do Mundial\n    - 'button \"A Torre O chaveamento como torre: a cada rodada você escolhe a jogada, e uma delas eles já estudaram. ›\"'\n    - 'button \"A grade da Copa A clássica da Copa: vire as células e conte com a sorte. ›\"'\n    - link \"← Voltar ao El Ídolo\":\n      - /url: /el-idolo\n  - contentinfo:\n    - paragraph: POTRERO\n    - paragraph: Datos. Pasión. Fútbol.\n    - navigation \"Enlaces del sitio\":\n      - link \"Sobre o Potrero\":\n        - /url: /sobre-potrero\n      - link \"Como jogar El Ídolo\":\n        - /url: /el-idolo/guia\n      - link \"Privacidade\":\n        - /url: /privacidad\n      - link \"Termos\":\n        - /url: /terminos\n      - link \"Publicidade\":\n        - /url: /publicidad\n      - link \"Contato\":\n        - /url: /contacto\n    - link \"Arg FutQuiz · Trivia de fútbol argentino\":\n      - /url: https://argfutquiz.app"
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "https://www.potrerofutbol.ar/el-idolo/entrenamiento",
+              "origin": "https://www.potrerofutbol.ar",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.8059.85",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

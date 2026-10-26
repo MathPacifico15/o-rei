@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import {DialogKeyboard} from "@/components/dialog-keyboard";
 
 export const metadata: Metadata = {
   title: "O REI — Sua carreira no futebol",
@@ -23,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased" suppressHydrationWarning>{children}</body>
+      <body className="antialiased" suppressHydrationWarning><DialogKeyboard/>{children}</body>
     </html>
   );
 }
