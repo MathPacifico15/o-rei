@@ -1,0 +1,653 @@
+{
+  "target": "https://www.potrerofutbol.ar/el-idolo?lang=pt",
+  "date": "2026-10-27",
+  "method": "REA passive CDP captures combined with Playwright UI actions in a temporary browser profile. No internal game state was modified.",
+  "runtime": [
+    {
+      "phase": "before_champions_action",
+      "id": "ev_fd0a56082f8000baab5a63d604d11b973c1363e12c2b35cf4f4ea798ce0f20b6"
+    },
+    {
+      "phase": "champions_victory",
+      "id": "ev_3a1491678a8ac469a179703469ccf3af62afcfbc4d603b8f0fc7b48d48d5db3a"
+    },
+    {
+      "phase": "confirmed_season",
+      "id": "ev_91567d2339ea978e1e849265e4acf8819310013e913e59c59437132291a66137"
+    }
+  ],
+  "journey": {
+    "mode": "Story career, Messi entry",
+    "generatedPlayer": "Matías Vera",
+    "position": "attacker",
+    "identity": "skill",
+    "startingClub": "Newell's",
+    "transfer": "Barcelona",
+    "season": 2028,
+    "finals": [
+      {
+        "competition": "Copa América",
+        "interaction": "Choose a shot direction against goalkeeper",
+        "choice": "left",
+        "result": "win"
+      },
+      {
+        "competition": "Champions League",
+        "clubs": [
+          "Barcelona",
+          "Arsenal"
+        ],
+        "interaction": "Stop the moving marker inside target zone",
+        "result": "win",
+        "confirmed": true
+      }
+    ],
+    "confirmedState": {
+      "titles": 2,
+      "summaryAwards": [
+        "Champions League",
+        "Copa América",
+        "Golden Boy"
+      ]
+    }
+  },
+  "boundaries": {
+    "coverage": {
+      "status": "policy_filtered",
+      "conditions": [
+        "attach_limited",
+        "policy_filtered"
+      ],
+      "policy_filtered_sections": [
+        "console_events",
+        "console_text",
+        "dom",
+        "frames",
+        "json_body_shapes",
+        "metadata",
+        "resources",
+        "script_sources",
+        "scripts",
+        "storage_keys",
+        "websocket_shapes",
+        "workers"
+      ],
+      "attach_limited_sections": [
+        "console_events",
+        "metadata",
+        "network_requests",
+        "websocket_connections",
+        "websocket_frames"
+      ],
+      "truncated_sections": [],
+      "unavailable_sections": [],
+      "excluded": [
+        {
+          "section": "console_events",
+          "reason": "disallowed_origin",
+          "count": 14
+        },
+        {
+          "section": "console_text",
+          "reason": "not_approved",
+          "count": null
+        },
+        {
+          "section": "dom",
+          "reason": "unsupported_url",
+          "count": 4
+        },
+        {
+          "section": "frames",
+          "reason": "unsupported_url",
+          "count": 4
+        },
+        {
+          "section": "json_body_shapes",
+          "reason": "not_approved",
+          "count": null
+        },
+        {
+          "section": "metadata",
+          "reason": "disallowed_origin",
+          "count": 111
+        },
+        {
+          "section": "metadata",
+          "reason": "unsupported_url",
+          "count": 6
+        },
+        {
+          "section": "resources",
+          "reason": "disallowed_origin",
+          "count": 52
+        },
+        {
+          "section": "resources",
+          "reason": "unsupported_url",
+          "count": 1
+        },
+        {
+          "section": "script_sources",
+          "reason": "not_approved",
+          "count": 58
+        },
+        {
+          "section": "scripts",
+          "reason": "disallowed_origin",
+          "count": 33
+        },
+        {
+          "section": "scripts",
+          "reason": "unattributed_origin",
+          "count": 110
+        },
+        {
+          "section": "storage_keys",
+          "reason": "not_approved",
+          "count": null
+        },
+        {
+          "section": "websocket_shapes",
+          "reason": "not_approved",
+          "count": null
+        },
+        {
+          "section": "workers",
+          "reason": "out_of_target_scope",
+          "count": 1
+        }
+      ],
+      "dropped_events": {
+        "scripts": 0,
+        "network_requests": 0,
+        "console_events": 0,
+        "websocket_connections": 0,
+        "websocket_frames": 0,
+        "webmcp_tools": 0,
+        "timeline_events": 0,
+        "total": 0
+      }
+    },
+    "notes": [
+      "Passive captures omit third-party origins and did not request raw script sources or storage keys.",
+      "Captured script presence does not establish that every function executed.",
+      "Career completed through season 3, not retirement; two decisions completed through result and confirmation.",
+      "Backend source and original authoring JSX/TSX were not recovered."
+    ]
+  },
+  "static": {
+    "evidence_id": "ev_9b61ebc34a33e1f2dbf2b08d947c094d0ab2f020b867792f6f30c822f93d54df",
+    "summary_evidence_id": "ev_1779a7c8794deed3c01d03722626c082208a718871f5b8416e2eec814bc22fe1",
+    "artifact_sha256": "0946a10f258f553365a8d1ed2b2552e1ca2d4cc2a005d8d0c25e85fcc2e8024f",
+    "statistics": {
+      "relevant_files": 10,
+      "nested_asar_containers": 0,
+      "text_bytes_read": 381657,
+      "invalid_utf8_files": 0,
+      "parsed_javascript_files": 9,
+      "skipped_javascript_files": 0,
+      "visited_ast_nodes": 79093,
+      "findings": 710,
+      "modules": 0,
+      "parse_failures": 0
+    },
+    "coverage": {
+      "application": {
+        "status": "partial",
+        "truncated": false,
+        "omitted_count": null,
+        "limits": []
+      },
+      "semantic": {
+        "status": "partial",
+        "truncated": true,
+        "omitted_nodes": null,
+        "omitted_relations": null,
+        "limits": [
+          {
+            "name": "semantic_graph_file_node_ceiling",
+            "value": 3000,
+            "unit": "items"
+          },
+          {
+            "name": "semantic_graph_node_ceiling",
+            "value": 12000,
+            "unit": "items"
+          }
+        ],
+        "families": [
+          {
+            "family": "boundary",
+            "status": "partial",
+            "retained_relations": 6,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "call-flow",
+            "status": "partial",
+            "retained_relations": 201,
+            "omitted_relations": null,
+            "unknown_count": 5778
+          },
+          {
+            "family": "child-process",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "closure",
+            "status": "partial",
+            "retained_relations": 5983,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "configuration",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "data-flow",
+            "status": "partial",
+            "retained_relations": 7219,
+            "omitted_relations": null,
+            "unknown_count": 3109
+          },
+          {
+            "family": "event",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "object-flow",
+            "status": "partial",
+            "retained_relations": 530,
+            "omitted_relations": null,
+            "unknown_count": 6855
+          },
+          {
+            "family": "promise-ownership",
+            "status": "partial",
+            "retained_relations": 1,
+            "omitted_relations": null,
+            "unknown_count": 1
+          },
+          {
+            "family": "request",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "resource-lifecycle",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 0
+          },
+          {
+            "family": "timer",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": null,
+            "unknown_count": 1
+          }
+        ]
+      },
+      "application_unknowns": 0,
+      "semantic_unknowns": 15744
+    },
+    "limitations": [
+      "Nine selected JavaScript bundles were parsed without execution; two CSS assets were acquired for style inspection.",
+      "Dependencies outside the selected tree remain unresolved.",
+      "Semantic graph constrained to 12000 nodes and 3000 per file; relationships are partial, not a complete whole-application model."
+    ]
+  },
+  "observedAssets": [
+    {
+      "url": "https://www.potrerofutbol.ar/assets/apiFootballMedia-Ma919y3_.js",
+      "source_code_units": 15480,
+      "cdp_hash": "fb41a9db0a7db244a041388033e8f329544e96a1b22d36f3fbabd5d55557cf37",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/engine--wX2rA9o.js",
+      "source_code_units": 185542,
+      "cdp_hash": "e3e5df369505c8064ad484191d13d72304d1632c46b011f1a04583d361904435",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/footballService-Dvxsbzl0.js",
+      "source_code_units": 112522,
+      "cdp_hash": "e465032d32e5a72babc8686c6d5e841d7651ed9153ab494ffb13ef6defec9d86",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/DailyRankingBoard-BlkyXQNc.js",
+      "source_code_units": 45585,
+      "cdp_hash": "f65b40cf1aa5f1e23229a5cb131e0173c30832d876d45cc5d561f6a3201556c7",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/BottomNav-BHGX-vMu.js",
+      "source_code_units": 9158,
+      "cdp_hash": "002ba4aca8811e370c02eb1d4e8c9e7177772cc63adbba6f748cc026da81fac7",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/useStore-CHZwnkza.js",
+      "source_code_units": 11639,
+      "cdp_hash": "6fe58939a2f2fffa4de3b7d6a7e0ae5ac75773b1f3be030fb8a449ebef20e9cf",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/MotionPrimitives-m02_odId.js",
+      "source_code_units": 2757,
+      "cdp_hash": "7a8aad3230f440c35aff5d9718de08e7d6e4209f79e0b31fc2d369eea363bc28",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/EventCard-DozyGY84.js",
+      "source_code_units": 7267,
+      "cdp_hash": "31bca0382635332bbbdc621ffb06dad1bb338db1e7d0a301ef3f31c73d0b0023",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/footballServiceFixtures-DBTK7vB4.js",
+      "source_code_units": 4116,
+      "cdp_hash": "89020cfc8ff28439c70fa0237432df1e2fb2322490174ffcc817670df074b2d3",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/utils-If9jSYSz.js",
+      "source_code_units": 23843,
+      "cdp_hash": "9456e32e7e4245d0a5f3f68e0a5f6c32098583e4c94af8df3a47128cf4bf3516",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/useSiteT-B4QtvJ8m.js",
+      "source_code_units": 172,
+      "cdp_hash": "48aa133f9d9e7a86ee380c8f6d82a2193098de6074a201a68e142875a6b82198",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/estiloPropio-CjPF7pD8.js",
+      "source_code_units": 8970,
+      "cdp_hash": "8f23f909f7e9ebc30b15188b809a6fb3b0145313ac761a0810f0016a242fa145",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/attributes-RPPup6BP.js",
+      "source_code_units": 13030,
+      "cdp_hash": "0cf88eae88a1247fbdeb84f882c052c3afcbd2b5349ecc781580678b9d058e8d",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/useAdaptivePolling-EHLP1wYv.js",
+      "source_code_units": 938,
+      "cdp_hash": "69e2aa95820ae1dfeac278fd554c655337f2119b95beb1c9181da64e9079c69d",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/IdolMeter-BMj3qeOY.js",
+      "source_code_units": 2297,
+      "cdp_hash": "517d434c0a27c14772730030e88103b460697f486719507dd200b3774e060a85",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/ElIdoloPage-DAbR4Ys3.js",
+      "source_code_units": 221109,
+      "cdp_hash": "eebae47d58848296128428633fb7dd8edab13905275689c319a7028722282fb0",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/BotonAnuncio-D9o7wnRv.js",
+      "source_code_units": 1474,
+      "cdp_hash": "9907caf87f64837b1af1f7ecaaf8eadf5e3c1d0c11453f169bd3594a06cdc7ed",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/index-D76k5BDA.js",
+      "source_code_units": 3952,
+      "cdp_hash": "80a838b711a52845acc8318feea7882893aa67016c7d10e4e2fab3defb708847",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/IdoloStats-BrAIehvM.js",
+      "source_code_units": 59247,
+      "cdp_hash": "4c51594cf047ba95a9cecb11cbbbef695054af99d12fe4e4fb4d4f32711854f2",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/WorldCupConfetti-BmIi_7mp.js",
+      "source_code_units": 1071,
+      "cdp_hash": "f17a57a78d5639a98f7576ffda9875a4f3a5043341191344a6a66d3d2c973be7",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/prefetch-W2DbIg9-.js",
+      "source_code_units": 3965,
+      "cdp_hash": "d82b306409dfd8716f86d1ec48e02dc5c322807ccc2b67db38af32cada4a1820",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/IdoloBanner-s8Bhv5SM.js",
+      "source_code_units": 3496,
+      "cdp_hash": "f5074fbd9787346784b78b98aa82b8e21ecba927b8df1feac18ac27d53cbf0f6",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/RuedaPrensa-B-R1oiuH.js",
+      "source_code_units": 243724,
+      "cdp_hash": "139a02d3da5b88a8deba136f9f178b9686af8b1cb366c8a6cdd5da6b9c0c4742",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/RewardedMonedas-BsVcSsKR.js",
+      "source_code_units": 8706,
+      "cdp_hash": "03248d6261b07e816c2c0736c3fbfdb1e45292e5f7615569d700f0b78f869975",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/Seo-ClB4eXnr.js",
+      "source_code_units": 6788,
+      "cdp_hash": "dc00da61f52d8e72449576c2056e47b9910365d8a160a830d2a7caebbeec2da3",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/PotreroCoin-Cx8Vrxrg.js",
+      "source_code_units": 19399,
+      "cdp_hash": "6e6f33628d6e6ea2d7eb897b775478e1b6e0f3f4300073680a64cca005169568",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/CompetitionTreeMenu-DgJ-162b.js",
+      "source_code_units": 14167,
+      "cdp_hash": "8451eccece19303011435eecd725dd30879763d3135120e90f08a37600cc44de",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/PremiumPlus-BEJ4qvxr.js",
+      "source_code_units": 14621,
+      "cdp_hash": "7409e768b25bb9c0ae41e308dc0e49a79f95496a5f550fa8c67a8d9ca20ad947",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/PickCards-BlB7_I2P.js",
+      "source_code_units": 5474,
+      "cdp_hash": "07e7f0bea9cd8d1e889b087b6ffac0d8d5529f2305186cca720d8c58661ab612",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/react-n6sbG8-k.js",
+      "source_code_units": 164659,
+      "cdp_hash": "2cf00405d4b35b8730d1c208e404cfc8b36f0d974ff41fd4eb578b31e152f2a9",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/events-BLmAYocs.js",
+      "source_code_units": 347866,
+      "cdp_hash": "d59057d4238e8da3e8057afd5d0f5e7c054b90714498733e425879074b5f0e46",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/PalmaresCard-CZ9jnaFt.js",
+      "source_code_units": 67866,
+      "cdp_hash": "0c8de7b68d16036b61eff40c67bce7b75bf3bd317e6dc9784a038e1f009136e2",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/IcoSolar-Bw3z_EmJ.js",
+      "source_code_units": 344037,
+      "cdp_hash": "812ceea1e2b08d4d63dd2bf3e51ed4d75544718784e11a0555f9c053ecdbf868",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/cupLogos-JB_GUOed.js",
+      "source_code_units": 1078,
+      "cdp_hash": "8d373691a7d25fdd525104da95e78bc6747ec653af9c09884628cc5911385dc4",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/BanderaFondo-epqwpHVy.js",
+      "source_code_units": 22000,
+      "cdp_hash": "415bfff175abab17213e32401b56b55fba3db1d3d26004696fa936867a81d256",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/icons-CphZxRQZ.js",
+      "source_code_units": 32682,
+      "cdp_hash": "49524659fc8c6e79a65e59025454aec02e62a8ef889df3a10ce365142a918d11",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/elIdolo-CErBEEha.js",
+      "source_code_units": 2861885,
+      "cdp_hash": "597adc744b67be59f64c3dd75255742e85152fe5879f45dd62524a225420dbc1",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/share-fj5DRh4Z.js",
+      "source_code_units": 1352,
+      "cdp_hash": "3d061d155dfcaad0586b1cda368cbada4a5793c61637e6646d8469cf82d8680e",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/LogoCombo-BXbJ53VC.js",
+      "source_code_units": 2870,
+      "cdp_hash": "456af09545c31d65edf7bc7842deee332097a72c45e0cc63433aa3523936c19d",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/CleverCubo-DY022G8z.js",
+      "source_code_units": 1834,
+      "cdp_hash": "028550b5f8d8247ae3165fffb3be78f70e49aa8e9a68f08f6e0578b985d67438",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/index-B9XZ_sH7.js",
+      "source_code_units": 185796,
+      "cdp_hash": "55afd53f789d9a112ccf6d4d2f883ac72cfe1947ef5f2fac99fb2c37c15b6efb",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/palmares-Dfmb14LW.js",
+      "source_code_units": 93318,
+      "cdp_hash": "04f2ec3e0ffc79b0250bf3ac45b183aef367b5899f703af7f6ba800d4cd2444d",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/useMatches-DXrH5Fle.js",
+      "source_code_units": 7065,
+      "cdp_hash": "ef8a9df243e13fd8a482351bd9b1b62219702eb5ebe1dfe6962fb821f8626729",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/clubs-CRKy5TDZ.js",
+      "source_code_units": 832735,
+      "cdp_hash": "a542d8780536824435b2501d41627ce76a2310cdb578f9b88455ca7859fd23c2",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/OfferBoard-BrU3wJm8.js",
+      "source_code_units": 9502,
+      "cdp_hash": "1268343b389b1c6891af69cf7de271c1eea5ca7c2b53d71c3b9db84e9612cb91",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/http-BuNY4Ty6.js",
+      "source_code_units": 38170,
+      "cdp_hash": "376da21a33a90af7aff4bbb91b8f2cba78d2654e3127bca20ed679eda07b550e",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/SideNav-DtLzoSHY.js",
+      "source_code_units": 4235,
+      "cdp_hash": "033eb112c30d508b0480274c6312abb2ccb83d8622ddc5e27c493718086bffa2",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/tx-tienda-perfil-Chfzypas.js",
+      "source_code_units": 1451,
+      "cdp_hash": "abd221788bcd3ecdf70107b2ba46731f1db3b2f29c5101bfe9e2d408ba13c7d5",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/useGeo-D3RCI2Ny.js",
+      "source_code_units": 987,
+      "cdp_hash": "d27690f7546520275f9631f3cdccd6b824843f642624823bfd53ce20d32727cd",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/NavPanel-BshZMNq0.js",
+      "source_code_units": 12890,
+      "cdp_hash": "7a339b75a2f9b0afe9beb386f85aa2447a299223128f6b2035a909f186a9e4e4",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/seoPaginas-CKs06bOZ.js",
+      "source_code_units": 5985,
+      "cdp_hash": "9b8e63ba8767300fc7eb551dc1983004ae6357ce6998e291b2b58434a681d901",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/AvisoTemporada-CSM7TqRc.js",
+      "source_code_units": 1187,
+      "cdp_hash": "0e989763e1f6c056f28c9f1a7ffff92d1b94d2b2b62d9122cdf856120cd53ffa",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/Navbar-D5wuUIoe.js",
+      "source_code_units": 5573,
+      "cdp_hash": "3122df42337e96a288b8d80b5d1c65ff7fe34f7533237a6b168ce481e5099134",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/motion-BqzNYlYR.js",
+      "source_code_units": 94419,
+      "cdp_hash": "b9fac298da47a8466e9dbb93649c376ecd26f769a5d65f19b06f054dfac13e9e",
+      "source_map_url": null
+    },
+    {
+      "url": "https://www.potrerofutbol.ar/assets/money-D8FLDhMn.js",
+      "source_code_units": 53679,
+      "cdp_hash": "ad2c4819216e4e09db54b77fc571395053c67b75c991b7f4fe54bbdfed1cdb47",
+      "source_map_url": null
+    }
+  ],
+  "implementation": {
+    "branch": "rea-maggio",
+    "stylesheet": "app/rea-maggio.css",
+    "font": "public/fonts/Anton-Regular.ttf",
+    "fontLicense": "public/fonts/Anton-OFL.txt"
+  }
+}

@@ -1,0 +1,295 @@
+/* REA visual study: original O REI components, with a compact sports-paper hierarchy.
+   Explicit document scope wins over legacy styles regardless of Vite CSS import order. */
+@font-face {
+  font-family: "Rei Anton";
+  src: url("/fonts/Anton-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+html:root {
+  --rei-ink: #050706;
+  --rei-panel: #0c1117;
+  --rei-panel-raised: #171d24;
+  --rei-stroke: #283039;
+  --rei-text: #e7eaf0;
+  --rei-muted: #9ca6b3;
+  --rei-green: #20d747;
+  --rei-yellow: #f6bf35;
+  --rei-cyan: #65cfee;
+  --rei-heading: "Rei Anton", Impact, sans-serif;
+  --rei-radius: 2px;
+  --rei-focus: #70eb8d;
+  --rei-overlay: rgba(3, 6, 7, .96);
+}
+
+html:root body, html:root body .app-shell { background: var(--rei-ink); color: var(--rei-text); font-family: Arial, Helvetica, sans-serif; }
+html:root body .app-shell h1, html:root body .app-shell h2, html:root body .app-shell h3 { font-family: var(--rei-heading); font-weight: 400; letter-spacing: .01em; }
+html:root body .app-shell button { touch-action: manipulation; }
+html:root body .topbar { height: 76px; max-width: 1180px; margin: 0 auto; padding: 0 28px; gap: 20px; border-color: var(--rei-stroke); }
+html:root body .topbar-caption { margin-right: auto; color: var(--rei-muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+html:root body .brand-compact img { width: 88px; max-height: 62px; object-fit: contain; }
+html:root body .save-chip { color: var(--rei-green); border: 1px solid #24512d; padding: 10px 13px; letter-spacing: .05em; }
+html:root body .eyebrow, html:root body .section-kicker { color: var(--rei-green); }
+html:root body .button { min-height: 46px; border-radius: 0; font-size: 11px; letter-spacing: .05em; }
+html:root body .button-primary, html:root body .play-button { background: var(--rei-green); color: #061008; border: 0; border-radius: 0; clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%); }
+html:root body .button-primary:hover, html:root body .play-button:hover { background: #42e363; transform: none; }
+html:root body .button-ghost { border-color: var(--rei-stroke); background: #10161c; color: var(--rei-text); }
+html:root body .button-ghost:hover { background: #19222b; transform: none; }
+
+/* Landing briefing */
+html:root body .start-shell { min-height: calc(100svh - 70px); }
+html:root body .start-content { width: min(1120px, 100%); max-width: none; margin: 0 auto; padding: 45px 28px 32px; text-align: left; }
+html:root body .start-heading { max-width: 700px; margin-bottom: 30px; }
+html:root body .start-heading h1 { color: #f4f6f8; font: 400 74px/.95 var(--rei-heading); margin: 15px 0; letter-spacing: -.02em; }
+html:root body .start-heading h1 > span { display: block; color: var(--rei-muted); font: 400 clamp(21px, 3vw, 30px)/1.15 var(--rei-heading); letter-spacing: .01em; margin-top: 10px; }
+html:root body .start-content p { max-width: 650px; margin: 0; color: var(--rei-muted); font-size: 13px; line-height: 1.65; }
+html:root body .start-briefing { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(240px, .8fr); gap: 20px; }
+html:root body .start-career { background: var(--rei-panel); border: 1px solid var(--rei-stroke); padding: 22px; border-top: 3px solid var(--rei-green); }
+html:root body .briefing-label { display: flex; justify-content: space-between; gap: 15px; padding-bottom: 18px; border-bottom: 1px solid var(--rei-stroke); color: var(--rei-green); font: 400 12px var(--rei-heading); letter-spacing: .1em; }
+html:root body .briefing-label small { color: #84909d; font: 700 9px Arial, sans-serif; letter-spacing: .06em; }
+html:root body .start-career h2 { margin: 21px 0 9px; font-size: 30px; text-transform: uppercase; }
+html:root body .start-actions { justify-content: start; align-items: stretch; margin: 24px 0; }
+html:root body .start-actions .button-primary { flex: 1 1 220px; }
+html:root body .start-actions .button-ghost { flex: 1 1 190px; }
+html:root body .feature-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; border-top: 1px solid var(--rei-stroke); padding-top: 18px; color: var(--rei-muted); font-size: 10px; }
+html:root body .feature-row b { display: block; color: var(--rei-text); font: 400 24px/1 var(--rei-heading); margin-bottom: 6px; }
+html:root body .start-playbook { padding: 20px 0 0; }
+html:root body .start-playbook > small { color: var(--rei-muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; }
+html:root body .start-playbook ol { list-style: none; margin: 12px 0 0; padding: 0; }
+html:root body .start-playbook li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 17px 0; border-top: 1px solid var(--rei-stroke); }
+html:root body .start-playbook li > b { color: var(--rei-green); font: 400 22px var(--rei-heading); }
+html:root body .start-playbook strong { color: var(--rei-text); font-size: 12px; }
+html:root body .start-playbook p { margin-top: 5px; font-size: 11px; }
+html:root body .start-shell footer { margin-top: auto; color: #737e88; font-size: 9px; }
+
+/* Creation */
+html:root body .form-wrap { width: min(860px, 100%); padding: 28px 26px 60px; }
+html:root body .form-wrap h1 { font-size: 37px; text-transform: uppercase; }
+html:root body .form-wrap > div > p { font-size: 13px; color: var(--rei-muted); }
+html:root body .form-grid { margin: 25px 0 18px; gap: 16px; }
+html:root body .field { color: var(--rei-muted); font-size: 10px; letter-spacing: .05em; }
+html:root body .field input, html:root body .field select, html:root body .country-trigger { color: var(--rei-text); background: var(--rei-panel); border-color: var(--rei-stroke); border-radius: 0; }
+html:root body .field-note { color: #8b96a1; }
+html:root body .position-choice, html:root body .club-choice { background: var(--rei-panel); border-color: var(--rei-stroke); color: var(--rei-text); }
+html:root body .position-choice.selected, html:root body .club-choice.selected { background: #10261a; border-color: var(--rei-green); }
+html:root body .club-picker { max-height: 320px; overflow-y: auto; scrollbar-width: thin; }
+html:root body .club-choice { min-height: 55px; }
+html:root body .country-menu { background: #0e141a; border-color: #43515f; }
+html:root body .country-options button { color: var(--rei-text); }
+html:root body .country-options button:hover { background: #20342a; }
+html:root body .generational-option { background: #151910; border-color: #645526; border-radius: 0; margin-bottom: 17px; }
+html:root body .generational-option input { accent-color: var(--rei-green); }
+
+/* Persistent profile and season newspaper */
+html:root body .save-tools { justify-content: center; align-items: center; background: #080c0e; border-bottom: 1px solid var(--rei-stroke); padding: 10px 18px; gap: 7px; color: var(--rei-muted); }
+html:root body .save-tools button, html:root body .save-tools label { border: 1px solid var(--rei-stroke); background: #10161c; color: #b8c0c9; border-radius: 0; font-size: 9px; font-weight: 800; padding: 9px 11px; letter-spacing: .04em; }
+html:root body .save-tools button:hover, html:root body .save-tools label:hover { border-color: #647381; color: var(--rei-text); }
+html:root body .save-tools input[type="file"] { max-width: 230px; margin-left: 10px; font-size: 10px; }
+html:root body .dashboard-shell { padding: 22px 24px 60px; }
+html:root body .dashboard-grid { max-width: 1120px; grid-template-columns: minmax(0, 1fr) 200px; align-items: start; gap: 18px; }
+html:root body .athlete-panel, html:root body .season-panel, html:root body .trajectory-panel { background: var(--rei-panel); border: 1px solid var(--rei-stroke); border-radius: 0; box-shadow: none; }
+html:root body .athlete-panel { padding: 20px 22px 15px; border-top: 3px solid var(--rei-green); min-height: 0; }
+html:root body .athlete-panel::before { display: none; }
+html:root body .athlete-head { grid-template-columns: 64px minmax(0, 1fr) 52px; gap: 15px; }
+html:root body .rating-block { border-right: 1px solid var(--rei-stroke); padding-right: 14px; }
+html:root body .rating-block strong { color: var(--rei-green); font-size: 52px; letter-spacing: -.03em; }
+html:root body .rating-block span { color: var(--rei-muted); font-size: 8px; letter-spacing: .06em; margin-top: 3px; }
+html:root body .athlete-identity { min-width: 0; }
+html:root body .athlete-identity h1 { font: 400 26px/1.15 var(--rei-heading); color: var(--rei-text); overflow-wrap: anywhere; }
+html:root body .athlete-identity h1 b { color: var(--rei-muted); font-size: 15px; white-space: nowrap; }
+html:root body .rating-block strong,
+html:root body .athlete-identity h1 b,
+html:root body .stat-tile b,
+html:root body .attribute-chips b,
+html:root body .finance-strip b {
+  font-family: var(--rei-heading);
+  font-weight: 400;
+  letter-spacing: .015em;
+  line-height: 1.1;
+}
+html:root body .athlete-identity p { font-size: 9px; color: var(--rei-muted); line-height: 1.6; }
+html:root body .athlete-identity p em { color: var(--rei-yellow); white-space: nowrap; }
+html:root body .athlete-head .crest { width: 48px; height: 56px; }
+html:root body .score-strip { gap: 0; margin-top: 18px; border-top: 2px solid var(--rei-green); }
+html:root body .stat-tile { background: linear-gradient(#161d24, #0e141b); border: 1px solid #222a32; min-height: 53px; gap: 5px; }
+html:root body .stat-tile b { color: var(--rei-text); font-family: var(--rei-heading); font-size: 24px; letter-spacing: 0; }
+html:root body .stat-tile span { color: #919ca8; font-size: 8px; letter-spacing: .035em; }
+html:root body .stat-tile.accent b { color: var(--rei-green); }
+html:root body .stat-tile.gold b { color: var(--rei-yellow); }
+html:root body .attribute-chips { grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); margin-top: 10px; gap: 6px; }
+html:root body .attribute-chips > div { flex-direction: row; gap: 7px; min-height: 42px; padding: 7px 5px; background: linear-gradient(#171e25, #0e141b); border-color: #283039; border-left: 3px solid #8c99a6; }
+html:root body .attribute-chips b { font-size: 24px; color: #a8b2bf; }
+html:root body .attribute-chips b.green { color: var(--rei-green); }
+html:root body .attribute-chips span { font: 400 8px/1.2 var(--rei-heading); white-space: normal; overflow-wrap: anywhere; color: #929eac; }
+html:root body .finance-strip { margin-top: 12px; gap: 6px; }
+html:root body .finance-strip > div, html:root body .finance-strip > div:nth-child(2) { border: 1px solid var(--rei-stroke); background: linear-gradient(#161d24, #0e141b); min-height: 51px; border-top: 2px solid var(--rei-cyan); gap: 5px; }
+html:root body .finance-strip > div:nth-child(2) { border-top-color: var(--rei-yellow); }
+html:root body .finance-strip > div:nth-child(3) { border-top-color: var(--rei-green); }
+html:root body .finance-strip b { color: var(--rei-cyan); font-size: 21px; }
+html:root body .finance-strip > div:nth-child(2) b { color: var(--rei-yellow); }
+html:root body .finance-strip .next-match { grid-template-columns: 26px minmax(0, 1fr); grid-template-rows: auto auto; }
+html:root body .next-match b { font-size: 11px; color: var(--rei-text); }
+html:root body .next-match span { color: var(--rei-muted); }
+html:root body .loyalty { margin-top: 16px; background: #111820; border: 1px solid var(--rei-stroke); padding: 10px 12px; }
+html:root body .loyalty > span { color: #abb5c1; font: 400 12px var(--rei-heading); }
+html:root body .loyalty-track { height: 10px; border-radius: 0; margin: 7px 0; background: repeating-linear-gradient(90deg, #283039 0, #283039 calc(20% - 1px), #10151c calc(20% - 1px), #10151c 20%); }
+html:root body .loyalty-track i { border-radius: 0; background: #8594a3; }
+html:root body .loyalty > small { display: block; color: #8d99a6; font-size: 9px; line-height: 1.5; }
+html:root body .loyalty-stages { display: none; }
+html:root body .selection-line { margin-top: 12px; color: #acb5bf; font-size: 8px; letter-spacing: .035em; flex-wrap: wrap; gap: 6px 15px; }
+html:root body .selection-line span { color: #8e9aa7; }
+html:root body .athlete-actions { display: flex; align-items: center; gap: 7px; margin-top: 17px; padding-top: 14px; border-top: 1px solid var(--rei-stroke); }
+html:root body .athlete-actions button { min-height: 36px; background: #0a0f14; border: 1px solid #584d21; color: var(--rei-yellow); font: 400 10px var(--rei-heading); letter-spacing: .05em; padding: 8px 14px; }
+html:root body .athlete-actions .athlete-store { background: #102719; border-color: #26893b; color: var(--rei-green); }
+html:root body .athlete-store span { padding-left: 14px; }
+html:root body .athlete-actions button small { font: 800 8px Arial, sans-serif; margin-left: 7px; opacity: .75; }
+html:root body .athlete-actions > span { color: #82909e; font-size: 8px; letter-spacing: .05em; margin-left: auto; }
+html:root body .season-panel { margin-top: 20px; padding: 22px; }
+html:root body .season-titleline { position: relative; display: flex; flex-direction: column; align-items: start; gap: 7px; margin: -22px -22px 17px; padding: 13px 22px; border-bottom: 3px solid var(--rei-green); background: #080d11; }
+html:root body .season-titleline::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 45px; background: var(--rei-green); clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%); }
+html:root body .season-titleline span { color: #f26e76; font: 400 11px var(--rei-heading); letter-spacing: .12em; }
+html:root body .season-titleline small { color: #a0aab7; font-size: 8px; }
+html:root body .season-panel h2 { margin: 0 0 7px; color: var(--rei-text); font: 400 27px/1.05 var(--rei-heading); letter-spacing: 0; }
+html:root body .season-panel p { color: var(--rei-muted); font-size: 12px; line-height: 1.55; }
+html:root body .club-season { padding: 11px 14px; margin: 17px 0 12px; background: linear-gradient(#161d24, #0e141b); border: 1px solid var(--rei-stroke); border-left: 3px solid #8063a3; gap: 12px; }
+html:root body .club-season b { font: 400 17px var(--rei-heading); text-transform: uppercase; }
+html:root body .club-season span { font-size: 9px; color: var(--rei-muted); }
+html:root body .club-season .crest { width: 30px; height: 36px; }
+html:root body .season-stats { border: 0; border-radius: 0; gap: 3px; }
+html:root body .season-stats .stat-tile { border: 1px solid var(--rei-stroke); border-top: 2px solid #71818f; background: linear-gradient(#161d24, #0e141b); min-height: 58px; }
+html:root body .season-stats .stat-tile.accent { border-top-color: var(--rei-green); }
+html:root body .season-stats .stat-tile.gold { border-top-color: var(--rei-yellow); }
+html:root body .play-button { margin-top: 24px; min-height: 50px; font: 400 17px var(--rei-heading); letter-spacing: .02em; }
+html:root body .trajectory-panel { padding: 16px 12px; border-top: 3px solid #647585; }
+html:root body .trajectory-label { color: #a3aebb; font-size: 9px; padding-bottom: 13px; }
+html:root body .trajectory-item { grid-template-columns: 21px minmax(0, 1fr); padding: 15px 2px; border-color: var(--rei-stroke); }
+html:root body .trajectory-item.active { background: #122019; }
+html:root body .trajectory-item b { color: #b1beca; font-size: 10px; }
+html:root body .trajectory-item.active b { color: var(--rei-green); }
+html:root body .trajectory-item span { color: #cbd2dc; font-size: 10px; line-height: 1.5; }
+html:root body .trajectory-item small { color: #8d99a7; font-size: 9px; line-height: 1.5; }
+html:root body .trajectory-dot { background: #586b7b; }
+
+/* Choice cards, overlays and practice catalog */
+html:root body .card-grid { gap: 10px; margin: 20px 0; }
+html:root body .training-card { min-height: 170px; background: var(--rei-panel); border-color: var(--rei-stroke); border-radius: 0; padding: 17px; }
+html:root body .training-card b { font: 400 25px var(--rei-heading); margin: 12px 0; }
+html:root body .training-card:hover { transform: none; background: #171f28; }
+html:root body .training-card i, html:root body .text-action { color: var(--rei-green); }
+html:root body .inline-event { border-radius: 0; background: #111820; border-color: var(--rei-stroke); }
+html:root body .career-overlay .shop-wrap { border-radius: 0; border-color: #394754; background: var(--rei-panel); }
+html:root body .career-overlay h2 { font: 400 28px/1.1 var(--rei-heading); color: var(--rei-text) !important; }
+html:root body .career-overlay h3 { font-family: var(--rei-heading); }
+html:root body .career-overlay button { background: #131c25; color: var(--rei-text); border-color: #3a4856; border-radius: 0; }
+html:root body .training-wrap { max-width: 980px; }
+html:root body .training-heading { display: flex; justify-content: space-between; align-items: start; gap: 20px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--rei-green); }
+html:root body .training-heading small { color: var(--rei-green); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+html:root body .training-heading h2 { margin: 9px 0; text-transform: uppercase; }
+html:root body .training-heading p { color: var(--rei-muted); font-size: 12px; margin: 0; }
+html:root body .training-close { white-space: nowrap; }
+html:root body .training-catalog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html:root body .career-overlay .training-game { display: grid; grid-template-columns: 26px minmax(0, 1fr) 16px; gap: 12px; align-items: center; padding: 16px; text-align: left; border-color: var(--rei-stroke); background: linear-gradient(#161e26, #0c1219); }
+html:root body .career-overlay .training-game:hover { border-color: #527c5d; background: #17251c; }
+html:root body .training-number { color: #627181; font: 400 23px var(--rei-heading); }
+html:root body .training-game small { color: #91a0ad; font-size: 8px; letter-spacing: .08em; }
+html:root body .training-game b { display: block; color: var(--rei-text); font: 400 20px var(--rei-heading); margin: 5px 0; }
+html:root body .training-game p { color: var(--rei-muted); font-size: 11px; line-height: 1.5; margin: 0; }
+html:root body .training-arrow { color: var(--rei-green); font-size: 19px; }
+html:root body .training-note { color: #8a97a5; font-size: 11px; margin: 20px 0 0; }
+html:root body .arena-overlay { background: var(--rei-overlay); }
+html:root body .arena, html:root body .arena-inline .arena { border-radius: 0; background: var(--rei-panel); color: var(--rei-text); border: 1px solid #394754; border-top: 3px solid var(--rei-green); box-shadow: none; font-family: Arial, sans-serif; }
+html:root body .arena h2 { font: 400 30px var(--rei-heading); text-transform: uppercase; }
+html:root body .arena header small { color: var(--rei-green); font-size: 9px; }
+html:root body .arena p { color: var(--rei-muted); font-size: 13px; }
+html:root body .arena button, html:root body .arena select { background: #17212b; border-color: #3b4b59; border-radius: 0; }
+html:root body .arena .button-primary { background: var(--rei-green); color: #061008; }
+html:root body .arena-grid button.lit { background: var(--rei-green); color: #061008; box-shadow: none; }
+html:root body .arena-track { background: #1a222b; border-color: #435362; height: 54px; }
+html:root body .arena-track i { background: #aa4646; }
+html:root body .arena-track b { background: #f4f6f7; }
+html:root body .arena-result > strong { display: block; font: 400 33px var(--rei-heading); color: var(--rei-green); margin: 22px 0; }
+html:root body .arena-result.arena-lost > strong { color: #f28b8b; }
+html:root body .arena header { position: relative; padding-bottom: 14px; border-bottom: 1px solid var(--rei-stroke); }
+html:root body .arena header h2 { margin: 9px 0 0; padding-right: 80px; }
+html:root body .arena header > button { position: absolute; right: 0; top: 0; font-size: 10px; padding: 7px 10px; }
+html:root body .arena .button-primary { display: block; width: 100%; min-height: 48px; font: 400 15px var(--rei-heading); }
+html:root body .arena-toolbar { padding: 10px 0; border-bottom: 1px solid var(--rei-stroke); gap: 8px; }
+html:root body .arena-toolbar > span { color: #9caab7; font-size: 10px; font-weight: 800; }
+html:root body .arena-toolbar > b { margin-left: auto; color: var(--rei-yellow); font: 400 24px var(--rei-heading); }
+html:root body .arena-toolbar button { min-height: 34px; padding: 6px 8px; font-size: 9px; }
+html:root body .arena-context { padding: 12px; border-left: 3px solid var(--rei-yellow); background: #151c22; }
+html:root body .match-briefing { margin: 22px 0 -1px; padding: 15px 18px; background: #101820; border: 1px solid #394754; border-top: 2px solid var(--rei-green); }
+html:root body .match-briefing > small { color: var(--rei-green); font: 900 9px Arial, sans-serif; letter-spacing: .09em; }
+html:root body .match-briefing h3 { margin: 7px 0 14px; font-size: 25px; color: var(--rei-text); text-transform: uppercase; }
+html:root body .match-briefing > div { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+html:root body .match-briefing b { font-size: 12px; color: #dce2e9; }
+html:root body .match-briefing > div > span:not(.crest) { color: #71818f; font-size: 10px; padding: 0 5px; }
+html:root body .match-briefing + .arena-inline { margin-top: 0; }
+html:root body .toast { background: #163b21; color: #d6f4dd; border: 1px solid #36a34d; box-shadow: none; font-size: 12px; }
+
+@media (max-width: 900px) {
+  html:root body .dashboard-grid { grid-template-columns: minmax(0, 1fr) 170px; gap: 12px; }
+  html:root body .dashboard-shell { padding: 16px 14px 40px; }
+  html:root body .athlete-panel, html:root body .season-panel { padding: 17px; }
+  html:root body .season-titleline { margin: -17px -17px 17px; padding: 13px 17px; }
+  html:root body .attribute-chips > div { flex-direction: column; gap: 3px; }
+}
+@media (max-width: 760px) {
+  html:root body .topbar { padding: 0 16px; height: 66px; }
+  html:root body .topbar-caption { display: none; }
+  html:root body .brand-compact img { width: 74px; }
+  html:root body .start-content { padding: 30px 16px 24px; }
+  html:root body .start-heading h1 { font-size: 60px; }
+  html:root body .start-briefing { grid-template-columns: 1fr; gap: 15px; }
+  html:root body .start-career { padding: 18px; }
+  html:root body .start-playbook { padding-top: 5px; }
+  html:root body .dashboard-grid { display: block; }
+  html:root body .trajectory-panel { display: none; }
+  html:root body .athlete-panel { border: 1px solid var(--rei-stroke); border-top: 3px solid var(--rei-green); }
+  html:root body .athlete-head { grid-template-columns: 54px minmax(0, 1fr) 40px; gap: 10px; }
+  html:root body .rating-block strong { font-size: 43px; }
+  html:root body .athlete-identity h1 { font-size: 22px; }
+  html:root body .athlete-identity h1 b { display: block; font-size: 12px; margin-top: 4px; }
+  html:root body .athlete-identity p { font-size: 8px; white-space: normal; }
+  html:root body .athlete-head .crest { width: 36px; height: 45px; }
+  html:root body .attribute-chips { overflow: visible; }
+  html:root body .attribute-chips span { font-size: 7px; }
+  html:root body .finance-strip b { font-size: 17px; }
+  html:root body .finance-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html:root body .finance-strip > div { min-width: 0; padding: 10px 5px; }
+  html:root body .finance-strip .next-match { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; grid-template-columns: none; grid-template-rows: none; text-align: center; }
+  html:root body .finance-strip .next-match .crest { display: none; }
+  html:root body .finance-strip .next-match b,
+  html:root body .finance-strip .next-match > span:not(.crest) { display: block; position: static; grid-column: auto; grid-row: auto; width: 100%; min-width: 0; align-self: auto; white-space: normal; overflow-wrap: anywhere; }
+  html:root body .finance-strip .next-match b { font: 400 12px/1.3 var(--rei-heading); text-align: center; }
+  html:root body .finance-strip .next-match > span:not(.crest) { font: 700 7px/1.4 Arial, sans-serif; letter-spacing: .025em; }
+  html:root body .athlete-actions { flex-wrap: wrap; }
+  html:root body .athlete-actions > span { font-size: 7px; }
+  html:root body .season-panel { margin: 17px 0 0; }
+  html:root body .season-panel h2 { font-size: 25px; }
+  html:root body .season-stats .stat-tile b { font-size: 18px; }
+  html:root body .season-stats .stat-tile span { font-size: 7px; }
+  html:root body .play-button { margin-top: 20px; }
+  html:root body .card-grid { grid-template-columns: 1fr; }
+  html:root body .save-tools { justify-content: start; padding: 9px 14px; gap: 5px; }
+  html:root body .save-tools button, html:root body .save-tools label { font-size: 8px; padding: 8px; min-height: 36px; }
+  html:root body .training-catalog { grid-template-columns: 1fr; }
+  html:root body .training-heading { flex-wrap: wrap; gap: 14px; }
+  html:root body .career-overlay { padding: 10px; }
+}
+@media (max-width: 420px) {
+  html:root body .briefing-label { flex-direction: column; gap: 6px; }
+  html:root body .start-career h2 { font-size: 27px; }
+  html:root body .feature-row { gap: 8px; }
+  html:root body .feature-row span { font-size: 9px; }
+  html:root body .dashboard-shell { padding: 10px 8px 28px; }
+  html:root body .athlete-panel, html:root body .season-panel { padding: 13px; }
+  html:root body .season-titleline { margin: -13px -13px 15px; padding: 12px 13px; }
+  html:root body .athlete-actions > span { width: 100%; margin: 4px 0 0; }
+  html:root body .form-wrap { padding: 24px 16px 40px; }
+  html:root body .form-grid { gap: 12px; }
+  html:root body .position-grid { grid-template-columns: 1fr; }
+  html:root body .club-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

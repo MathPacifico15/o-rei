@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "screen": "local-home-desktop",
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "screen": "local-create-desktop",
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "screen": "local-career-desktop",
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "screen": "local-training-desktop",
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "screen": "local-match-result-desktop",
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "screen": "local-career-mobile",
+      "viewport": 390,
+      "scroll": 390
+    },
+    {
+      "screen": "local-training-mobile",
+      "viewport": 390,
+      "scroll": 390
+    },
+    {
+      "screen": "local-match-mobile",
+      "viewport": 390,
+      "scroll": 390
+    }
+  ],
+  "errors": []
+}
