@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'vite';
-const server=await createServer({configFile:false,server:{middlewareMode:true}});
+const server=await createServer({configFile:false,server:{middlewareMode:true,watch:null}});
 let checks=0;const check=(value,message)=>{assert.ok(value,message);checks++};
 try{
  const engine=await server.ssrLoadModule('/game/engine.ts'),{clubs,competitions}=await server.ssrLoadModule('/game/catalog.ts');
@@ -8,6 +8,27 @@ try{
  const events=await server.ssrLoadModule('/game/career-events.ts'),economy=await server.ssrLoadModule('/game/economy.ts'),history=await server.ssrLoadModule('/game/career-history.ts'),context=await server.ssrLoadModule('/game/minigame-context.ts');
  function fixture(position='ATA') {const club=clubs.find(c=>c.id==='santos')??clubs[0];const player={id:'test',name:'Teste',nationality:'Brasil',position,preferredFoot:'Direito',heightCm:180,shirtNumber:9,age:16,clubId:club.id,attributes:engine.baseAttributes(),form:68,fame:3,salary:16700,marketValue:400000,games:0,goals:0,assists:0,cleanSheets:0,saves:0,titles:[],awards:[],clubIdolatry:{[club.id]:12},judasAt:[],injuries:0};return {seed:187,season:2026,player,history:[],clubHistory:[{clubId:club.id,titles:[]}],currentCompetition:'Liga',mode:'normal',balance:2000000,contract:{clubId:club.id,monthlySalary:16700,seasonsRemaining:3,role:'titular',expectedMinutes:72},leagueAssignments:Object.fromEntries(clubs.map(c=>[c.id,c.leagueId])),leagueTables:{},shop:{ownedPermanent:[],activeSeasonal:[],freeUses:[]},nationalTeam:{games:0,goals:0,assists:0,titles:[]},originCountry:club.country,highestOvr:56,saveVersion:7};}
  const initial=fixture(),raw=JSON.stringify(initial);check(persistence.decodeSave(raw).career.saveVersion===8,'migration v7');
+ for(const position of ['GOL','MEI','ATA']){
+  const eligible=engine.upgradeCards.filter(card=>card.eligible.includes(position));
+  const exhausted=eligible.map(card=>card.id);
+  const available=eligible.slice(-2).map(card=>card.id);
+  for(const recent of [[],exhausted,exhausted.slice(0,-2)])for(const seed of [1,42,187,2026]){
+   const before=fixture(position).player, snapshot=structuredClone(before);
+   const hand=engine.chooseUpgradeCards(position,seed,recent);
+   check(hand.length===3&&new Set(hand.map(card=>card.id)).size===3,`three unique cards after cooldown exhaustion: ${position}`);
+   check(hand.every(card=>card.eligible.includes(position)),`cards remain eligible: ${position}`);
+   check(JSON.stringify(hand)===JSON.stringify(engine.chooseUpgradeCards(position,seed,recent)),`deterministic card hand: ${position}`);
+   if(recent.length===exhausted.length-2)check(available.every(id=>hand.some(card=>card.id===id)),`use remaining fresh cards before relaxing cooldown: ${position}`);
+   for(const card of hand){
+    const total=Object.values(card.changes).reduce((sum,gain)=>sum+gain,0);
+    check(card.rarity==='raro'?total===3:card.rarity==='epico'?total>=4&&total<=5:card.rarity==='lendario'&&total>=7&&total<=8,`existing rarity gain range: ${card.id}`);
+    const after=engine.applyCard(before,card);
+    check(Object.entries(before.attributes).every(([key,value])=>after.attributes[key]===Math.min(99,value+(card.changes[key]??0))),`offered card applies its declared gains: ${card.id}`);
+    check(after.games===before.games&&after.clubId===before.clubId&&JSON.stringify(after.titles)===JSON.stringify(before.titles),`card only changes attributes: ${card.id}`);
+   }
+   check(JSON.stringify(before)===JSON.stringify(snapshot),`card effects preserve input: ${position}`);
+  }
+ }
  const storage=new Map();const adapter={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)};
  persistence.writeSave(adapter,{version:8,career:initial});persistence.writeSave(adapter,{version:8,career:{...initial,balance:25}});storage.set(persistence.SAVE_KEY,'broken');check(persistence.readSave(adapter).save.career.balance===initial.balance,'backup recovery');check(storage.get(persistence.SAVE_KEY)==='broken','do not destroy damaged save');
  check(events.everydayEvents.length>=80,'80 original events');
@@ -34,12 +55,12 @@ try{
  for(const game of minigames)for(const difficulty of ['easy','standard','hard'])for(const seed of [1,42,187]){
    let round=games.createRound(game.mode,seed,difficulty);check(JSON.stringify(round)===JSON.stringify(games.createRound(game.mode,seed,difficulty)),'deterministic '+game.id);
    check(games.actRound({...round,done:true},0).done,'finished guard');
-   check(games.tickRound(round,round.limit+1).done,'timeout '+game.id);
+   check(games.tickRound(games.revealRound(round),round.limit+1).done,'timeout '+game.id);
    if(game.mode==='puzzle'){const board=round.board.filter(Boolean);let inversions=0;for(let i=0;i<board.length;i++)for(let j=i+1;j<board.length;j++)if(board[i]>board[j])inversions++;check(inversions%2===0,'solvable puzzle');}
    if(game.mode==='pairs')check(new Set(round.board).size===8,'8 pairs');
    const result=games.roundResult({...round,done:true,won:true},'id','test');check(result.won===true&&!('score' in result),'binary minigame result');
  }
- let code=games.createRound('code',44);for(let i=0;i<3;i++){code=games.tickRound(code,code.preview+1);for(const n of [...code.sequence])code=games.actRound(code,n)}check(code.done&&code.won,'three code phases');check(games.actRound(code,1)===code,'victory cannot restart a round');
+ let code=games.createRound('code',44);for(let i=0;i<3;i++){code=games.revealRound(code);code=games.tickRound(code,code.preview+1);for(const n of [...code.sequence])code=games.actRound(code,n)}check(code.done&&code.won,'three code phases');check(games.actRound(code,1)===code,'victory cannot restart a round');
  for(const mode of ['timing','goldZone']){const r=games.createRound(mode,42);const timed=games.tickRound(r,1000);check(games.actRound(timed,0).won,'timing hit');check(!games.actRound(r,0).won,'timing miss');}
  for(const mode of ['maze','pressureMap','ballTrack','cups','pairs','puzzle','ticTacToe']){
   let r=games.createRound(mode,42);r=games.tickRound(r,r.preview+1);
@@ -54,5 +75,5 @@ try{
  }
  check(context.difficultyForFinal({clubStrength:88,opponentStrength:74,competitionPrestige:50})==='easy','strong club gets favorable decision');
  check(context.difficultyForFinal({clubStrength:70,opponentStrength:88,competitionPrestige:90,phaseIndex:6})==='hard','strong rival and final raise pressure');
- console.log(`${checks} checks passed: career, saves, shop, events, league, transfers, history and 10 minigames.`);
+ console.log(`${checks} checks passed: career, saves, shop, events, league, transfers, history and minigame mechanics.`);
 }finally{await server.close()}

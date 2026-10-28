@@ -1,0 +1,60 @@
+/* Mechanics-specific controls; the approved REA visual layer supplies the palette. */
+html:root body .arena-timing-segments { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(14,minmax(0,1fr)); pointer-events: none; }
+html:root body .arena-timing-segments span { border-right: 1px solid #ffffff20; }
+html:root body .arena-timing-segments span:last-child { border-right: 0; }
+html:root body .arena-code-reveal { padding: 30px 0 15px; text-align: center; }
+html:root body .arena-code-reveal strong { font-family: var(--rei-heading, sans-serif); font-size: 26px; font-weight: 400; }
+html:root body .arena-code-reveal p { max-width: 420px; margin: 18px auto; }
+html:root body .arena-code { font-size: clamp(28px,9vw,42px); letter-spacing: .16em; margin: 28px 8px; }
+html:root body .arena-code-instruction { text-align: center; }
+html:root body .arena-code-backspace { display: block; margin: 12px auto; font-size: 11px; }
+html:root body .arena-attribute-note { padding: 11px 13px; border-left: 3px solid var(--rei-green,#20d747); background: #122019; }
+
+html:root body .arena-choice-note { font-size: 11px; text-align: center; }
+html:root body .arena-shot-cue { text-align: center; }
+html:root body .arena-shot-cue strong { color: var(--rei-yellow,#f6bf35); }
+html:root body .arena-shot-goal { position: relative; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); height: 145px; margin: 24px 8px 16px; border: 4px solid #e1e7ed; border-bottom: 1px solid #91a0ad; background: #101b22; }
+html:root body .arena-goal-net { position: absolute; inset: 0; background-image: linear-gradient(#ffffff12 1px,transparent 1px),linear-gradient(90deg,#ffffff12 1px,transparent 1px); background-size: 18px 18px; pointer-events: none; }
+html:root body .arena-shot-lane { position: relative; border-right: 1px dashed #81919e50; }
+html:root body .arena-shot-lane:last-child { border-right: 0; }
+html:root body .arena-keeper { position: absolute; width: 42px; height: 82px; bottom: 4px; left: 50%; transform: translateX(-50%); }
+html:root body .arena-keeper i { position: absolute; width: 19px; height: 19px; border-radius: 50%; background: #f6bf35; left: 12px; top: 0; }
+html:root body .arena-keeper b { position: absolute; width: 34px; height: 52px; border: 3px solid #f6bf35; border-top-width: 15px; border-radius: 9px 9px 2px 2px; left: 4px; top: 26px; }
+html:root body .arena-shot-options { max-width: 460px; }
+html:root body .arena-shot-options button { aspect-ratio: auto; min-height: 88px; padding: 10px 4px; }
+html:root body .arena-shot-options span { display: block; color: var(--rei-green,#20d747); font-size: 25px; line-height: 1; }
+html:root body .arena-shot-options b { display: block; margin: 7px 0; font: 400 15px var(--rei-heading,sans-serif); }
+html:root body .arena-shot-options small { display: block; color: #8f9ba6; font: 700 9px Arial,sans-serif; }
+html:root body .arena-monty-choices { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 24px 0; }
+html:root body .arena-monty-choices button { min-width: 0; padding: 16px 4px; border: 1px solid #435360; }
+html:root body .arena-monty-choices button.selected { border-color: var(--rei-green,#20d747); background: #14291b; }
+html:root body .arena-monty-choices button.revealed { border-color: #6e4247; background: #27171b; }
+html:root body .arena-monty-choices button:disabled { opacity: 1; }
+html:root body .arena-monty-icon { display: block; min-height: 46px; color: #d68089; font: 400 36px/1 var(--rei-heading,sans-serif); }
+html:root body .arena-monty-choices b { display: block; margin: 9px 0; font: 400 16px var(--rei-heading,sans-serif); }
+html:root body .arena-monty-choices small { display: block; color: #a7b4be; font: 800 8px Arial,sans-serif; letter-spacing: .04em; }
+html:root body .arena-monty-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; align-items: stretch; }
+html:root body .arena-monty-actions button,html:root body .arena-monty-actions .button-primary { min-height: 52px; margin: 0; padding: 10px 5px; font: 400 13px var(--rei-heading,sans-serif); }
+html:root body .arena-pass-score { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 20px 0 10px; }
+html:root body .arena-pass-score strong { font: 400 26px var(--rei-heading,sans-serif); color: var(--rei-green,#20d747); }
+html:root body .arena-pass-score > span { display: flex; gap: 7px; }
+html:root body .arena-pass-score i { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid #435360; border-radius: 50%; color: #9caab4; font: 700 12px Arial,sans-serif; }
+html:root body .arena-pass-score i.current { border-color: #e1e7ed; color: #e1e7ed; }
+html:root body .arena-pass-score i.scored { background: #163b21; border-color: #42c862; color: #80e998; }
+html:root body .arena-pass-score i.missed { background: #321d23; border-color: #ad5965; color: #ee99a4; }
+html:root body .arena-pass-pitch { position: relative; height: 245px; margin: 20px 8px 25px; overflow: hidden; border: 1px solid #577666; background: repeating-linear-gradient(0deg,#10251c 0,#10251c 41px,#132b20 41px,#132b20 82px); }
+html:root body .arena-pass-pitch::before { content: ''; position: absolute; inset: 10px 16%; height: 65px; border: 1px solid #abc7b54a; }
+html:root body .arena-pass-goal { position: absolute; top: 0; left: 36%; width: 28%; height: 12px; border: 2px solid #d8e5dd; border-top: 0; }
+html:root body .arena-pass-window { position: absolute; top: 18%; height: 45%; background: #38cd6c25; border: 1px dashed #63ed94; }
+html:root body .arena-pass-runner,html:root body .arena-pass-defender { position: absolute; display: grid; place-items: center; width: 25px; height: 30px; transform: translateX(-50%); font: 400 15px var(--rei-heading,sans-serif); border-radius: 5px 5px 2px 2px; }
+html:root body .arena-pass-runner { top: 27%; background: #25cd51; color: #04190b; border: 1px solid #9cf0ae; }
+html:root body .arena-pass-defender { top: 51%; background: #b65b68; color: #fff3f3; border: 1px solid #e3a1aa; }
+html:root body .arena-pass-ball { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 24px; }
+html:root body .arena-pass-pitch > small { position: absolute; left: 0; right: 0; bottom: 8px; color: #9dbbaa; text-align: center; font: 800 8px Arial,sans-serif; letter-spacing: .1em; }
+@media(max-width:420px){
+ html:root body .arena-monty-choices { gap: 6px; }
+ html:root body .arena-monty-choices b { font-size: 14px; }
+ html:root body .arena-monty-actions { grid-template-columns: 1fr; }
+ html:root body .arena-shot-goal { height: 125px; }
+ html:root body .arena-pass-pitch { margin-inline: 0; height: 220px; }
+}

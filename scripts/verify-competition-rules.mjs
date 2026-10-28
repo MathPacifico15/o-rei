@@ -4,7 +4,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const vite = await createServer({ root: process.cwd(), configFile: false, server: { middlewareMode: true } });
+const vite = await createServer({ root: process.cwd(), configFile: false, server: { middlewareMode: true, watch: null } });
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");

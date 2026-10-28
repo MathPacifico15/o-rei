@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-28",
+  "phase": "2028-champions-one-on-one",
+  "evidence_id": "ev_4de9db425d4132f1da8d6d72d4247c0e9f17209a7216782f2f429b93c302d38f",
+  "target": {
+    "target_id": "466808E292677A924F789817D3C9F9BA",
+    "type": "page",
+    "title": "El Ídolo: faça sua carreira de jogador | Jogo de modo carreira | Potrero",
+    "url": "https://www.potrerofutbol.ar/el-idolo?lang=pt",
+    "origin": "https://www.potrerofutbol.ar",
+    "attached": null
+  },
+  "controls": [
+    {
+      "role": "button",
+      "name": "Español"
+    },
+    {
+      "role": "button",
+      "name": "Português"
+    },
+    {
+      "role": "button",
+      "name": "English"
+    },
+    {
+      "role": "button",
+      "name": "Français"
+    },
+    {
+      "role": "button",
+      "name": "Italiano"
+    },
+    {
+      "role": "button",
+      "name": "Buscar"
+    },
+    {
+      "role": "button",
+      "name": "Abrir competições"
+    },
+    {
+      "role": "button",
+      "name": "↖️ Esquerda"
+    },
+    {
+      "role": "button",
+      "name": "🎯 No meio"
+    },
+    {
+      "role": "button",
+      "name": "↗️ Direita"
+    },
+    {
+      "role": "button",
+      "name": "Finalização: o que faz"
+    },
+    {
+      "role": "button",
+      "name": "Velocidade: o que faz"
+    },
+    {
+      "role": "button",
+      "name": "Potência: o que faz"
+    },
+    {
+      "role": "button",
+      "name": "Liderança: o que faz"
+    },
+    {
+      "role": "button",
+      "name": "Resistência: o que faz"
+    },
+    {
+      "role": "heading",
+      "name": "CHAMPIONS LEAGUE"
+    },
+    {
+      "role": "button",
+      "name": "Abrir a loja"
+    },
+    {
+      "role": "button",
+      "name": "Ver carreira"
+    },
+    {
+      "role": "button",
+      "name": "Me aposentar"
+    },
+    {
+      "role": "button",
+      "name": ""
+    }
+  ],
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Observation starts when REA attaches; prior network and console activity is unavailable.",
+    "Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.",
+    "Source maps are reported only as declarative URLs and are not fetched.",
+    "URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.",
+    "CDP discovery omitted the target attachment state; attached is reported as unknown.",
+    "Browser host platform and architecture were not observed."
+  ]
+}

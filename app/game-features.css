@@ -1,0 +1,14 @@
+/* Additions needed by game mechanics; the approved REA presentation stays intact. */
+html:root body .play-style-choice { border:1px solid var(--rei-stroke); padding:16px; margin:22px 0; min-width:0; }
+html:root body .play-style-choice legend { color:var(--rei-green); font-size:12px; padding:0 8px; }
+html:root body .play-style-choice p { color:var(--rei-muted); font-size:11px; line-height:1.6; margin:0 0 12px; }
+html:root body .play-style-choice > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+html:root body .play-style-choice button { border:1px solid var(--rei-stroke); padding:12px; color:var(--rei-text); background:var(--rei-panel); text-align:left; min-height:70px; }
+html:root body .play-style-choice button[aria-pressed=true] { border-color:var(--rei-green); background:#102719; }
+html:root body .play-style-choice b { display:block; font-size:13px; margin-bottom:6px; }
+html:root body .play-style-choice small { color:var(--rei-muted); font-size:10px; line-height:1.5; display:block; }
+html:root body .card-redraw-tools { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:18px; }
+html:root body .card-redraw-tools button { border:1px solid #645526; color:var(--rei-yellow); background:#151910; padding:10px 13px; min-height:40px; font-size:10px; }
+html:root body .card-redraw-tools small { color:var(--rei-muted); font-size:10px; }
+html:root body .card-redraw-tools button:disabled { opacity:.45; cursor:not-allowed; }
+@media(max-width:500px) { html:root body .play-style-choice > div { grid-template-columns:1fr; } }

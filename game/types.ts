@@ -313,6 +313,10 @@ export interface SeasonResult {
 }
 
 export interface CareerState {
+  /** Finals outside world campaigns follow this permanent career identity. */
+  playStyle?: import('./decision-selection').PlayStyle;
+  miniGameHistory?: Array<{ season: number; decisionId: string; gameId: import('./minigames').MiniGameId }>;
+  cardRedraws?: { used: number; lastSeason: number; nonce: number };
   /** Maior vínculo atingido: homenagens permanecem após uma transferência. */
   clubMilestones?: Record<string, number>;
   financialLedger?: Array<{season:number;label:string;amount:number}>;

@@ -1,0 +1,656 @@
+{
+  "target": "https://www.potrerofutbol.ar/el-idolo?lang=pt",
+  "date": "2026-10-28",
+  "player": "Marcelo Luna",
+  "position": "attacker",
+  "identity": "mixed",
+  "startMode": "Messi story career",
+  "career": {
+    "firstSeason": 2026,
+    "lastSeason": 2050,
+    "seasons": 25,
+    "retirementAge": 40,
+    "retirementTitle": "El extraterrestre de Barcelona",
+    "complete": true
+  },
+  "journalRecords": 1186,
+  "identifiedMinigameEntries": 50,
+  "uniqueFamilies": 24,
+  "preseasonChoicesObserved": 22,
+  "initialSpecializationChoices": 1,
+  "bySeason": [
+    {
+      "season": 2026,
+      "age": 16,
+      "identifiedEntries": 0,
+      "preseasonCards": false,
+      "families": []
+    },
+    {
+      "season": 2027,
+      "age": 17,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "connect-four"
+      ]
+    },
+    {
+      "season": 2028,
+      "age": 18,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "memory-pairs",
+        "goalkeeper-duel",
+        "through-pass"
+      ]
+    },
+    {
+      "season": 2029,
+      "age": 19,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "choice-boots",
+        "aerial-duel",
+        "signal"
+      ]
+    },
+    {
+      "season": 2030,
+      "age": 20,
+      "identifiedEntries": 2,
+      "preseasonCards": false,
+      "families": [
+        "slalom",
+        "world-score-grid"
+      ]
+    },
+    {
+      "season": 2031,
+      "age": 21,
+      "identifiedEntries": 0,
+      "preseasonCards": true,
+      "families": []
+    },
+    {
+      "season": 2032,
+      "age": 22,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "power",
+        "last-minute-choice",
+        "tactical-tower"
+      ]
+    },
+    {
+      "season": 2033,
+      "age": 23,
+      "identifiedEntries": 4,
+      "preseasonCards": true,
+      "families": [
+        "national-duel",
+        "crossing-ball",
+        "tracking-cups",
+        "world-tower"
+      ]
+    },
+    {
+      "season": 2034,
+      "age": 24,
+      "identifiedEntries": 2,
+      "preseasonCards": true,
+      "families": [
+        "roulette",
+        "signal"
+      ]
+    },
+    {
+      "season": 2035,
+      "age": 25,
+      "identifiedEntries": 0,
+      "preseasonCards": true,
+      "families": []
+    },
+    {
+      "season": 2036,
+      "age": 26,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "timing",
+        "memory-code",
+        "higher-lower"
+      ]
+    },
+    {
+      "season": 2037,
+      "age": 27,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "free-kick",
+        "slalom",
+        "world-timing"
+      ]
+    },
+    {
+      "season": 2038,
+      "age": 28,
+      "identifiedEntries": 4,
+      "preseasonCards": true,
+      "families": [
+        "slalom",
+        "world-tower",
+        "aerial-duel",
+        "through-pass"
+      ]
+    },
+    {
+      "season": 2039,
+      "age": 29,
+      "identifiedEntries": 2,
+      "preseasonCards": true,
+      "families": [
+        "goalkeeper-duel",
+        "roulette"
+      ]
+    },
+    {
+      "season": 2040,
+      "age": 30,
+      "identifiedEntries": 2,
+      "preseasonCards": true,
+      "families": [
+        "goalkeeper-duel",
+        "last-minute-choice"
+      ]
+    },
+    {
+      "season": 2041,
+      "age": 31,
+      "identifiedEntries": 3,
+      "preseasonCards": true,
+      "families": [
+        "timing",
+        "higher-lower",
+        "world-moving-keeper"
+      ]
+    },
+    {
+      "season": 2042,
+      "age": 32,
+      "identifiedEntries": 2,
+      "preseasonCards": false,
+      "families": [
+        "slalom",
+        "world-timing"
+      ]
+    },
+    {
+      "season": 2043,
+      "age": 33,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "power"
+      ]
+    },
+    {
+      "season": 2044,
+      "age": 34,
+      "identifiedEntries": 2,
+      "preseasonCards": true,
+      "families": [
+        "higher-lower",
+        "national-duel"
+      ]
+    },
+    {
+      "season": 2045,
+      "age": 35,
+      "identifiedEntries": 4,
+      "preseasonCards": true,
+      "families": [
+        "memory-pairs",
+        "crossing-ball",
+        "timing",
+        "world-gap"
+      ]
+    },
+    {
+      "season": 2046,
+      "age": 36,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "world-moving-keeper"
+      ]
+    },
+    {
+      "season": 2047,
+      "age": 37,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "crossing-ball"
+      ]
+    },
+    {
+      "season": 2048,
+      "age": 38,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "tracking-cups"
+      ]
+    },
+    {
+      "season": 2049,
+      "age": 39,
+      "identifiedEntries": 2,
+      "preseasonCards": true,
+      "families": [
+        "roulette",
+        "timing"
+      ]
+    },
+    {
+      "season": 2050,
+      "age": 40,
+      "identifiedEntries": 1,
+      "preseasonCards": true,
+      "families": [
+        "world-gap"
+      ]
+    }
+  ],
+  "byFamily": {
+    "choice-boots": 1,
+    "memory-pairs": 2,
+    "connect-four": 1,
+    "through-pass": 2,
+    "goalkeeper-duel": 3,
+    "aerial-duel": 2,
+    "signal": 2,
+    "slalom": 4,
+    "world-score-grid": 1,
+    "power": 2,
+    "last-minute-choice": 2,
+    "tactical-tower": 1,
+    "roulette": 3,
+    "timing": 4,
+    "memory-code": 1,
+    "higher-lower": 3,
+    "free-kick": 1,
+    "world-timing": 2,
+    "world-moving-keeper": 2,
+    "world-gap": 2,
+    "crossing-ball": 3,
+    "tracking-cups": 2,
+    "world-tower": 2,
+    "national-duel": 2
+  },
+  "events": [
+    {
+      "year": 2027,
+      "age": 17,
+      "competition": "COPA DEL REY",
+      "family": "connect-four",
+      "firstJournalIndex": 15
+    },
+    {
+      "year": 2028,
+      "age": 18,
+      "competition": "COPA AMERICA",
+      "family": "memory-pairs",
+      "firstJournalIndex": 36
+    },
+    {
+      "year": 2028,
+      "age": 18,
+      "competition": "CHAMPIONS LEAGUE",
+      "family": "goalkeeper-duel",
+      "firstJournalIndex": 53
+    },
+    {
+      "year": 2028,
+      "age": 18,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "through-pass",
+      "firstJournalIndex": 59
+    },
+    {
+      "year": 2029,
+      "age": 19,
+      "competition": "FINALISSIMA",
+      "family": "choice-boots",
+      "firstJournalIndex": 76
+    },
+    {
+      "year": 2029,
+      "age": 19,
+      "competition": "SUPERCOPA DE EUROPA",
+      "family": "aerial-duel",
+      "firstJournalIndex": 84
+    },
+    {
+      "year": 2029,
+      "age": 19,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "signal",
+      "firstJournalIndex": 88
+    },
+    {
+      "year": 2030,
+      "age": 20,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "slalom",
+      "firstJournalIndex": 114
+    },
+    {
+      "year": 2030,
+      "age": 20,
+      "competition": "COPA DO MUNDO",
+      "family": "world-score-grid",
+      "firstJournalIndex": 137
+    },
+    {
+      "year": 2032,
+      "age": 22,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "power",
+      "firstJournalIndex": 175
+    },
+    {
+      "year": 2032,
+      "age": 22,
+      "competition": "COPA AMERICA",
+      "family": "last-minute-choice",
+      "firstJournalIndex": 181
+    },
+    {
+      "year": 2032,
+      "age": 22,
+      "competition": "CHAMPIONS LEAGUE",
+      "family": "tactical-tower",
+      "firstJournalIndex": 185
+    },
+    {
+      "year": 2033,
+      "age": 23,
+      "competition": "FINALISSIMA",
+      "family": "national-duel",
+      "firstJournalIndex": 227
+    },
+    {
+      "year": 2033,
+      "age": 23,
+      "competition": "SUPERCOPA DE EUROPA",
+      "family": "crossing-ball",
+      "firstJournalIndex": 231
+    },
+    {
+      "year": 2033,
+      "age": 23,
+      "competition": "COPA DEL REY",
+      "family": "tracking-cups",
+      "firstJournalIndex": 237
+    },
+    {
+      "year": 2033,
+      "age": 23,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "world-tower",
+      "firstJournalIndex": 251
+    },
+    {
+      "year": 2034,
+      "age": 24,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "roulette",
+      "firstJournalIndex": 286
+    },
+    {
+      "year": 2034,
+      "age": 24,
+      "competition": "COPA DO MUNDO",
+      "family": "signal",
+      "firstJournalIndex": 446
+    },
+    {
+      "year": 2036,
+      "age": 26,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "timing",
+      "firstJournalIndex": 477
+    },
+    {
+      "year": 2036,
+      "age": 26,
+      "competition": "COPA AMERICA",
+      "family": "memory-code",
+      "firstJournalIndex": 481
+    },
+    {
+      "year": 2036,
+      "age": 26,
+      "competition": "CHAMPIONS LEAGUE",
+      "family": "higher-lower",
+      "firstJournalIndex": 498
+    },
+    {
+      "year": 2037,
+      "age": 27,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "free-kick",
+      "firstJournalIndex": 514
+    },
+    {
+      "year": 2037,
+      "age": 27,
+      "competition": "COPA DEL REY",
+      "family": "slalom",
+      "firstJournalIndex": 518
+    },
+    {
+      "year": 2037,
+      "age": 27,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "world-timing",
+      "firstJournalIndex": 531
+    },
+    {
+      "year": 2038,
+      "age": 28,
+      "competition": "COPA DEL REY",
+      "family": "slalom",
+      "firstJournalIndex": 551
+    },
+    {
+      "year": 2038,
+      "age": 28,
+      "competition": "COPA DO MUNDO",
+      "family": "world-tower",
+      "firstJournalIndex": 570
+    },
+    {
+      "year": 2038,
+      "age": 28,
+      "competition": "CHAMPIONS LEAGUE",
+      "family": "aerial-duel",
+      "firstJournalIndex": 589
+    },
+    {
+      "year": 2038,
+      "age": 28,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "through-pass",
+      "firstJournalIndex": 595
+    },
+    {
+      "year": 2039,
+      "age": 29,
+      "competition": "SUPERCOPA DE EUROPA",
+      "family": "goalkeeper-duel",
+      "firstJournalIndex": 636
+    },
+    {
+      "year": 2039,
+      "age": 29,
+      "competition": "COPA DEL REY",
+      "family": "roulette",
+      "firstJournalIndex": 640
+    },
+    {
+      "year": 2040,
+      "age": 30,
+      "competition": "SUPERCOPA DE ESPANA",
+      "family": "goalkeeper-duel",
+      "firstJournalIndex": 657
+    },
+    {
+      "year": 2040,
+      "age": 30,
+      "competition": "COPA AMERICA",
+      "family": "last-minute-choice",
+      "firstJournalIndex": 661
+    },
+    {
+      "year": 2041,
+      "age": 31,
+      "competition": "FINALISSIMA",
+      "family": "timing",
+      "firstJournalIndex": 675
+    },
+    {
+      "year": 2041,
+      "age": 31,
+      "competition": "CHAMPIONS LEAGUE",
+      "family": "higher-lower",
+      "firstJournalIndex": 679
+    },
+    {
+      "year": 2041,
+      "age": 31,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "world-moving-keeper",
+      "firstJournalIndex": 689
+    },
+    {
+      "year": 2042,
+      "age": 32,
+      "competition": "SUPERCOPA DE EUROPA",
+      "family": "slalom",
+      "firstJournalIndex": 729
+    },
+    {
+      "year": 2042,
+      "age": 32,
+      "competition": "COPA DO MUNDO",
+      "family": "world-timing",
+      "firstJournalIndex": 750
+    },
+    {
+      "year": 2043,
+      "age": 33,
+      "competition": "COPA DEL REY",
+      "family": "power",
+      "firstJournalIndex": 774
+    },
+    {
+      "year": 2044,
+      "age": 34,
+      "competition": "COPA DE FRANCIA",
+      "family": "higher-lower",
+      "firstJournalIndex": 794
+    },
+    {
+      "year": 2044,
+      "age": 34,
+      "competition": "COPA AMERICA",
+      "family": "national-duel",
+      "firstJournalIndex": 802
+    },
+    {
+      "year": 2045,
+      "age": 35,
+      "competition": "FINALISSIMA",
+      "family": "memory-pairs",
+      "firstJournalIndex": 816
+    },
+    {
+      "year": 2045,
+      "age": 35,
+      "competition": "TROPHEE DES CHAMPIONS",
+      "family": "crossing-ball",
+      "firstJournalIndex": 821
+    },
+    {
+      "year": 2045,
+      "age": 35,
+      "competition": "COPA DE FRANCIA",
+      "family": "timing",
+      "firstJournalIndex": 827
+    },
+    {
+      "year": 2045,
+      "age": 35,
+      "competition": "MUNDIAL DE CLUBES",
+      "family": "world-gap",
+      "firstJournalIndex": 831
+    },
+    {
+      "year": 2046,
+      "age": 36,
+      "competition": "COPA DO MUNDO",
+      "family": "world-moving-keeper",
+      "firstJournalIndex": 862
+    },
+    {
+      "year": 2047,
+      "age": 37,
+      "competition": "CONCACAF CHAMPIONS CUP",
+      "family": "crossing-ball",
+      "firstJournalIndex": 898
+    },
+    {
+      "year": 2048,
+      "age": 38,
+      "competition": "COPA AMERICA",
+      "family": "tracking-cups",
+      "firstJournalIndex": 914
+    },
+    {
+      "year": 2049,
+      "age": 39,
+      "competition": "FINALISSIMA",
+      "family": "roulette",
+      "firstJournalIndex": 938
+    },
+    {
+      "year": 2049,
+      "age": 39,
+      "competition": "CONCACAF CHAMPIONS CUP",
+      "family": "timing",
+      "firstJournalIndex": 945
+    },
+    {
+      "year": 2050,
+      "age": 40,
+      "competition": "COPA DO MUNDO",
+      "family": "world-gap",
+      "firstJournalIndex": 955
+    }
+  ],
+  "limitations": [
+    "Single guided elite attacker career; measured counts do not estimate universal probabilities.",
+    "Entry means one identified family per competition and season; group and knockout rounds within that entry are not counted again.",
+    "Counts are a lower bound: unnamed transition screens and families outside the classifier are omitted.",
+    "Inputs used visible controls, previews and gestures; no internal career state or remote clock was changed.",
+    "Some attempts were lost or timed out while controls were being inspected; successful perfect play was not the objective.",
+    "The career was resumed from its browser save after a session interruption."
+  ]
+}

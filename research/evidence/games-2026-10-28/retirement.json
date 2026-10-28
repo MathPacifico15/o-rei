@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-28",
+  "phase": "career-retirement",
+  "evidence_id": "ev_88336ccb8251cf3ae63dc5b55293189c33e892687b4641d7014bf66b9e5fc287",
+  "target": {
+    "target_id": "466808E292677A924F789817D3C9F9BA",
+    "type": "page",
+    "title": "El Ídolo: faça sua carreira de jogador | Jogo de modo carreira | Potrero",
+    "url": "https://www.potrerofutbol.ar/el-idolo?lang=pt",
+    "origin": "https://www.potrerofutbol.ar",
+    "attached": null
+  },
+  "headings": [
+    "“EL EXTRATERRESTRE DE BARCELONA”"
+  ],
+  "controls": [
+    "Español",
+    "Português",
+    "English",
+    "Français",
+    "Italiano",
+    "Buscar",
+    "Abrir competições",
+    "COPIAR IMAGEM DO HISTÓRICO",
+    "💔 💔 FINAIS PERDIDAS 20",
+    "PRÊMIOS DESTA CARREIRA 46",
+    "⚔️ O DUELO ETERNO",
+    "COMPARTILHAR MINHA CARREIRA",
+    "SUA TRAJETÓRIA 25",
+    "OUTRA CARREIRA"
+  ],
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Observation starts when REA attaches; prior network and console activity is unavailable.",
+    "Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.",
+    "Source maps are reported only as declarative URLs and are not fetched.",
+    "URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.",
+    "CDP discovery omitted the target attachment state; attached is reported as unknown.",
+    "Browser host platform and architecture were not observed."
+  ]
+}

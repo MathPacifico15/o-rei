@@ -1,6 +1,6 @@
 # O REI — versão jogável local
 
-Esta é a evolução do repositório original, com a interface central e os dez minijogos existentes. A prévia está em **http://127.0.0.1:4183/**.
+Esta é a evolução do repositório original. A branch `rea-maggio-games-n-features` conserva a UI aprovada e oferece treze minijogos, identidade de carreira e troca limitada de cartas. A prévia está em **http://127.0.0.1:4183/**.
 
 ## Executar
 
@@ -25,7 +25,7 @@ O build está em `dist-local/`. Os comandos originais de hospedagem foram mantid
 
 Crie o atleta, assine o primeiro contrato e escolha uma das três cartas. Continue a temporada, responda aos acontecimentos e dispute as decisões. Ligas são simuladas de uma vez; playoffs e permanência interrompem apenas quando o regulamento exige. Na Copa do Mundo e no Super Mundial, todas as partidas dos grupos à final são minijogos exclusivos, com dificuldade crescente. Confira o resumo, prepare a próxima temporada e resolva propostas quando a janela abrir. A carreira termina com a aposentadoria e pode ser exportada como imagem.
 
-O topo oferece histórico, treino dos dez minijogos, exportação/importação do save e recuperação do backup anterior. A loja está no cabeçalho do atleta. Não é necessário criar conta.
+O topo oferece histórico, treino dos treze minijogos, exportação/importação do save e recuperação do backup anterior. A loja está no painel do atleta. Não é necessário criar conta. O estudo da carreira completa de referência e as adaptações estão em `research/rea-games-features.md`.
 
 ## Documentação
 

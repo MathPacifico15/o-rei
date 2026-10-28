@@ -212,16 +212,21 @@ function pickSeasonEvents(random: () => number, fame: number, _position: Positio
 /** Três cartas sorteadas: raras dominam, épicas são especiais e lendárias exceção. */
 export function chooseUpgradeCards(position: Position, seed: number, recent: string[] = []): UpgradeCard[] {
   const random = mulberry32(seed);
+  const eligible = upgradeCards.filter((card) => card.eligible.includes(position));
   const selected = new Set<string>(); const blocked = new Set(recent);
   const rarityFor = () => {
     const roll = random();
     return roll < .75 ? "raro" : roll < .95 ? "epico" : "lendario";
   };
-  return Array.from({ length: 3 }, () => {
+  return Array.from({ length: Math.min(3, eligible.length) }, () => {
     const rarity = rarityFor();
-    const pool = upgradeCards.filter((card) => card.rarity === rarity && card.eligible.includes(position) && !selected.has(card.id) && !blocked.has(card.id));
-    const fallback = upgradeCards.filter((card) => card.eligible.includes(position) && !selected.has(card.id) && !blocked.has(card.id));
-    const card = pool[Math.floor(random() * pool.length)] ?? fallback[Math.floor(random() * fallback.length)] ?? upgradeCards[0];
+    const remaining = eligible.filter((card) => !selected.has(card.id));
+    const fresh = remaining.filter((card) => !blocked.has(card.id));
+    // Recent history may exhaust a position's catalogue. Relax only that
+    // cooldown, never the player's position or uniqueness within this hand.
+    const candidates = fresh.length ? fresh : remaining;
+    const pool = candidates.filter((card) => card.rarity === rarity);
+    const card = pool[Math.floor(random() * pool.length)] ?? candidates[Math.floor(random() * candidates.length)];
     selected.add(card.id);
     return card;
   });

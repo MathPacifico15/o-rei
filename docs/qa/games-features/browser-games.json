@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "mode": "mobile touch and keyboard",
+  "games": [
+    {
+      "name": "Código da prancheta",
+      "won": true
+    },
+    {
+      "name": "Copos embaralhados",
+      "won": true
+    },
+    {
+      "name": "Marca vermelha",
+      "won": false
+    },
+    {
+      "name": "Labirinto",
+      "won": false
+    },
+    {
+      "name": "Jogo da Velha",
+      "won": false
+    },
+    {
+      "name": "Pareamento rápido",
+      "won": true
+    },
+    {
+      "name": "Quebra-cabeça",
+      "won": false
+    },
+    {
+      "name": "Mapa de pressão",
+      "won": false
+    },
+    {
+      "name": "Zona de ouro",
+      "won": false
+    },
+    {
+      "name": "Rastrear a bola",
+      "won": false
+    },
+    {
+      "name": "Duelo com o goleiro",
+      "won": false
+    },
+    {
+      "name": "A escolha da chuteira",
+      "won": false
+    },
+    {
+      "name": "Passe entre linhas",
+      "won": true
+    }
+  ],
+  "paused": true,
+  "cardRedraw": true,
+  "errors": []
+}

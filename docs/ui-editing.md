@@ -4,6 +4,8 @@ O visual existente continua em `app/globals.css`, `app/final-tweaks.css` e `app/
 
 Na branch `rea-maggio`, a camada visual aplicada após essas folhas é `app/rea-maggio.css`. Ela define painéis escuros, estatísticas, perfil, resumo editorial, treino e arena; os seletores têm escopo `html:root body` para prevalecer sobre o CSS legado. A prévia importa a mesma folha em `preview/main.tsx`. A tipografia Anton é local em `public/fonts/`, acompanhada da licença OFL. O estudo de referência e seus limites estão em `research/rea-ui-potrero.md`.
 
+Na branch `rea-maggio-games-n-features`, essa folha aprovada permanece intacta. `app/game-features.css` acrescenta controles de identidade e troca de cartas; `components/minigame-features.css` apresenta os controles das novas modalidades. Mecânicas, dados e seleção de desafios continuam em `game/`, separados do acabamento visual.
+
 Os minijogos têm CSS isolado em `components/minigame-arena.css`. Loja e retrospectiva foram extraídas para componentes próprios; editar seus textos e composição não exige alterar o motor da carreira.
 
 Dados de produtos/preços/efeitos ficam em `game/economy.ts`. Situações e escolhas ficam em `game/career-events.ts`. Não coloque regras de simulação no CSS ou em textos de botões. Depois de alterar valores, execute `npm test` e revise os textos dos benefícios.

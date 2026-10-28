@@ -78,4 +78,6 @@ Capturas da implementação: [perfil desktop](../docs/qa/rea-maggio/career-deskt
 
 ## Cobertura restante
 
+A continuação de 28/10/2026 percorreu uma carreira até a aposentadoria com foco em mecânicas. Ela está documentada em [rea-games-features.md](rea-games-features.md), na branch separada `rea-maggio-games-n-features`.
+
 Perfil, cartões, resumo, catálogo de treino e estado da arena foram trabalhados na branch. Para um levantamento exaustivo, ainda é necessário percorrer a aposentadoria, histórico completo, loja, outros modos, todos os minijogos e seus estados de erro, além dos breakpoints do site original. Mercado foi observado em uma proposta, não em todas as variantes. A tipografia e a composição foram aproximadas; não foi feita comparação automatizada pixel a pixel.
