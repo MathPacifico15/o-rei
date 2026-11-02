@@ -213,7 +213,7 @@ export default function Home() {
       const history = [...source.history]; history[history.length - 1] = pending;
       source = { ...source, history };
       const game = gameForFinal(retry, source.seed + source.season, source.campaignMiniGames, source.recentMiniGameIds);
-      setCareer(source); setLastResult(pending); setActiveGame(game); setGameAttempt((attempt) => attempt + 1); setToast("A partida terminou empatada. Pênaltis: o mesmo desafio volta em dificuldade maior."); setScreen("career");
+      setCareer(source); setLastResult(pending); setActiveGame(game); setGameAttempt((attempt) => attempt + 1); setToast(null); setScreen("career");
       return;
     }
 
@@ -259,7 +259,7 @@ export default function Home() {
       const accessFinal = { ...cupFinal, won: undefined, stakes: "promotion" as const, phase: "access" as const, competitionName: "Jogo do Acesso" };
       const pending = { ...lastResult, cupFinal: accessFinal, access: "pending" as const, phaseReached: "Jogo do Acesso" };
       const history = [...career.history]; history[history.length - 1] = pending;
-      setCareer({ ...career, history }); setLastResult(pending); setActiveGame(gameForFinal(accessFinal, career.seed + career.season + 91)); setGameAttempt(0); setToast("A taça escapou. Agora o Jogo do Acesso decide sua divisão."); setScreen("career");
+      setCareer({ ...career, history }); setLastResult(pending); setActiveGame(gameForFinal(accessFinal, career.seed + career.season + 91)); setGameAttempt(0); setToast(null); setScreen("career");
       return;
     }
     const titleWon = won && cupFinal.stakes !== "promotion" && cupFinal.stakes !== "relegation" && (cupFinal.stakes !== "campaign" || cupFinal.campaignMatchIndex === campaignLength - 1);
@@ -310,6 +310,7 @@ export default function Home() {
     if (!won && cupFinal.stakes !== "titleAndPromotion") finishSeason();
   }
   function completeMiniGame(won: boolean) {
+    setToast(null);
     if (!career || !lastResult?.cupFinal || lastResult.cupFinal.won !== undefined) return;
     if (isWorldCampaign(lastResult.cupFinal)) { resolveWorldDecision(won); return; }
     const victory = won;
@@ -418,7 +419,7 @@ export default function Home() {
   return <><div className="save-tools"><button onClick={()=>setShowHistory(true)}>VER CARREIRA</button><button onClick={()=>setTrainingMenu(true)}>TREINAR MINIJOGOS</button><button onClick={()=>{const raw=localStorage.getItem("o-rei-career");if(!raw)return;const url=URL.createObjectURL(new Blob([raw],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download="o-rei-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}}>EXPORTAR SAVE</button><label>IMPORTAR SAVE<input type="file" accept="application/json" hidden onChange={async(e)=>{const file=e.target.files?.[0];if(!file)return;try{const save=decodeSave(await file.text());writeSave(localStorage,save);window.location.reload()}catch(error){setToast((error as Error).message)}}}/></label><button onClick={()=>{try{const raw=localStorage.getItem(BACKUP_KEY);if(!raw)throw Error("Ainda não há backup anterior.");const save=decodeSave(raw);writeSave(localStorage,save);window.location.reload()}catch(error){setToast((error as Error).message)}}}>RECUPERAR BACKUP</button></div>
   {showHistory&&<CareerRetrospective career={career} onClose={()=>setShowHistory(false)}/>}
   {trainingMenu&&<div className="career-overlay training-overlay" role="dialog" aria-modal="true" aria-label="Centro de treino"><section className="shop-wrap training-wrap"><header className="training-heading"><div><small>O REI · CAMPO DE TREINO</small><h2>Prepare a próxima decisão.</h2><p>Escolha um desafio. A dificuldade pode ser ajustada antes de começar.</p></div><button className="training-close" onClick={()=>setTrainingMenu(false)}>Voltar ×</button></header><div className="training-catalog">{minigames.map((g,index)=><button className="training-game" key={g.id} onClick={()=>{setTraining(g);setTrainingMenu(false)}}><span className="training-number">{String(index+1).padStart(2,"0")}</span><span><small>{g.exclusive?'MUNDIAIS':'DECISÕES DA CARREIRA'}</small><b>{g.name}</b><p>{g.description}</p></span><span className="training-arrow" aria-hidden="true">↗</span></button>)}</div><p className="training-note">Prática livre. Os resultados do treino não alteram sua carreira.</p></section></div>}
-  {training&&<MiniGameArena game={training} context="treino" onClose={()=>setTraining(null)} onFinish={r=>{setTraining(null);setToast(r.won?'Treino concluído.':'Treino encerrado; tente outra vez quando quiser.')}}/>}
+  {training&&<MiniGameArena game={training} context="treino" onClose={()=>setTraining(null)} onFinish={()=>{setTraining(null);setToast(null)}}/>}
   {screen === "shop" && <CareerShop career={career} onBack={() => setScreen("career")} onChange={setCareer} onToast={setToast} />}<Career career={career} club={club} result={lastResult} event={event} seasonSummary={seasonSummary} seasonConsequences={seasonConsequences} upgradeReady={upgradeReady} onChooseEvent={chooseEvent} onChooseCard={takeCard} onChooseEvolution={chooseEvolution} onSkipCard={() => setToast("Escolha uma das três cartas para preparar a temporada.")} onRedrawCards={()=>{if(!upgradeReady||career.pendingEvolution||!canRedrawCards(career))return;setCareer(redrawCards(career));setToast("Três novas opções. Esta troca fica disponível novamente em duas temporadas.")}} toast={toast} onDismiss={() => setToast(null)} onPlay={playSeason} onShop={() => setScreen("shop")} onRenew={renewContract} onProposal={acceptProposal} onNegotiate={(clubId,priority)=>{const outcome=negotiateOffer(career,clubId,mulberry32(career.seed+career.season*167+clubId.split('').reduce((n,c)=>n+c.charCodeAt(0),0)),priority);setCareer(outcome.state);setToast(outcome.message)}} onStay={()=>setCareer({...career,marketWindow:career.marketAfterLoan,marketAfterLoan:undefined})} onLoan={requestLoan} onCountry={(country)=>{const kind=career.marketWindow?.kind??"transfer";const next=createMarketWindow(career,mulberry32(career.marketWindow?.seed??(career.seed+career.season*311+(kind==="loan"?73:0))),country||undefined,kind);setCareer({...career,marketWindow:next});}} onExit={()=>{if((career.exitRequests??0)>=2)return setToast("Você já usou os dois pedidos de saída.");const p={...career.player,clubIdolatry:{...career.player.clubIdolatry,[career.player.clubId]:Math.max(0,(career.player.clubIdolatry[career.player.clubId]??0)-3)}};const next={...career,player:p,exitRequests:(career.exitRequests??0)+1};setCareer({...next,marketWindow:prepareMarketWindow(next)});setToast("Seu representante abriu conversas. Idolatria −3.")}} activeGame={activeGame} gameAttempt={gameAttempt} onRestartGame={() => setGameAttempt((attempt) => attempt + 1)} onFinishGame={completeMiniGame} /></>;
 }
 

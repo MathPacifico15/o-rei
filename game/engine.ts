@@ -635,6 +635,14 @@ export function superMundialEligibleClubs(state: CareerState) {
 function superMundialQualificationSource(state: CareerState, club: Club) {
   return wonContinentalInCycle(state, club.id) ? "campeão continental no ciclo" : "ranking mundial de clubes";
 }
+const continentalFinalMinimum:Record<string,number>={ucl:78,uel:72,lib:73,sula:62};
+export function selectContinentalFinalOpponent(state:CareerState, club:Club, competitionId:string, random:()=>number, usedOpponentIds:ReadonlySet<string>=new Set()):Club|undefined {
+  const minimum=continentalFinalMinimum[competitionId]; if(!minimum)return undefined;
+  const eligible=clubs.filter(candidate=>candidate.id!==club.id&&cupEligible(candidate,competitionId,state)&&competitions.find(entry=>entry.id===currentLeagueId(state,candidate))?.tier===1&&candidate.strength>=minimum&&candidate.reputation>=minimum-5);
+  const fresh=eligible.filter(candidate=>!usedOpponentIds.has(candidate.id));
+  const pool=fresh.length?fresh:eligible;
+  return pool[Math.floor(random()*pool.length)];
+}
 function campaignOpponent(state: CareerState, club: Club, competitionId: string, random: () => number, usedOpponentIds: ReadonlySet<string> = new Set(), finalPhase = false) {
   const competition = competitions.find((entry) => entry.id === competitionId);
   if (competitionId === "cwc") {
@@ -775,7 +783,8 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
     for (const currentPhase of campaignPhases(category)) {
       phase = currentPhase;
       if (currentPhase === "Final") {
-        const opponent = category === "supercup" ? supercupOpponent(state, club, competition.id, random) : campaignOpponent(state, club, competition.id, random, usedOpponents, true);
+        const opponent = category === "supercup" ? supercupOpponent(state, club, competition.id, random) : continentalFinalMinimum[competition.id] ? selectContinentalFinalOpponent(state,club,competition.id,random,usedOpponents) : campaignOpponent(state, club, competition.id, random, usedOpponents, true);
+        if (!opponent) { status="active"; phase="Final sem adversário elegível no catálogo"; break; }
         usedOpponents.add(opponent.id);
         matches.push({ phase: currentPhase, opponentId: opponent.id, opponentName: opponent.name, result: "pending", playable: true });
         status = "final";
@@ -1034,23 +1043,26 @@ export function createMarketWindow(state: CareerState, random: () => number, pre
   const historical=Math.min(3, Math.max(0, ((state.highestOvr??ovr)-ovr)/5) + Math.min(1.5,player.titles.length/5) + player.fame/100);
   const level=ovr+performance+historical-(player.age>34?2:0);
   const tier=ovr<80?0:ovr<85?1:2;
-  const originContinent=competitionRuleFor(state.originCountry??current.country)?.continent;
-  const currentContinent=competitionRuleFor(current.country)?.continent;
+  // Australia competes in Asian football, but geographically is in Oceania.
+  const marketContinent=(country:string)=>country==='Austrália'?'oceania':competitionRuleFor(country)?.continent;
+  const originContinent=marketContinent(state.originCountry??current.country);
+  const currentContinent=marketContinent(current.country);
   const abroad=Boolean(originContinent&&currentContinent&&originContinent!==currentContinent);
   const candidate=clubs.filter(c=>c.id!==current.id && (!abroad || competitions.find(x=>x.id===(state.leagueAssignments[c.id]??c.leagueId))?.tier===1) && (kind!=="loan" || c.strength<=current.strength+5) && c.strength<=level+(tier===0?19:tier===1?15:12));
   const remaining=[...candidate], offers:ContractOffer[]=[], countryCounts=new Map<string,number>();
   const desired=5+Math.floor(random()*2);
   const preferHit=Boolean(preferredCountry&&candidate.some(c=>c.country===preferredCountry)&&random()<.65);
-  if (preferredCountry && !preferHit && remaining.some(c=>c.country!==preferredCountry)) {
+  if (preferredCountry && !preferHit) {
     for (let i=remaining.length-1;i>=0;i--) if (remaining[i].country===preferredCountry) remaining.splice(i,1);
   }
-  const eliteNames=new Set(["barcelona","real madrid","liverpool","manchester city","manchester united","bayern münchen","bayern munich","paris saint-germain","arsenal","chelsea","juventus","inter","milan"]);
+  const eliteLeagues:Record<string,string[]>={"eng-pl":["liverpool","manchester city","manchester united","arsenal","chelsea"],"esp-ll":["barcelona","real madrid"],"ger-bl":["bayern münchen","bayern munich"],"fra-l1":["paris saint-germain"],"ita-sa":["juventus","inter","milan"]};
+  const isElite=(c:Club)=>Boolean(eliteLeagues[state.leagueAssignments[c.id]??c.leagueId]?.includes(c.name.toLowerCase()));
   const agent=state.shop?.ownedPermanent.includes("empresario")?1.15:1;
   const academy=state.shop?.ownedPermanent.includes("academia")?1.2:1;
   while(offers.length<desired && remaining.length){
     const preferredAvailable=preferHit&&!offers.some(o=>clubs.find(c=>c.id===o.clubId)?.country===preferredCountry);
-    const eliteAvailable=ovr>=85&&!offers.some(o=>{const c=clubs.find(x=>x.id===o.clubId);return c&&eliteNames.has(c.name.toLowerCase())})&&remaining.some(c=>eliteNames.has(c.name.toLowerCase()));
-    const forced=preferredAvailable?remaining.filter(c=>c.country===preferredCountry):eliteAvailable?remaining.filter(c=>eliteNames.has(c.name.toLowerCase())):remaining;
+    const eliteAvailable=ovr>=85&&!offers.some(o=>{const c=clubs.find(x=>x.id===o.clubId);return c&&isElite(c)})&&remaining.some(isElite);
+    const forced=preferredAvailable?remaining.filter(c=>c.country===preferredCountry):eliteAvailable?remaining.filter(isElite):remaining;
     const weights=forced.map(c=>{
       const gap=c.strength-level;
       const fit=gap>0 ? Math.exp(-gap/8) : Math.exp(gap/22);

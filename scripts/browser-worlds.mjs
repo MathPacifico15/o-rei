@@ -33,17 +33,18 @@ try{
   await page.clock.install();
   await page.getByRole('button',{name:'COMEÇAR',exact:true}).click();
   for(let match=0;match<total;match++){
+   console.log(`${id}: iniciando partida ${match+1}/${total}`);
    await page.locator('.arena-track-gold').waitFor();
    if(match>0)assert.equal(await page.getByRole('button',{name:'COMEÇAR',exact:true}).count(),0,`${id}: tutorial repetido na partida ${match+1}`);
    let hit=false;
-   for(let tick=0;tick<250;tick++){
-    const inside=await page.locator('.arena-track-gold').evaluate(track=>{const target=track.querySelector('i').getBoundingClientRect(),marker=track.querySelector('b').getBoundingClientRect(),x=marker.x+marker.width/2;return x>target.left+1&&x<target.right-1});
-    if(inside){hit=true;break;} await page.clock.runFor(20);
+   for(let tick=0;tick<1600;tick++){
+    const inside=await page.locator('.arena-track-gold').evaluate(track=>{const target=track.querySelector('i').getBoundingClientRect(),marker=track.querySelector('b').getBoundingClientRect(),x=marker.x+marker.width/2,hit=Math.abs(x-(target.left+target.width/2))<1.5;if(hit)Array.from(track.closest('.arena').querySelectorAll('button')).find(button=>button.textContent.includes('PARAR'))?.click();return hit});
+    if(inside){hit=true;break;} await page.clock.runFor(5);
    }
    assert.ok(hit,`${id}: faixa alcançável na partida ${match+1}`);
-   await page.getByRole('button',{name:/PARAR/}).click();
    await page.clock.runFor(1000);
-   if(match<total-1)await page.locator('.arena-track-gold').waitFor();
+   assert.equal(await page.locator('.toast').count(),0,`${id}: mensagem flutuante após a partida ${match+1}`);
+   if(match<total-1) { try { await page.locator('.arena-track-gold').waitFor({timeout:10000}); } catch(error) { console.error('Tela após partida:',(await page.locator('body').innerText()).slice(-1400)); throw error; } }
   }
   await page.locator('.celebration-close').waitFor({timeout:10000});
   assert.equal(errors.length,0,errors.join('\n'));

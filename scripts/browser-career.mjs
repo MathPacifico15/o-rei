@@ -66,7 +66,8 @@ try{
   }
   if(await page.locator('.training-card').count()){await page.locator('.training-card').first().click();continue;}
   if(await page.locator('.market-inline').count()){
-    if(transfers<2&&await page.locator('.inline-offers button').count()){await page.locator('.inline-offers button').first().click();transfers++;}
+    if(await page.getByRole('button',{name:'BUSCAR PROPOSTAS'}).count()){await page.getByRole('button',{name:'BUSCAR PROPOSTAS'}).click();continue;}
+    if(transfers<2&&await page.locator('.inline-offers article').count()){await page.locator('.inline-offers article').first().getByRole('button',{name:'ASSINAR'}).click();transfers++;}
     else await page.locator('.market-renewal').click();continue;
   }
   if(await page.locator('.play-button').isEnabled()){await page.locator('.play-button').click();continue;}

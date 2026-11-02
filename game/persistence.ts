@@ -31,6 +31,17 @@ export interface CareerFlow {
 export interface SaveEnvelope { version: 8; career: CareerState; flow?: CareerFlow }
 export const SAVE_KEY = 'o-rei-career';
 export const BACKUP_KEY = 'o-rei-career:backup';
+// Translate legacy competition labels at read time without changing the stored original.
+const oldCompetitionNames:Record<string,string>={'Κύπελλο Ελλάδας':'Copa da Grécia','كأس خادم الحرمين الشريفين':'Copa do Rei Saudita','كأس السوبر السعودي':'Supercopa Saudita','天皇杯':'Copa do Imperador'};
+function translateCompetitionLabels(value:unknown,key=''):unknown {
+  if(Array.isArray(value)) return value.map(item=>translateCompetitionLabels(item,key));
+  if(value && typeof value==='object') return Object.fromEntries(Object.entries(value).map(([name,item])=>[name,translateCompetitionLabels(item,name)]));
+  if(typeof value==='string') {
+    if(oldCompetitionNames[value]&&!['name','id','clubId','playerId'].includes(key)) return oldCompetitionNames[value];
+    if(['competitionName','currentCompetition','leagueName','competition','title','titles','label','source'].includes(key)) return Object.entries(oldCompetitionNames).reduce((text,[oldName,newName])=>text.replaceAll(oldName,newName),value);
+  }
+  return value;
+}
 export function decodeSave(raw: string): SaveEnvelope {
   const parsed = JSON.parse(raw);
   const career = parsed.version === 8 ? parsed.career : parsed;
@@ -42,7 +53,7 @@ export function decodeSave(raw: string): SaveEnvelope {
     throw new Error('Save incompatível ou danificado. O arquivo original foi preservado.');
   }
   if (parsed.version === 8 && parsed.flow && (!Array.isArray(parsed.flow.eventQueue) || !Array.isArray(parsed.flow.finalQueue))) throw new Error('Etapa do save inválida.');
-  return { version: 8, career: { ...career, saveVersion: 8 }, flow: parsed.version === 8 ? parsed.flow : undefined };
+  return { version: 8, career: translateCompetitionLabels({ ...career, saveVersion: 8 }) as CareerState, flow: parsed.version === 8 ? translateCompetitionLabels(parsed.flow) as CareerFlow|undefined : undefined };
 }
 export function readSave(storage: Pick<Storage,'getItem'>): { save?: SaveEnvelope; warning?: string } {
   const raw = storage.getItem(SAVE_KEY);

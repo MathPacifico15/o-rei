@@ -8,7 +8,7 @@ const vite = await createServer({ root: process.cwd(), configFile: false, server
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
-  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs, protectedFromRelegation, receivesSurvivalDecision, cupEligible } = await vite.ssrLoadModule("/game/engine.ts");
+  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs, protectedFromRelegation, receivesSurvivalDecision, cupEligible, selectContinentalFinalOpponent, mulberry32 } = await vite.ssrLoadModule("/game/engine.ts");
   const { resolveWorldMatch, rescueForDecision, worldMatchDifficulty } = await vite.ssrLoadModule("/game/world-tournaments.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
@@ -126,6 +126,12 @@ try {
     assert(campaign, `Vaga europeia ${id} não gerou campanha`);
   }
   const liverpool=clubs.find(item=>item.name==='Liverpool');
+  for(const [name,id,min] of [['Liverpool','ucl',78],['Liverpool','uel',72],['Santos','lib',73],['Santos','sula',62]]) {
+    const playerClub=clubs.find(c=>c.name===name), state=makeState(playerClub);
+    for(let seed=1;seed<=80;seed++){const opponent=selectContinentalFinalOpponent(state,playerClub,id,mulberry32(seed));assert(opponent&&opponent.id!==playerClub.id&&opponent.strength>=min&&opponent.reputation>=min-5&&cupEligible(opponent,id,state),`${id}: adversário de final inválido`);}
+    const empty={...state,leagueAssignments:Object.fromEntries(clubs.map(c=>[c.id,'unavailable']))};
+    assert(selectContinentalFinalOpponent(empty,playerClub,id,mulberry32(1))===undefined,`${id}: não pode inventar rival quando não há elegíveis`);
+  }
   const europeanSupercup=makeState(liverpool); europeanSupercup.season=2027;
   europeanSupercup.competitionWinners={ucl:[{clubId:liverpool.id,season:2026}]};
   const superFinal=simulateSeason(europeanSupercup).result.finals?.find(item=>item.competitionId==='uefa-super');
