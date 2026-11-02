@@ -80,11 +80,16 @@ export interface ContractOffer {
   /** Percentual de partidas que o clube espera que o atleta dispute. */
   expectedMinutes: number;
   idolatryChange: number;
+  kind?: "transfer" | "loan";
 }
 export interface MarketWindow {
   season: number;
   offers: ContractOffer[];
   renewal: ContractOffer;
+  phase?: "preference" | "offers";
+  kind?: "transfer" | "loan";
+  preferredCountry?: string;
+  seed?: number;
 }
 export interface CareerContract {
   clubId: string;
@@ -97,6 +102,7 @@ export interface CareerContract {
 export interface LoanSpell {
   parentClubId: string;
   returnSeason: number;
+  parentContract?: CareerContract;
 }
 
 export interface LeagueTableEntry {
@@ -345,6 +351,7 @@ export interface CareerState {
   originCountry: string;
   highestOvr: number;
   marketWindow?: MarketWindow;
+  marketAfterLoan?: MarketWindow;
   /** Ajustes de força persistentes, sem mutar o catálogo global. */
   clubStrengthAdjustments?: Record<string, number>;
   recentEventIds?: string[];

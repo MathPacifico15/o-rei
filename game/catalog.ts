@@ -83,7 +83,7 @@ const expandedCompetitions: CompetitionRow[] = [
   ...competitionRows("Turquia", "european", "league", [["tur-a", "Süper Lig", 1, 73]]),
   ...competitionRows("Turquia", "european", "cup", [["tur-cup", "Türkiye Kupası", 1, 61], ["tur-super", "Süper Kupa", 1, 49]]),
   ...competitionRows("Grécia", "european", "league", [["gre-a", "Super League Grécia", 1, 59]]),
-  ...competitionRows("Grécia", "european", "cup", [["gre-cup", "Κύπελλο Ελλάδας", 1, 52], ["gre-super", "Greek Super Cup", 1, 43]]),
+  ...competitionRows("Grécia", "european", "cup", [["gre-cup", "Copa da Grécia", 1, 52], ["gre-super", "Greek Super Cup", 1, 43]]),
   ...competitionRows("Suíça", "european", "league", [["sui-a", "Super League Suíça", 1, 61]]),
   ...competitionRows("Suíça", "european", "cup", [["sui-cup", "Schweizer Cup", 1, 53]]),
   ...competitionRows("Áustria", "european", "league", [["aut-a", "Bundesliga Áustria", 1, 60]]),
@@ -104,8 +104,8 @@ const expandedCompetitions: CompetitionRow[] = [
   ...competitionRows("América do Norte", "calendar", "cup", [["leagues-cup", "Leagues Cup", 1, 55]]),
   ...competitionRows("Estados Unidos", "calendar", "cup", [["usa-open", "Lamar Hunt U.S. Open Cup", 1, 52]]),
   ...competitionRows("Ásia", "calendar", "continental", [["afc-cl", "AFC Champions League Elite", 1, 75]]),
-  ...competitionRows("Arábia Saudita", "calendar", "cup", [["sau-cup", "كأس خادم الحرمين الشريفين", 1, 61], ["sau-super", "كأس السوبر السعودي", 1, 51]]),
-  ...competitionRows("Japão", "calendar", "cup", [["jpn-cup", "天皇杯", 1, 60], ["jpn-super", "FUJIFILM SUPER CUP", 1, 49]]),
+  ...competitionRows("Arábia Saudita", "calendar", "cup", [["sau-cup", "Copa do Rei Saudita", 1, 61], ["sau-super", "Supercopa Saudita", 1, 51]]),
+  ...competitionRows("Japão", "calendar", "cup", [["jpn-cup", "Copa do Imperador", 1, 60], ["jpn-super", "FUJIFILM SUPER CUP", 1, 49]]),
   ...competitionRows("Austrália", "calendar", "cup", [["aus-cup", "Australia Cup", 1, 50]]),
 ];
 

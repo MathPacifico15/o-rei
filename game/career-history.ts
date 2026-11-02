@@ -11,8 +11,13 @@ export function careerStints(history:SeasonResult[]):CareerStint[]{
  return result;
 }
 export function groupedTitles(titles:string[]){return Object.entries(titles.reduce<Record<string,number>>((r,t)=>({...r,[t]:(r[t]??0)+1}),{}));}
-export function negotiateOffer(state:CareerState,clubId:string,random:()=>number):{state:CareerState;message:string}{
- const offer=state.marketWindow?.offers.find(o=>o.clubId===clubId);if(!offer||state.negotiatedOffers?.includes(`${state.season}:${clubId}`))return {state,message:'Esta oferta não permite outra negociação.'};
- const accepted=random()<.65;
- return {state:{...state,negotiatedOffers:[...(state.negotiatedOffers??[]),`${state.season}:${clubId}`],marketWindow:{...state.marketWindow!,offers:accepted?state.marketWindow!.offers.map(o=>o.clubId===clubId?{...o,monthlySalary:Math.round(o.monthlySalary*1.12)}:o):state.marketWindow!.offers.filter(o=>o.clubId!==clubId)}},message:accepted?'Contraproposta aceita: salário aumentado em 12%. Você ainda precisa assinar.':'O clube retirou a proposta. As outras ofertas continuam disponíveis.'};
+export function negotiateOffer(state:CareerState,clubId:string,random:()=>number,priority:'salary'|'role'|'duration'='salary'):{state:CareerState;message:string}{
+ const key=`${state.season}:${state.marketWindow?.kind??'transfer'}:${clubId}`;
+ const offer=state.marketWindow?.offers.find(o=>o.clubId===clubId);if(!offer||state.negotiatedOffers?.includes(key)||state.negotiatedOffers?.includes(`${state.season}:${clubId}`))return {state,message:'Esta oferta não permite outra negociação.'};
+ const roll=random(), accepted=roll<.55, withdrawn=roll>=.85;
+ const roles=['promessa','rotacao','titular','estrela'] as const;
+ const role=roles[Math.min(roles.length-1,roles.indexOf(offer.role)+1)];
+ const changed=priority==='salary'?{...offer,monthlySalary:Math.round(offer.monthlySalary*1.12)}:priority==='duration'?{...offer,seasons:Math.min(5,offer.seasons+1)}:{...offer,role,expectedMinutes:role==='estrela'?86:role==='titular'?72:role==='rotacao'?48:28};
+ const offers=withdrawn?state.marketWindow!.offers.filter(o=>o.clubId!==clubId):state.marketWindow!.offers.map(o=>o.clubId===clubId&&accepted?changed:o);
+ return {state:{...state,negotiatedOffers:[...(state.negotiatedOffers??[]),key],marketWindow:{...state.marketWindow!,offers}},message:accepted?'Contraproposta aceita. Confira os novos termos antes de assinar.':withdrawn?'O clube retirou a proposta. As outras ofertas continuam disponíveis.':'O clube recusou a contraproposta, mas manteve a oferta original.'};
 }

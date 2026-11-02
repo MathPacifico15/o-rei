@@ -167,6 +167,7 @@ try {
   assert(worldCampaign.groups.every((group) => group.participantIds.length === 4), "Grupo da Copa fora do formato de quatro seleções");
   assert(new Set(worldCampaign.matches.map((match) => match.opponentId)).size === worldCampaign.matches.length, "Copa do Mundo repetiu adversário na mesma campanha");
   assert(worldCampaign.matches.slice(-2).every((match) => worldCupEligibilityFor(match.opponentName) === "group1"), "Semifinal/final da Copa não usaram seleções do Grupo 1");
+  assert(worldCampaign.matches.slice(-3).every((match) => !["Egito","Senegal","Eslovênia"].includes(match.opponentName)), "Quartas em diante não devem sortear seleções fora da elite definida");
   assert(worldCupQualificationChance("Brunei") === .02, "Brunei deveria manter 2% de chance no Grupo 4");
   const under82 = makeState(flamengo); under82.player.attributes = Object.fromEntries(Object.keys(under82.player.attributes).map((key) => [key, 81]));
   assert(!simulateSeason(under82).result.campaigns?.some((campaign) => campaign.competitionId === "wc"), "OVR 81 não pode disputar a Copa principal");

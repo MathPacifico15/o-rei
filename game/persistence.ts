@@ -5,11 +5,14 @@ import { z } from 'zod';
 const finite=z.number().finite();
 const eventSchema=z.object({id:z.string(),title:z.string(),copy:z.string(),choices:z.array(z.object({label:z.string()}).passthrough()).min(1)}).passthrough();
 const seasonSchema=z.object({season:finite,games:finite,goals:finite,assists:finite,cleanSheets:finite,events:z.array(eventSchema)}).passthrough();
+const offerSchema=z.object({clubId:z.string(),monthlySalary:finite.nonnegative(),seasons:finite,role:z.enum(['promessa','rotacao','titular','estrela']),expectedMinutes:finite,idolatryChange:finite,kind:z.enum(['transfer','loan']).optional()}).passthrough();
+const marketSchema=z.object({season:finite,offers:z.array(offerSchema),renewal:offerSchema,phase:z.enum(['preference','offers']).optional(),kind:z.enum(['transfer','loan']).optional(),preferredCountry:z.string().optional()}).passthrough();
 const careerSchema=z.object({
  seed:finite,season:finite,balance:finite,history:z.array(seasonSchema),
  playStyle:z.enum(['skill','luck','mixed']).optional(),
  miniGameHistory:z.array(z.object({season:finite,decisionId:z.string(),gameId:z.string()})).optional(),
  cardRedraws:z.object({used:z.number().int().min(0).max(3),lastSeason:finite,nonce:z.number().int().min(0)}).optional(),
+ marketWindow:marketSchema.optional(),marketAfterLoan:marketSchema.optional(),pendingTransfer:offerSchema.optional(),
  player:z.object({id:z.string(),name:z.string(),clubId:z.string(),nationality:z.string(),age:finite,form:finite,fame:finite,salary:finite,marketValue:finite,games:finite,goals:finite,assists:finite,cleanSheets:finite,saves:finite,injuries:finite,titles:z.array(z.string()),awards:z.array(z.string()),judasAt:z.array(z.string()),clubIdolatry:z.record(z.string(),finite)}).passthrough(),
  contract:z.object({clubId:z.string(),monthlySalary:finite,seasonsRemaining:finite,role:z.enum(['promessa','rotacao','titular','estrela']),expectedMinutes:finite}).passthrough(),
  shop:z.object({ownedPermanent:z.array(z.string()),activeSeasonal:z.array(z.string()),freeUses:z.array(z.string())}).passthrough(),

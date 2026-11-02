@@ -37,3 +37,16 @@ Nenhuma autenticação, endpoint privado, código-fonte do alvo, ranking ou meca
 - O REI usa uma fórmula original mensal, dependente de habilidade e orçamento, e preços próprios. Não se afirma equivalência matemática à referência.
 - Decisão de calibração do O REI: novos contratos iniciais partem de US$ 4 mil mensais (US$ 48 mil em 12 meses sem prêmios), compatível em ordem de grandeza com o cenário observado; uma única amostra não demonstra uma regra geral do jogo de referência. Saves antigos mantêm seus contratos.
 - Validação local: REA `ev_a09df088c08254c3da6db7868ee22016cefa60d2b2cecddbf50594691d50986e` confirmou a criação de carreira e exibição de US$ 4 mil mensais. Um teste separado de navegador percorreu 26 temporadas até a aposentadoria, com duas transferências, recarga do save, compra e exportação da retrospectiva; a conferência do saldo com o extrato passou. `scripts/browser-worlds.mjs` jogou 8 partidas de Copa e 7 de Super Mundial até a celebração, sem repetição do tutorial. Estas evidências são do O REI local, não da referência.
+
+## Mercado: investigação adicional em 2 de novembro
+
+- O guia público descreve propostas, renovação, negociação com risco e pedidos de saída. É descrição pública, não uma negociação executada nesta investigação; o conteúdo e a disponibilidade podem mudar.
+- REA `ev_16b72c64765026797f72f83394d03c2d3425522043639ed3b546452b1d903c4b` analisou estaticamente 73 scripts recebidos na página pública inicial. Essa análise não demonstra que o código de cálculo do mercado foi localizado nem executado. As fórmulas de oferta e salário e a lógica de servidor permanecem desconhecidas.
+- O REI: até cinco ofertas distintas e renovação; salário, papel, país, liga, duração e previsão de jogos são exibidos; a negociação existente tem regras originais e risco informado. A renovação usa arredondamento que mantém salários positivos. Saves e ofertas já geradas não são modificados retroativamente.
+- Limitações pendentes: não foi observada uma negociação real na referência, nem foram estabelecidas suas fórmulas de elegibilidade e salário; portanto, não se declara clonagem fiel desses sistemas.
+
+### Repaginação original do mercado do O REI
+
+- A partir desta versão, faixas de OVR orientam a força dos interessados sem excluir países inteiros. O sorteio usa nível atual, histórico limitado, forma recente, idade, reputação e orçamento do clube, e favorece diversidade de países. São geradas cinco ou seis ofertas quando há candidatos suficientes.
+- Antes das propostas, o jogador pode priorizar um país. Negocia uma vez por oferta escolhendo salário, papel ou duração; aceite, recusa e retirada seguem probabilidades próprias do O REI. Empréstimos são solicitados pelo jogador e terminam com retorno ao contrato de origem.
+- Essas regras são decisões originais, não novas observações sobre a referência. Saves antigos e propostas já abertas permanecem válidos.

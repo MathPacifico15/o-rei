@@ -263,8 +263,15 @@ h1, h2, p { margin-top: 0; } h1, h2 { font-family: Georgia, 'Times New Roman', s
 .shop-item button { border:1px solid #4b7d54; border-radius:3px; color:#3bf06b; background:#102615; font-size:8px; font-weight:900; padding:5px; white-space:nowrap; }.shop-item button:hover { background:#1a5530; }
 
 .market-inline { border-color:#3d8050; border-left-color:#38df62; }
+.market-inline label { display:block; margin:10px 0 5px; color:#d5e3d4; font-size:12px; font-weight:700; }
+.market-inline select { display:block; width:min(100%,340px); min-height:42px; margin-bottom:10px; padding:8px; border:1px solid #63846a; border-radius:4px; color:#f1f6ef; background:#16271a; }
+.market-negotiations { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+.inline-offers .market-negotiations button { min-height:36px; }
+.inline-offers button:disabled { opacity:.48; cursor:not-allowed; }
+.market-inline :focus-visible { outline:3px solid #ffe08a; outline-offset:2px; }
 .inline-offers { display:grid; gap:6px; margin-top:10px; }
 .inline-offers article { display:grid; grid-template-columns:28px 1fr auto; gap:8px; align-items:center; padding:8px; border:1px solid #38503b; background:#101b12; }.inline-offers .crest { width:25px; height:30px; }.inline-offers b,.inline-offers span,.inline-offers strong,.inline-offers small { display:block; }.inline-offers b { color:#eef2ea; font-size:11px; }.inline-offers span,.inline-offers small { margin-top:2px; color:#a7b2a8; font-size:8px; }.inline-offers strong { margin-top:3px; color:#52e77a; font-size:10px; }.inline-offers button,.market-renewal { border:1px solid #48a95c; color:#53ec7b; background:#102b16; font-size:8px; font-weight:900; padding:7px; }.market-renewal { width:100%; margin-top:9px; background:#1a3b20; }
+@media (max-width:480px) { .inline-offers article { grid-template-columns:28px minmax(0,1fr); } .inline-offers article > button { grid-column:2; min-height:40px; } }
 
 /* Celebração de títulos e acessos */
 .celebration-shell { position:relative; display:grid; place-items:center; overflow:hidden; background:radial-gradient(circle at 50% 42%,#4b3711 0,#151006 36%,#040504 80%); }

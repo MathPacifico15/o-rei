@@ -121,11 +121,11 @@ export function mazeRoute(seed: number, round = 1, size = 5) {
   let start = edgeCells[Math.floor(random() * edgeCells.length)], goal = edgeCells[Math.floor(random() * edgeCells.length)];
   const minDistance = size >= 8 ? 11 : size === 7 ? 9 : 6;
   // Bola e gol só surgem nas bordas (incluindo cantos), sempre bem separados.
-  while (Math.abs(Math.floor(goal / size) - Math.floor(start / size)) + Math.abs(goal % size - start % size) < minDistance) {
+  while (Math.abs(Math.floor(goal / size) - Math.floor(start / size)) + Math.abs(goal % size - start % size) < minDistance || Math.abs(Math.floor(goal / size)-Math.floor(start / size))<2 || Math.abs(goal%size-start%size)<2) {
     start = edgeCells[Math.floor(random() * edgeCells.length)]; goal = edgeCells[Math.floor(random() * edgeCells.length)];
   }
   const route = [start];
-  let current = start;
+  let current = start, previousAxis = -1, straight = 0;
   while (current !== goal) {
     const row = Math.floor(current / size), column = current % size;
     const goalRow = Math.floor(goal / size), goalColumn = goal % size;
@@ -133,7 +133,10 @@ export function mazeRoute(seed: number, round = 1, size = 5) {
       ...(row !== goalRow ? [current + (row < goalRow ? size : -size)] : []),
       ...(column !== goalColumn ? [current + (column < goalColumn ? 1 : -1)] : []),
     ], random);
-    current = candidates[0]; route.push(current);
+    let next=candidates[0];
+    if(candidates.length>1 && straight>=2) next=candidates.find(cell=>(Math.abs(cell-current)===size?0:1)!==previousAxis)??next;
+    const axis=Math.abs(next-current)===size?0:1; straight=axis===previousAxis?straight+1:1;previousAxis=axis;
+    current = next; route.push(current);
   }
   return route;
 }
@@ -187,7 +190,7 @@ export function revealRound(s: Round): Round { return s.done || s.mode !== 'code
 export function markerAt(s: Round) {
   if (s.mode === 'goldZone') {
     const stage = Math.max(1, s.challenge?.campaignRound ?? 1);
-    const speed = .035 + Math.min(7, stage - 1) * .008;
+    const speed = .055 + Math.min(7, stage - 1) * .011;
     const x = (s.elapsed * speed) % 200, sweep = x <= 100 ? x : 200 - x;
     const startsRight = rng(s.seed + s.round * 271 + 17)() >= .5;
     return startsRight ? 100 - sweep : sweep;
