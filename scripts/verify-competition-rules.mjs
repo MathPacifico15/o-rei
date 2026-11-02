@@ -8,7 +8,7 @@ const vite = await createServer({ root: process.cwd(), configFile: false, server
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
-  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs, protectedFromRelegation, receivesSurvivalDecision } = await vite.ssrLoadModule("/game/engine.ts");
+  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs, protectedFromRelegation, receivesSurvivalDecision, cupEligible } = await vite.ssrLoadModule("/game/engine.ts");
   const { resolveWorldMatch, rescueForDecision, worldMatchDifficulty } = await vite.ssrLoadModule("/game/world-tournaments.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
@@ -33,6 +33,16 @@ try {
     for (const id of rule.divisions) assert(competition(id).country === country && competition(id).kind === "league", `${country}: divisão inválida ${id}`);
     if (rule.primaryCup) assert(competition(rule.primaryCup).country === country, `${country}: copa principal inválida`);
     for (const id of [...(rule.secondaryCups ?? []), ...(rule.supercups ?? [])]) assert(competition(id).country === country, `${country}: competição inválida ${id}`);
+  }
+  // Varredura completa dos clubes e competições cadastradas: nenhum clube
+  // estrangeiro entra em estadual ou copa nacional, nem divisão inferior na copa principal.
+  for (const club of clubs) for (const comp of competitions) {
+    if(!cupEligible(club,comp.id)) continue;
+    if(comp.kind==='state') assert(club.country==='Brasil' && club.competitionIds?.includes(comp.id), `${club.name}: estadual incorreto ${comp.name}`);
+    const rule=COUNTRY_COMPETITION_RULES[comp.country];
+    if(comp.kind==='cup' && comp.id!=='copa-verde' && rule && (rule.primaryCup===comp.id || (rule.secondaryCups??[]).includes(comp.id))) assert(club.country===comp.country && club.leagueId===rule.topLeague, `${club.name}: copa nacional incorreta ${comp.name}`);
+    if(['ucl','uel','uecl'].includes(comp.id)) assert(COUNTRY_COMPETITION_RULES[club.country]?.continent==='europe', `${club.name}: competição europeia indevida`);
+    if(['lib','sula'].includes(comp.id)) assert(COUNTRY_COMPETITION_RULES[club.country]?.continent==='southAmerica', `${club.name}: competição sul-americana indevida`);
   }
 
   // Pirâmides: as movimentações são calculadas de uma vez e não podem alterar
@@ -164,6 +174,15 @@ try {
   assert(simulateSeason(exact82).result.campaigns?.some((campaign) => campaign.competitionId === "wc"), "OVR 82 e seleção classificada devem liberar a Copa");
 
   const groupFinal = brazilWorldCup.result.finals.find((final) => final.competitionId === "wc");
+  let completeWorld=worldCampaign;
+  for(const final of brazilWorldCup.result.finals.filter(item=>item.competitionId==='wc')) {
+    const outcome=resolveWorldMatch(completeWorld,final,true); completeWorld=outcome.campaign;
+    assert(outcome.continueCampaign || outcome.champion, `Copa interrompida após vitória na fase ${final.campaignMatchIndex}`);
+  }
+  assert(completeWorld.status==='champion' && completeWorld.matches.every(match=>match.result==='won'), 'Oito vitórias devem concluir a Copa do Mundo');
+  for(const name of ['Bayern Munich','Hamburg SV','Internazionale','FC Porto','Ajax Amsterdam','Feyenoord Rotterdam','Estudiantes de La Plata','Club Olimpia']) {
+    const club=clubs.find(item=>item.name===name);assert(club && protectedFromRelegation(club), `${name}: campeão do catálogo sem proteção`);
+  }
   const rescuedGroup = resolveWorldMatch(worldCampaign, { ...groupFinal, rescueAvailable: true }, false);
   assert(rescuedGroup.outcome === "drawn", "Derrota resgatada nos grupos precisa virar empate");
   const lostGroup = resolveWorldMatch(worldCampaign, { ...groupFinal, rescueAvailable: false }, false);

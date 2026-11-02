@@ -405,7 +405,7 @@ function countryCompetitionRules(country: string) {
     supercups: (rule.supercups ?? []).map(byId).filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)),
   };
 }
-function cupEligible(club: Club, competitionId: string, state?: CareerState) {
+export function cupEligible(club: Club, competitionId: string, state?: CareerState) {
   const domestic = competitions.find((entry) => entry.id === competitionId);
   if (!domestic) return false;
   // Copa Verde é regional: Norte, Centro-Oeste e Espírito Santo. Ela não é
@@ -913,8 +913,8 @@ type PlayerDivisionOutcome = "stayed" | "promoted" | "relegated";
 const protectedChampions: Record<string, string[]> = {
   Brasil: ["Santos", "Grêmio", "Corinthians", "São Paulo", "Palmeiras", "Flamengo", "Fluminense", "Botafogo", "Atlético-MG", "Cruzeiro", "Internacional", "Vasco da Gama"],
   Espanha: ["Real Madrid", "Barcelona"], Inglaterra: ["Liverpool", "Manchester United", "Manchester City", "Chelsea", "Nottingham Forest", "Aston Villa"],
-  Alemanha: ["Bayern München", "Borussia Dortmund", "Hamburgo", "Hamburger SV"], Itália: ["AC Milan", "Milan", "Inter", "Inter de Milão", "Juventus"], França: ["Olympique de Marseille", "Marseille", "Paris Saint-Germain"], Portugal: ["Porto", "Benfica"], Holanda: ["Ajax", "Feyenoord", "PSV", "PSV Eindhoven"], Escócia: ["Celtic"], Romênia: ["Steaua București", "Steaua Bucharest", "FCSB"], Sérvia: ["Estrela Vermelha", "Red Star Belgrade", "Crvena Zvezda"],
-  Argentina: ["Independiente", "Boca Juniors", "River Plate", "Estudiantes", "Racing", "Racing Club", "San Lorenzo", "Vélez Sarsfield", "Argentinos Juniors"], Uruguai: ["Peñarol", "Nacional"], Paraguai: ["Olimpia"], Colômbia: ["Atlético Nacional", "Once Caldas"], Chile: ["Colo-Colo", "Colo Colo"], Equador: ["LDU Quito", "Liga de Quito"]
+  Alemanha: ["Bayern München", "Bayern Munich", "Borussia Dortmund", "Hamburgo", "Hamburger SV", "Hamburg SV"], Itália: ["AC Milan", "Milan", "Inter", "Internazionale", "Inter de Milão", "Juventus"], França: ["Olympique de Marseille", "Marseille", "Paris Saint-Germain"], Portugal: ["Porto", "FC Porto", "Benfica"], Holanda: ["Ajax", "Ajax Amsterdam", "Feyenoord", "Feyenoord Rotterdam", "PSV", "PSV Eindhoven"], Escócia: ["Celtic"], Romênia: ["Steaua București", "Steaua Bucharest", "FCSB"], Sérvia: ["Estrela Vermelha", "Red Star Belgrade", "Crvena Zvezda"],
+  Argentina: ["Independiente", "Boca Juniors", "River Plate", "Estudiantes", "Estudiantes de La Plata", "Racing", "Racing Club", "San Lorenzo", "Vélez Sarsfield", "Argentinos Juniors"], Uruguai: ["Peñarol", "Nacional"], Paraguai: ["Olimpia", "Club Olimpia"], Colômbia: ["Atlético Nacional", "Once Caldas"], Chile: ["Colo-Colo", "Colo Colo"], Equador: ["LDU Quito", "Liga de Quito"]
 };
 export function protectedFromRelegation(club: Club) { return (protectedChampions[club.country] ?? []).includes(club.name); }
 export function receivesSurvivalDecision(club: Club, inTopDivision: boolean, inDropZone: boolean, roll: number) {
@@ -1195,7 +1195,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
       : national?.reachedFinal && national.competitionId
       ? { competitionId: national.competitionId, competitionName: national.competition, opponentClubId: national.opponentId, opponentClubName: national.opponentName, stakes: "cup", phase: "title", scope: "national" }
       : generatedCampaigns.finals[0];
-  const contract=activeContract ?? {clubId:player.clubId,monthlySalary:16_700,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
+  const contract=activeContract ?? {clubId:player.clubId,monthlySalary:4_000,seasonsRemaining:3,role:"promessa" as const,expectedMinutes:30};
   const monthlySalary=contract.monthlySalary*1;
   const prize=(leagueTitle?league?.prestige??0:0)*50_000;
   const balance=(state.balance??0)+monthlySalary*12+prize;
