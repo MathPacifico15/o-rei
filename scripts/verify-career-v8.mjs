@@ -46,7 +46,7 @@ try{
   check(persistence.decodeSave(JSON.stringify({version:8,career:state})).career.season===state.season,'career migration at every year');
  }
  check(engine.shouldRetire(state.player,state.seed),'career reaches retirement');
- const bought=economy.purchaseProduct(initial,'psicologo');check(bought.shop.ownedPermanent.includes('psicologo'),'psychologist permanent');check(bought.financialLedger[0].amount===-480000,'audit purchase');assert.throws(()=>economy.purchaseProduct(bought,'psicologo'));checks++;
+ const bought=economy.purchaseProduct({...initial,balance:10000000},'psicologo');check(bought.shop.ownedPermanent.includes('psicologo'),'psychologist permanent');check(bought.financialLedger[0].amount===-3840000,'audit purchase');assert.throws(()=>economy.purchaseProduct(bought,'psicologo'));checks++;
  const supplement=economy.purchaseProduct(initial,'suplementacao');const first=engine.simulateSeason(supplement).state;check(first.shop.activeSeasonal.includes('suplementacao'),'two-season item retained');check(!engine.simulateSeason(first).state.shop.activeSeasonal.includes('suplementacao'),'two-season item expires');
  const a=engine.simulateSeason(initial),b=engine.simulateSeason(bought);check(b.state.player.form>=a.state.player.form,'psychologist boosts form');
  const offer={clubId:clubs[1].id,monthlySalary:10000,seasons:2,role:'titular',expectedMinutes:70,idolatryChange:-2},market={...initial,marketWindow:{season:2026,offers:[offer],renewal:offer}};

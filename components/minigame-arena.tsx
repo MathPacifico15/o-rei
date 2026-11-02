@@ -134,7 +134,7 @@ export function MiniGameArena({game,seed:providedSeed,context='treino',difficult
   ticTacToe:'Conecte quatro peças em um tabuleiro 5×5. Você joga com X. No primeiro empate o rival começa um novo tabuleiro; no segundo, você vence.',
   cups:'A bola aparece sob um dos quatro copos. Acompanhe as trocas e escolha o copo que a esconde.',
   code:'São três etapas. Revele e memorize cinco números diferentes, depois digite a sequência. O tempo para observar diminui a cada etapa.',
-  pairs:'Memorize os oito pares no início. Vire duas cartas por vez; cinco erros encerram a tentativa.',
+  pairs:'Memorize os oito pares por 1,85 segundo. Vire duas cartas por vez; cinco erros encerram a tentativa.',
   maze:'Memorize a rota iluminada. Depois escolha cada casa do caminho, do início até o gol. Um erro encerra a tentativa.',
  };
  const tutorial=tutorials[game.mode]??game.tutorial;
@@ -145,7 +145,7 @@ export function MiniGameArena({game,seed:providedSeed,context='treino',difficult
    {phase==='tutorial'?<>
     <p>{game.description}</p><p>{tutorial}</p>
     <p>Toque ou clique para jogar. Use Tab e Enter nos botões, setas nos tabuleiros e Espaço para parar o marcador. Esc pausa.</p>
-    {(game.mode==='timing'||game.mode==='goldZone')&&challenge?.finishing!==undefined&&<p className="arena-attribute-note">{challenge.attributeLabel??"Finalização"} {challenge.finishing}: seus atributos influenciam a faixa de acerto desta decisão.</p>}
+    {game.mode==='timing'&&challenge?.finishing!==undefined&&<p className="arena-attribute-note">{challenge.attributeLabel??"Finalização"} {challenge.finishing}: seus atributos influenciam a faixa de acerto desta decisão.</p>}
     {game.mode==='cups'&&challenge?.speed!==undefined&&<p className="arena-attribute-note">Velocidade {challenge.speed}: atletas rápidos acompanham uma troca a menos a partir de 80.</p>}
     {isTraining?<label>Dificuldade <select value={difficulty} onChange={e=>setDifficulty(e.target.value as Difficulty)}><option value="standard">Normal</option><option value="hard">Difícil</option></select></label>:<p className="arena-context"><strong>Pressão da decisão:</strong> {difficultyLabel(difficulty)}. Ela é definida pelo adversário e pelo tamanho da competição.</p>}
     <button className="button button-primary" autoFocus onClick={start}>COMEÇAR</button>

@@ -28,3 +28,9 @@ Esta matriz é a revisão para a implementação do repositório original. Subst
 - IDs adicionais acima foram devolvidos pelo REA nesta conversa; quando não há JSON local da captura, não se alega que o arquivo existe.
 
 Nenhuma autenticação, endpoint privado, código-fonte do alvo, ranking ou mecanismo de servidor foi inspecionado. Cenários públicos usaram perfis temporários e cliques limitados. As capturas anteriores permanecem históricas, incluindo tentativas incompletas claramente identificadas no índice.
+
+## Investigação complementar — salários
+
+- REA `ev_71185fb481a850e860b92e428421b422b3c93ae61bd78d9bad2534692635246c`: abertura pública da página inicial em perfil temporário. Não apresenta uma fórmula salarial.
+- Tentativas de chegar à criação de carreira encontraram diálogos de novidades; não estabelecem a fórmula, valores ou progressão de salários. As fórmulas internas permanecem desconhecidas.
+- O REI usa uma fórmula original mensal, dependente de habilidade e orçamento, e preços próprios. Não se afirma equivalência matemática à referência.

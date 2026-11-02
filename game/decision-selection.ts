@@ -13,7 +13,7 @@ export function selectDecisionGame(options: Selection): MiniGameDefinition {
  const pool = minigames.filter(game => Boolean(game.exclusive) === Boolean(options.campaign) && (!game.positions || game.positions.includes(options.position)));
  const locked = pool.find(game => game.id === options.locked);
  if (locked) return locked;
- if (options.access) return minigames.find(game => game.id === 'marca-vermelha')!;
+ if (options.access && options.recent?.at(-1) !== 'marca-vermelha') return minigames.find(game => game.id === 'marca-vermelha')!;
  const style = options.style ?? 'mixed';
  let eligible = pool;
  if (!options.campaign) {
@@ -24,7 +24,11 @@ export function selectDecisionGame(options: Selection): MiniGameDefinition {
  const history = options.history ?? [], recent = options.recent ?? [];
  const thisSeason = new Set(history.filter(entry => entry.season === options.season).map(entry => entry.gameId));
  const ever = new Set(history.map(entry => entry.gameId));
- const tiers = [eligible.filter(game => !ever.has(game.id) && !recent.includes(game.id)), eligible.filter(game => !thisSeason.has(game.id)), eligible.filter(game => !recent.includes(game.id)), eligible.filter(game => game.id !== recent.at(-1)), eligible];
+ const nonRepeated = eligible.filter(game => game.id !== recent.at(-1));
+ const alternativePool = pool.filter(game => game.id !== recent.at(-1));
+ if (nonRepeated.length) eligible = nonRepeated;
+ else if (alternativePool.length) eligible = alternativePool;
+ const tiers = [eligible.filter(game => !ever.has(game.id) && !recent.includes(game.id)), eligible.filter(game => !thisSeason.has(game.id)), eligible.filter(game => !recent.includes(game.id)), eligible];
  const choices = tiers.find(tier => tier.length)!;
  return choices[Math.abs(options.seed) % choices.length];
 }

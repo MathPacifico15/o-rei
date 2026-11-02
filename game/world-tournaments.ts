@@ -47,9 +47,12 @@ function rankGroup(campaign: CampaignResult) {
     goalsFor: groupMatches.reduce((sum, match) => sum + (match.playerGoals ?? 0), 0),
     position: 0,
   };
-  return [row, ...rivals.filter((item) => item.name !== player)]
+  const ranked = [row, ...rivals.filter((item) => item.name !== player)]
     .sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor || tournamentRoll(`${campaign.id}:${a.name}`) - tournamentRoll(`${campaign.id}:${b.name}`))
     .map((item, index) => ({ ...item, position: index + 1 }));
+  // A primeira linha identifica o clube do jogador entre partidas. Conservar
+  // essa identidade evita trocar o jogador pelo líder ao recalcular a tabela.
+  return [ranked.find(item => item.name === player)!, ...ranked.filter(item => item.name !== player)];
 }
 
 /** Resolve somente campanhas mundiais. Nenhuma simulação posterior altera o minijogo. */
@@ -57,13 +60,6 @@ export function resolveWorldMatch(campaign: CampaignResult, final: CupFinal, won
   const index = final.campaignMatchIndex ?? 0;
   const group = final.worldStage === "group" || index < 3;
   const penalties = final.attempt === "penalties";
-  if (!won && !group && !penalties && final.rescueAvailable) {
-    const matches = campaign.matches.map((match, matchIndex) => matchIndex === index
-      ? { ...match, result: "drawn" as const, playerGoals: 1, opponentGoals: 1, penaltyShootout: "pending" as const }
-      : match);
-    return { campaign: { ...campaign, matches, phase: `${campaign.matches[index]?.phase ?? campaign.phase} · pênaltis` }, outcome: "penalties", continueCampaign: true, champion: false };
-  }
-
   const outcome: "won" | "drawn" | "lost" = won ? "won" : group && final.rescueAvailable ? "drawn" : "lost";
   const [playerGoals, opponentGoals] = scored(outcome, `${campaign.id}:${index}:${penalties ? "pen" : "normal"}`);
   const matches = campaign.matches.map((match, matchIndex) => matchIndex === index

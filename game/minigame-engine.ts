@@ -142,7 +142,7 @@ export function createRound(mode: Round['mode'], seed: number, difficulty: Diffi
   let board: number[] = [], sequence: number[] = [], swaps: number[][] = [];
   let target = n(4), preview = t.preview;
   if (mode === 'code') { sequence = shuffled([1, 2, 3, 4, 5, 6, 7, 8, 9], random).slice(0, 5); preview = [2000, 1300, 800][Math.min(2, Math.max(0, round - 1))]; }
-  if (mode === 'pairs') { board = shuffled([...Array(8).keys(), ...Array(8).keys()], random); preview = 1000; }
+  if (mode === 'pairs') { board = shuffled([...Array(8).keys(), ...Array(8).keys()], random); preview = 1850; }
   if (mode === 'puzzle') {
     board = [1, 2, 3, 4, 5, 6, 7, 8, 0]; let last = -1;
     // Curto e legível: dificuldade aumenta a leitura, não transforma em maratona.
@@ -292,7 +292,22 @@ export function actRound(s: Round, value: number): Round {
     next.board[value] = 1; if (wonLine(next.board, 1)) return end(next, true);
     const empty = next.board.flatMap((v, i) => v ? [] : [i]); if (!empty.length) return drawnBoard(next);
     let chosen = -1; for (const side of [2, 1]) { for (const i of empty) { const b = [...next.board]; b[i] = side; if (wonLine(b, side)) { chosen = i; break; } } if (chosen >= 0) break; }
-    if (chosen < 0) { const random = rng(s.seed + s.steps * 97); chosen = s.difficulty === 'easy' ? empty[Math.floor(random() * empty.length)] : empty.sort((a, b) => Math.abs(a - 12) - Math.abs(b - 12))[0]; }
+    if (chosen < 0) {
+      const scoreMove = (cell: number) => {
+        const board = [...next.board]; board[cell] = 2;
+        let score = 0;
+        for (let p=0;p<25;p++) for (const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
+          const line:number[]=[];
+          for(let k=0;k<4;k++){const row=Math.floor(p/5)+dr*k,col=p%5+dc*k;if(row<0||row>=5||col<0||col>=5)break;line.push(board[row*5+col]);}
+          if(line.length!==4)continue;
+          const own=line.filter(v=>v===2).length, rival=line.filter(v=>v===1).length;
+          if(!rival)score += [0,1,5,35,500][own];
+          if(!own)score -= [0,1,7,45,600][rival];
+        }
+        return score;
+      };
+      chosen = empty.sort((a,b) => scoreMove(b)-scoreMove(a) || Math.abs(a-12)-Math.abs(b-12))[0];
+    }
     next.board[chosen] = 2; if (wonLine(next.board, 2)) return end(next, false);
     return next.board.every(Boolean) ? drawnBoard(next) : next;
   }

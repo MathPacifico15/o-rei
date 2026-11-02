@@ -157,7 +157,7 @@ export default function Home() {
   }
   function lockCampaignGame(state: CareerState, final: SeasonResult["cupFinal"], seed: number) {
     if (!isWorldCampaign(final) || !final?.campaignId || state.campaignMiniGames?.[final.campaignId]) return state;
-    const previous = state.lastWorldMiniGames?.[final.competitionId as "wc" | "cwc"];
+    const previous = state.miniGameHistory?.filter(entry => minigames.some(game => game.id === entry.gameId && game.exclusive)).at(-1)?.gameId;
     const available = minigames.filter((game) => game.exclusive && game.id !== previous);
     const chosen = available[Math.abs(seed) % Math.max(1, available.length)] ?? gameForFinal(final, seed, state.campaignMiniGames, state.recentMiniGameIds);
     return { ...state, campaignMiniGames: { ...(state.campaignMiniGames ?? {}), [final.campaignId]: chosen.id } };
@@ -558,5 +558,5 @@ function MiniGame({game,result,onFinish,seed,player,playStyle}:{seed:number;play
   const challenge:ChallengeContext={attributeLabel:player.position==="GOL"?"Reflexo":"Finalização",finishing:player.position==="GOL"?player.attributes.reflexo:player.attributes.finalizacao,speed:player.attributes.velocidade,identity:playStyle,stakes:final?.stakes==="campaign"||(competitions.find(c=>c.id===final?.competitionId)?.prestige??0)>=85?"high":"normal",campaignRound:(final?.campaignMatchIndex??0)+1};
   const homeClub=clubs.find(club=>club.id===result?.clubId);
   const opponent=clubs.find(club=>club.id===final?.opponentClubId);
-  return <>{final&&result&&!isWorldDecision(result)&&<header className="match-briefing"><small>EM CAMPO · {result.season}</small><h3>{final.competitionName}</h3><div>{final.scope!=='national'&&homeClub&&<><ClubCrest club={homeClub} small/><b>{homeClub.name}</b><span>vs</span></>}{opponent&&<ClubCrest club={opponent} small/>}<b>{final.opponentClubName}</b></div></header>}<MiniGameArena game={game} difficulty={difficulty} challenge={challenge} seed={seed+(result?.season??2026)*101+(result?.cupFinal?.campaignMatchIndex??0)+(final?.attempt==='penalties'?977:0)} context={decisionAttemptKey(seed,result?.season??2026,final)} onFinish={r=>onFinish(r.won)}/></>;
+  return <>{final&&result&&!isWorldDecision(result)&&<header className="match-briefing"><small>EM CAMPO · {result.season}</small><h3>{final.competitionName}</h3><div>{final.scope!=='national'&&homeClub&&<><ClubCrest club={homeClub} small/><b>{homeClub.name}</b><span>vs</span></>}{opponent&&<ClubCrest club={opponent} small/>}<b>{final.opponentClubName}</b></div></header>}<MiniGameArena game={game} difficulty={difficulty} challenge={challenge} seed={seed+(result?.season??2026)*101+(result?.cupFinal?.campaignMatchIndex??0)+(final?.attempt==='penalties'?977:0)} context={decisionAttemptKey(seed,result?.season??2026,final)} autoStart={final?.stakes==='campaign'&&(final.campaignMatchIndex??0)>0} onFinish={r=>onFinish(r.won)}/></>;
 }

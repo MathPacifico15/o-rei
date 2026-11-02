@@ -8,7 +8,7 @@ const vite = await createServer({ root: process.cwd(), configFile: false, server
 try {
   const { clubs, competitions } = await vite.ssrLoadModule("/game/catalog.ts");
   const { COUNTRY_COMPETITION_RULES, qualifiesForWorldCup, worldCupEligibilityFor, worldCupMiniGameDifficulty, worldCupParticipants, worldCupQualificationChance } = await vite.ssrLoadModule("/game/competition-rules.ts");
-  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs } = await vite.ssrLoadModule("/game/engine.ts");
+  const { applyAutomaticSeasonEvolution, applyFinalConsequence, baseAttributes, computeOvr, simulateSeason, superMundialEligibleClubs, protectedFromRelegation, receivesSurvivalDecision } = await vite.ssrLoadModule("/game/engine.ts");
   const { resolveWorldMatch, rescueForDecision, worldMatchDifficulty } = await vite.ssrLoadModule("/game/world-tournaments.ts");
   const competition = (id) => {
     const result = competitions.find((entry) => entry.id === id);
@@ -76,17 +76,7 @@ try {
   const weakTable=weakTopDivision.state.leagueTables["bra-a"];
   const weakRow=weakTable.entries.find(row=>row.clubId===flamengo.id);
   const shouldDrop=weakRow.position>weakTable.entries.length-weakTable.relegationPlaces;
-  if (shouldDrop) {
-    const survivalFinal=weakTopDivision.result.finals?.find(f=>f.stakes==="relegation");
-    assert(survivalFinal, "Zona de rebaixamento da Série A deve abrir final de permanência");
-    assert(weakTopDivision.state.leagueAssignments[flamengo.id]==="bra-a", "O clube fica na Série A até resolver a permanência");
-    const saved=applyFinalConsequence(weakTopDivision.state,survivalFinal,true);
-    const relegated=applyFinalConsequence(weakTopDivision.state,survivalFinal,false);
-    assert(saved.leagueAssignments[flamengo.id]==="bra-a", "Vitória na permanência mantém o clube na Série A");
-    assert(relegated.leagueAssignments[flamengo.id]==="bra-b", "Derrota na permanência rebaixa apenas uma divisão");
-    assertStablePyramid(weakTopDivisionState,saved,"Brasil","permanência vencida");
-    assertStablePyramid(weakTopDivisionState,relegated,"Brasil","permanência perdida");
-  } else assert(weakTopDivision.state.leagueAssignments[flamengo.id]==="bra-a", "Fora da zona de queda, o clube permanece na Série A");
+  assert(!weakTopDivision.result.finals?.some(f=>f.stakes==="relegation") && weakTopDivision.state.leagueAssignments[flamengo.id]==="bra-a", "Campeão continental deve permanecer na Série A mesmo na zona de queda");
   const serieA = simulateSeason(makeState(flamengo));
   assert(serieA.result.campaigns?.some((campaign) => campaign.competitionId === "copa-br"), "Série A não entrou na Copa do Brasil");
   assert(!serieA.result.campaigns?.some((campaign) => campaign.competitionId === "bra-super"), "Supercopa liberada sem título anterior");
@@ -98,8 +88,33 @@ try {
   assert(supercupSeason.result.finals?.some((final) => final.competitionId === "bra-super"), "Final da Supercopa não foi disponibilizada para minigame");
   const santos = clubs.find((club) => club.name === "Santos");
   assert(santos, "Santos não encontrado");
+  const laguna = clubs.find((club) => club.name === "Santos Laguna" && club.country === "México") ?? { ...santos, name: "Santos Laguna", country: "México" };
+  assert(protectedFromRelegation(santos) && !receivesSurvivalDecision(santos,true,true,0), "Campeão continental não pode receber decisão de queda");
+  assert(laguna && !protectedFromRelegation(laguna) && receivesSurvivalDecision(laguna,true,true,.349) && !receivesSurvivalDecision(laguna,true,true,.35), "Santos Laguna é independente do Santos e usa limite de 35%");
   const santosSeason = simulateSeason(makeState(santos));
   assert(!santosSeason.result.campaigns?.some((campaign) => campaign.competitionId === "copa-verde"), "Santos entrou indevidamente na Copa Verde");
+  for (const name of ["Santos", "Liverpool", "Real Madrid", "Barcelona"]) {
+    const club=clubs.find(item=>item.name===name); if(!club)continue;
+    for(let seed=1;seed<=5;seed++) {
+      const sample=makeState(club); sample.seed=seed;
+      const {result}=simulateSeason(sample);
+      for(const campaign of result.campaigns??[]) {
+        for(const match of campaign.matches??[]) {
+          const rival=clubs.find(item=>item.id===match.opponentId);
+          if(!rival || campaign.category==='national' || campaign.category==='world')continue;
+          assert(rival.id!==club.id, `${club.name} enfrentou a si mesmo em ${campaign.competitionName}`);
+          if(campaign.category==='state')assert(rival.country==='Brasil' && rival.competitionIds?.includes(campaign.competitionId), `${rival.name} não pertence ao estadual`);
+          if(campaign.category==='cup')assert(rival.country===club.country && rival.leagueId===COUNTRY_COMPETITION_RULES[club.country]?.topLeague, `${rival.name} não pertence à elite da copa nacional`);
+        }
+      }
+    }
+  }
+  for(const id of ['ucl','uel','uecl']) {
+    const club=clubs.find(item=>item.name==='Liverpool');
+    const sample=makeState(club); sample.campaignQualifications={[club.id]:[{competitionId:id,source:'teste de classificação'}]};
+    const campaign=simulateSeason(sample).result.campaigns?.find(item=>item.competitionId===id);
+    assert(campaign, `Vaga europeia ${id} não gerou campanha`);
+  }
   const goias = clubs.find((club) => club.name === "Goiás");
   assert(goias, "Goiás não encontrado");
   const goiasSeason = simulateSeason(makeState(goias));
@@ -148,10 +163,8 @@ try {
   const lostGroup = resolveWorldMatch(worldCampaign, { ...groupFinal, rescueAvailable: false }, false);
   assert(lostGroup.outcome === "lost", "Derrota sem resgate nos grupos precisa continuar derrota");
   const knockoutFinal = brazilWorldCup.result.finals.find((final) => final.competitionId === "wc" && final.campaignMatchIndex === 3);
-  const penalties = resolveWorldMatch(worldCampaign, { ...knockoutFinal, rescueAvailable: true }, false);
-  assert(penalties.outcome === "penalties", "Derrota resgatada no mata-mata precisa abrir pênaltis");
-  const eliminated = resolveWorldMatch(penalties.campaign, { ...knockoutFinal, attempt: "penalties", rescueAvailable: false }, false);
-  assert(eliminated.outcome === "lost" && eliminated.campaign.status === "eliminated", "Derrota nos pênaltis precisa ser definitiva");
+  const eliminated = resolveWorldMatch(worldCampaign, { ...knockoutFinal, rescueAvailable: true }, false);
+  assert(eliminated.outcome === "lost" && eliminated.campaign.status === "eliminated" && !eliminated.continueCampaign, "Derrota no mata-mata precisa eliminar imediatamente");
   assert(rescueForDecision("2026:wc", 3) === rescueForDecision("2026:wc", 3), "Sorteio de resgate não é determinístico");
   assert(worldMatchDifficulty("easy", 0) === "easy" && worldMatchDifficulty("easy", 7) === "hard" && worldMatchDifficulty("standard", 3, true) === "hard", "Pressão dos Mundiais não cresce por fase/pênaltis");
 

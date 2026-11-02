@@ -18,7 +18,7 @@ export const shopProducts:ShopProduct[] = [
  {id:'ilha',name:'Refúgio particular',icon:'🏝',description:'+4 de fama na aquisição.',price:1400000,category:'Patrimônio'},
  {id:'bairro',name:'Campo do bairro',icon:'⚽',description:'+5 de idolatria na aquisição e +1 por temporada no clube atual.',price:750000,category:'Patrimônio'},
  {id:'academia',name:'Centro de formação',icon:'🏫',description:'+15 de fama na aquisição e valorização de 20% nas propostas.',price:1800000,category:'Patrimônio'},
-];
+].map(item => ({ ...item, price: item.price * (item.category === 'Patrimônio' ? 20 : item.category === 'Equipe' ? 8 : 3) })) as ShopProduct[];
 export function purchaseProduct(state:CareerState,id:ShopItemId):CareerState {
  const item=shopProducts.find(x=>x.id===id);if(!item)throw Error('Produto inexistente.');
  if(state.shop.ownedPermanent.includes(id)||state.shop.activeSeasonal.includes(id))throw Error('Este benefício já está ativo.');

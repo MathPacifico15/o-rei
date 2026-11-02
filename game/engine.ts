@@ -414,7 +414,7 @@ function cupEligible(club: Club, competitionId: string, state?: CareerState) {
   if (competitionId === "copa-verde") return (club.competitionIds ?? []).some((id) => COPA_VERDE_STATE_SET.has(id));
   // Each Brazilian club has at most one state championship in its catalogue
   // membership. The state title is seasonal, never a separate starting league.
-  if (domestic.kind === "state") return club.competitionIds?.includes(competitionId) === true;
+  if (domestic.kind === "state") return club.country === "Brasil" && club.competitionIds?.includes(competitionId) === true;
   const rules = countryCompetitionRules(domestic.country);
   // Copas nacionais só usam clubes que estejam atualmente na primeira divisão.
   // A competição de cada país vem do regulamento explícito, não da força do clube.
@@ -649,7 +649,7 @@ function campaignOpponent(state: CareerState, club: Club, competitionId: string,
   const selectable = pool.length ? pool : eligible;
   const credible = selectable.filter((candidate) => candidate.strength >= Math.max(45, club.strength - 18));
   const selected = (credible.length ? credible : selectable)[Math.floor(random() * Math.max(1, credible.length ? credible.length : selectable.length))];
-  return selected ?? clubs.find((candidate) => candidate.id !== club.id) ?? club;
+  return selected ?? clubs.find((candidate) => candidate.id !== club.id && cupEligible(candidate, competitionId, state)) ?? club;
 }
 function simulatedCampaignMatch(state: CareerState, club: Club, competitionId: string, phase: string, ovr: number, form: number, random: () => number, usedOpponentIds: ReadonlySet<string> = new Set()): CampaignMatch {
   const opponent = campaignOpponent(state, club, competitionId, random, usedOpponentIds);
@@ -689,7 +689,10 @@ function supercupOpponent(state: CareerState, club: Club, competitionId: string,
     if (rival && competitions.find((entry) => entry.id === currentLeagueId(state, rival))?.tier === 1) return rival;
   }
   const { topLeague, primaryCup, supercups } = countryCompetitionRules(competition.country);
-  if (!supercups.some((supercup) => supercup.id === competitionId)) return club;
+  if (!supercups.some((supercup) => supercup.id === competitionId)) {
+    const continent = competitionId === "uefa-super" ? "europe" : "southAmerica";
+    return clubs.filter((candidate) => candidate.id !== club.id && competitionRuleFor(candidate.country)?.continent === continent && currentLeagueId(state, candidate) === competitionRuleFor(candidate.country)?.topLeague).sort((a,b) => b.strength-a.strength)[0] ?? campaignOpponent(state, club, competitionId, random);
+  }
   const mainLeague = topLeague?.id;
   const mainCup = primaryCup?.id;
   const winners = [mainLeague, mainCup].flatMap((id) => id ? state.competitionWinners?.[id] ?? [] : []).filter((winner) => winner.season === state.season - 1 && winner.clubId !== club.id);
@@ -698,9 +701,12 @@ function supercupOpponent(state: CareerState, club: Club, competitionId: string,
   return clubs.filter((candidate) => candidate.id !== club.id && candidate.country === competition.country && competitions.find((entry) => entry.id === currentLeagueId(state, candidate))?.tier === 1).sort((a,b) => b.strength-a.strength)[0] ?? club;
 }
 function initialQualifications(club: Club, leagueId = club.leagueId): CampaignQualification[] {
-  void club; void leagueId;
-  // Vagas continentais vêm exclusivamente da temporada anterior, nunca da força do clube.
-  return [];
+  const league = competitions.find((entry) => entry.id === leagueId);
+  const rule = league && competitionRuleFor(league.country);
+  if (!rule || rule.topLeague !== leagueId) return [];
+  const field = clubs.filter(candidate => candidate.country === club.country && candidate.leagueId === leagueId).sort((a,b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  const rank = field.findIndex(candidate => candidate.id === club.id) + 1;
+  return rank > 0 ? nextSeasonQualifications(leagueId, rank, field.length).map(entry => ({ ...entry, source: 'classificação inicial estimada' })) : [];
 }
 function campaignEntries(state: CareerState, club: Club): Array<{ competitionId: string; qualification: CampaignQualification }> {
   const entries: Array<{ competitionId: string; qualification: CampaignQualification }> = [];
@@ -902,6 +908,18 @@ function leagueTarget(state: CareerState, leagueId: string, direction: "up" | "d
 }
 
 type PlayerDivisionOutcome = "stayed" | "promoted" | "relegated";
+// Campeões continentais históricos presentes no catálogo, agrupados por país
+// para não confundir clubes homônimos, como Santos e Santos Laguna.
+const protectedChampions: Record<string, string[]> = {
+  Brasil: ["Santos", "Grêmio", "Corinthians", "São Paulo", "Palmeiras", "Flamengo", "Fluminense", "Botafogo", "Atlético-MG", "Cruzeiro", "Internacional", "Vasco da Gama"],
+  Espanha: ["Real Madrid", "Barcelona"], Inglaterra: ["Liverpool", "Manchester United", "Manchester City", "Chelsea", "Nottingham Forest", "Aston Villa"],
+  Alemanha: ["Bayern München", "Borussia Dortmund", "Hamburgo", "Hamburger SV"], Itália: ["AC Milan", "Milan", "Inter", "Inter de Milão", "Juventus"], França: ["Olympique de Marseille", "Marseille", "Paris Saint-Germain"], Portugal: ["Porto", "Benfica"], Holanda: ["Ajax", "Feyenoord", "PSV"], Escócia: ["Celtic"], Romênia: ["Steaua București", "Steaua Bucharest", "FCSB"], Sérvia: ["Estrela Vermelha", "Red Star Belgrade", "Crvena Zvezda"],
+  Argentina: ["Independiente", "Boca Juniors", "River Plate", "Estudiantes", "Racing", "Racing Club", "San Lorenzo", "Vélez Sarsfield", "Argentinos Juniors"], Uruguai: ["Peñarol", "Nacional"], Paraguai: ["Olimpia"], Colômbia: ["Atlético Nacional", "Once Caldas"], Chile: ["Colo-Colo"], Equador: ["LDU Quito", "Liga de Quito"]
+};
+export function protectedFromRelegation(club: Club) { return (protectedChampions[club.country] ?? []).includes(club.name); }
+export function receivesSurvivalDecision(club: Club, inTopDivision: boolean, inDropZone: boolean, roll: number) {
+  return inTopDivision && inDropZone && !protectedFromRelegation(club) && roll < .35;
+}
 type DivisionMovement = { clubId: string; from: string; to: string };
 
 /** Fecha uma pirâmide de forma atômica. As tabelas sempre representam a mesma
@@ -920,7 +938,8 @@ function settleCountryDivisions(state: CareerState, tables: Record<string, Leagu
     if (isPlayerLeague && playerOutcome === "relegated") downSlots = Math.max(0, downSlots - 1);
     const eligible = table.entries.filter((entry) => entry.clubId !== playerClubId);
     const promoted = eligible.slice(0, upSlots);
-    const relegated = eligible.slice(Math.max(0, eligible.length - downSlots));
+    const relegationEligible = eligible.filter(entry => { const club = clubs.find(candidate => candidate.id === entry.clubId); return !club || !protectedFromRelegation(club); });
+    const relegated = downSlots ? relegationEligible.slice(-downSlots) : [];
     const upTarget = divisions[index - 1]?.id; const downTarget = divisions[index + 1]?.id;
     if (upTarget) for (const entry of promoted) { assignments[entry.clubId] = upTarget; movements.push({ clubId: entry.clubId, from: source.id, to: upTarget }); }
     if (downTarget) for (const entry of relegated) { assignments[entry.clubId] = downTarget; movements.push({ clubId: entry.clubId, from: source.id, to: downTarget }); }
@@ -1010,12 +1029,10 @@ function offerTier(club: Club, ovr: number, currentCountry: string, originCountr
   return lowCountry || lowLeague ? "low" : "none";
 }
 function proposalSalary(club: Club, ovr: number, random: () => number) {
-  const arab=club.leagueId==="sau-pro";
-  let monthly=16_700+club.budget*1_450+Math.max(0,ovr-60)*3_200+Math.round(random()*28_000);
-  if (arab) monthly*=2.2;
-  if (ovr>=87) monthly=Math.max(monthly,1_000_000+club.budget*8_000+Math.round(random()*500_000));
-  if (arab && ovr>=80) monthly=Math.max(monthly,1_050_000+club.budget*7_000+Math.round(random()*400_000));
-  return Math.round(monthly/10_000)*10_000;
+  // O REI: remuneração mensal gradual, em função do atleta e do orçamento.
+  const ability = Math.max(0, Math.min(40, ovr - 55));
+  const monthly = (15_000 + club.budget * 850 + ability * ability * 480) * (.9 + random() * .2) * (club.leagueId === "sau-pro" ? 1.35 : 1);
+  return Math.max(10_000, Math.round(monthly / 1000) * 1000);
 }
 function proposalRole(ovr: number, club: Club): ContractOffer["role"] {
   return ovr>=club.strength+7?"estrela":ovr>=club.strength?"titular":ovr>=club.strength-6?"rotacao":"promessa";
@@ -1143,7 +1160,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
    * is our documented version of the public "final de permanência" behavior.
    */
   const promotion = inPromotionZone ? leagueTarget(seasonState, leagueId, "up") : undefined;
-  const relegation = isTopDivision && inRelegationZone ? leagueTarget(seasonState, leagueId, "down") : undefined;
+  const relegation = receivesSurvivalDecision(club, isTopDivision, inRelegationZone, isTopDivision && inRelegationZone && !protectedFromRelegation(club) ? random() : 1) ? leagueTarget(seasonState, leagueId, "down") : undefined;
   const playerNeedsDivisionDecision = Boolean(relegation || inPromotionPlayoff);
   const playerDivisionOutcome: PlayerDivisionOutcome = promotion ? "promoted" : "stayed";
   const leagueTitle=row.position===1 ? league?.name : undefined;

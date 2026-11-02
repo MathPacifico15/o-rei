@@ -62,7 +62,7 @@ try {
 
   for (const difficulty of ['easy', 'standard', 'hard']) {
     let pairs = game.createRound('pairs', 41, difficulty);
-    check(pairs.preview === 1000 && game.mistakeLimit(pairs) === 5, 'Pares têm mesma memória e tolerância em todas as dificuldades');
+    check(pairs.preview === 1850 && game.mistakeLimit(pairs) === 5, 'Pares têm mesma memória e tolerância em todas as dificuldades');
     pairs = game.tickRound(pairs, pairs.preview);
     const mismatch = pairs.board.findIndex(value => value !== pairs.board[0]);
     pairs = game.actRound(game.actRound(pairs, 0), mismatch);
