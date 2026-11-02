@@ -13,7 +13,7 @@ export interface MiniGameDefinition {
 }
 const generic: MiniGameDefinition[] = [
   { id:"codigo-prancheta",name:"Código da prancheta",mode:"code",description:"O auxiliar protegeu a jogada decisiva com um código.",tutorial:"Memorize cinco números de 1 a 9. A terceira fase desaparece mais rápido.",rounds:3 },
-  { id:"copos-embaralhados",name:"Copos embaralhados",mode:"cups",description:"A bola desapareceu sob quatro copos antes da decisão.",tutorial:"Acompanhe a bola durante 6 a 9 trocas e escolha um copo. Sua velocidade reduz uma troca a partir de 80.",rounds:1 },
+  { id:"copos-embaralhados",name:"Copos embaralhados",mode:"cups",description:"A bola desapareceu sob quatro copos antes da decisão.",tutorial:"Acompanhe a bola durante as trocas e escolha o copo que a esconde. Sua velocidade reduz uma troca a partir de 80.",rounds:1,difficulty:"hard" },
   { id:"marca-vermelha",name:"Marca vermelha",mode:"timing",description:"O último toque precisa parar no momento exato.",tutorial:"Pare o marcador dentro da faixa vermelha.",rounds:1 },
   { id:"labirinto",name:"Labirinto",mode:"maze",description:"Você enxerga a rota por segundos antes de ela desaparecer.",tutorial:"Revele o caminho, memorize e leve a bola até o gol.",rounds:1 },
   { id:"jogo-velha",name:"Jogo da Velha",mode:"ticTacToe",description:"Um duelo tático 5×5 decide a confiança do elenco.",tutorial:"Conecte quatro X. Primeiro empate reinicia; segundo empate é seu.",rounds:1 },

@@ -51,6 +51,9 @@ html:root body .arena-pass-runner { top: 27%; background: #25cd51; color: #04190
 html:root body .arena-pass-defender { top: 51%; background: #b65b68; color: #fff3f3; border: 1px solid #e3a1aa; }
 html:root body .arena-pass-ball { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 24px; }
 html:root body .arena-pass-pitch > small { position: absolute; left: 0; right: 0; bottom: 8px; color: #9dbbaa; text-align: center; font: 800 8px Arial,sans-serif; letter-spacing: .1em; }
+html:root body .arena-keeper-moving { transition: left 180ms cubic-bezier(.22,.8,.32,1), transform 180ms ease; transform: translateX(-50%) skewX(-7deg); }
+html:root body .arena-ttt button.lit { color: #fff5c9; background: #8d6820; border-color: #ffe18a; box-shadow: 0 0 18px #f6c84fbb; animation: rei-winning-line .62s ease-in-out infinite alternate; }
+@keyframes rei-winning-line { from { filter: brightness(1); } to { filter: brightness(1.55); transform: scale(1.08); } }
 @media(max-width:420px){
  html:root body .arena-monty-choices { gap: 6px; }
  html:root body .arena-monty-choices b { font-size: 14px; }

@@ -13,6 +13,7 @@ try {
   assert(new Set(minigames.map((game) => game.id)).size === 13, "Há minigame duplicado no catálogo");
   assert(new Set(minigames.map((game) => game.mode)).size === 13, "Cada minigame precisa ter um modo próprio");
   assert(minigames.every((game) => expectedModes.has(game.mode)), "Modo de minigame inválido");
+  assert(minigames.find(game => game.mode === 'cups')?.difficulty === 'hard', 'Copos embaralhados abre na dificuldade difícil');
   assert(exclusiveMinigames.length === 3 && exclusiveMinigames.every((game) => game.exclusive), "Copa do Mundo e Super Mundial devem ter exatamente 3 minigames exclusivos");
 
   const genericSeen = new Set();
@@ -79,9 +80,18 @@ try {
   check(Math.abs(game.targetWidth(low) - 100 / 14) < 1e-8 && Math.abs(game.targetWidth(high) - 400 / 14) < 1e-8, 'Largura limitada de uma a quatro faixas');
   const skill = game.createRound('timing', 1, 'standard', 1, { finishing: 99, identity: 'skill', stakes: 'high' });
   check(game.targetWidth(skill) < game.targetWidth(high), 'Identidade e pressão diminuem janela de decisão');
-  const edge = { ...high, elapsed: 1250, totalElapsed: 1250 }; // marker=62.5, inside the wide target only.
+  const timingStandard = game.createRound('timing', 1, 'standard');
+  check(game.targetWidth(timingStandard) === 29 && game.markerAt({ ...timingStandard, elapsed: 500 }) === 90, 'Marca vermelha amplia faixa e acelera o marcador');
+  check(game.targetCenter(game.createRound('timing', 10)) !== game.targetCenter(game.createRound('timing', 11)), 'Marca vermelha recebe uma zona diferente para sementes diferentes');
+  const edge = { ...high, elapsed: (game.targetCenter(high) + 10) / .18, totalElapsed: (game.targetCenter(high) + 10) / .18 }; // Ten points from the seeded centre: only the wide target reaches it.
   check(game.actRound(edge, 0).won && !game.actRound({ ...edge, challenge: low.challenge }, 0).won, 'Atributo influencia vitória, não apenas desenho');
-  check(game.targetWidth(game.createRound('goldZone', 1)) === game.tuning.standard.width * .7, 'Tentativa legada conserva alvo goldZone');
+  const goldFirst = game.createRound('goldZone', 1, 'easy', 1, { finishing: 1, campaignRound: 1 });
+  const goldFinal = game.createRound('goldZone', 1, 'hard', 1, { finishing: 99, campaignRound: 8 });
+  check(game.targetWidth(goldFirst) === 28 && game.targetWidth(goldFinal) === 7, 'Zona de ouro diminui somente por fase');
+  check(game.targetCenter(goldFirst) >= 14 && game.targetCenter(goldFirst) <= 86, 'Zona de ouro sorteia posição dentro da barra');
+  const goldFirstDistance = Math.min(game.markerAt({ ...goldFirst, elapsed: 500 }), 100 - game.markerAt({ ...goldFirst, elapsed: 500 }));
+  const goldFinalDistance = Math.min(game.markerAt({ ...goldFinal, elapsed: 500 }), 100 - game.markerAt({ ...goldFinal, elapsed: 500 }));
+  check(goldFinalDistance > goldFirstDistance, 'Marcador da zona de ouro acelera por fase');
 
   const standardCups = game.createRound('cups', 2, 'standard', 1, { identity: 'mixed', speed: 70 });
   const skilledCups = game.createRound('cups', 2, 'standard', 1, { identity: 'skill', speed: 70 });
@@ -101,8 +111,29 @@ try {
   check(draw.totalElapsed === 1200 && game.validRound(draw), 'Empate conserva telemetria e save válido');
   draw = game.actRound({ ...draw, board: drawBoard }, 24);
   check(draw.done && draw.won && draw.draws === 2, 'Segundo empate concede vitória');
-  check(game.createRound('pressureMap', 3, 'standard', 1, { campaignRound: 5 }).sequence.length === 9, 'Sequência cresce por partida da campanha');
-  check(game.createRound('pressureMap', 3, 'hard', 1, { campaignRound: 100 }).sequence.length === 12, 'Sequência de campanha tem limite jogável');
+  const maze = game.createRound('maze', 18); const wrongMazeCell = Array.from({ length: 25 }, (_, cell) => cell).find(cell => cell !== maze.sequence[1]);
+  check(game.actRound(game.tickRound(maze, maze.preview), wrongMazeCell).done, 'Labirinto encerra imediatamente no primeiro erro');
+  const mazeStarts=new Set(),mazeGoals=new Set(),mazeRoutes=new Set();
+  for(let seed=0;seed<80;seed++){const route=game.createRound('maze',seed,'easy').sequence,start=route[0],goal=route.at(-1);mazeStarts.add(start);mazeGoals.add(goal);mazeRoutes.add(route.join(','));check(route.length>=7&&Math.abs(Math.floor(goal/5)-Math.floor(start/5))+Math.abs(goal%5-start%5)>=6,'Labirinto legado mantém bola e gol distantes');check(route.every((cell,index)=>index===0||(Math.abs(cell-route[index-1])===1&&Math.floor(cell/5)===Math.floor(route[index-1]/5))||Math.abs(cell-route[index-1])===5),'Labirinto só cria passos ortogonais');}
+  check(mazeStarts.size>8&&mazeGoals.size>8&&mazeRoutes.size>40,'Labirinto sorteia origem, gol e rota');
+  for(const [difficulty,size,minDistance] of [['standard',7,9],['hard',8,11]])for(let seed=0;seed<80;seed++){const maze=game.createRound('maze',seed,difficulty),route=maze.sequence,start=route[0],goal=route.at(-1);const onEdge=cell=>{const row=Math.floor(cell/size),column=cell%size;return row===0||row===size-1||column===0||column===size-1};check(maze.board.length===size*size&&onEdge(start)&&onEdge(goal)&&Math.abs(Math.floor(goal/size)-Math.floor(start/size))+Math.abs(goal%size-start%size)>=minDistance,`Labirinto ${difficulty} usa grade ${size}×${size}, bordas e distância maior`);}
+  const keeper = game.createRound('shot', 19, 'hard');
+  check(game.shotKeeperLane(keeper) !== game.shotKeeperLane({ ...keeper, elapsed: 260 }) || game.shotKeeperLane(keeper) !== game.shotKeeperLane({ ...keeper, elapsed: 520 }), 'Goleiro tem fintas determinísticas entre batidas');
+  const pressureLengths=[3,3,3,4,5,6,7,8];
+  for(const [index,length] of pressureLengths.entries()) check(game.createRound('pressureMap', 3, 'hard', 1, { campaignRound:index+1 }).sequence.length===length, `Mapa de pressão usa ${length} casas na fase ${index+1}`);
+  check(game.pressureMapSequenceLength(100)===8, 'Mapa de pressão limita a sequência da final a oito casas');
+  const earlyTrack = game.createRound('ballTrack', 3, 'easy', 1, { campaignRound: 1 });
+  const lateTrack = game.createRound('ballTrack', 3, 'hard', 1, { campaignRound: 7 });
+  check(lateTrack.board.length > earlyTrack.board.length && lateTrack.sequence.length > earlyTrack.sequence.length, 'Rastrear bola cresce por fase e pressão');
+  check(game.ballTrackStepDuration('standard', 1) === 235 && game.ballTrackStepDuration('standard', 6) === 588, 'Rastrear bola alterna rajada e pulso');
+  check(game.ballTrackPreviewDuration('standard', 8) < 2600, 'Rastrear bola mantém ritmo rápido');
+  const trackPulse = game.createRound('ballTrack', 7, 'standard');
+  check(game.ballTrackIndexAt({ ...trackPulse, elapsed: 235 }) === 1 && game.ballTrackIndexAt({ ...trackPulse, elapsed: 235 * 5 }) === 5, 'Rastrear bola avança a cada passe curto');
+  const expectedGrids = [[3,3],[3,4],[4,4],[4,5],[5,5],[5,6],[6,6],[6,7]];
+  for (const [stage, dimensions] of expectedGrids.entries()) {
+    const grid = game.ballTrackGrid(stage + 1), track = game.createRound('ballTrack', 3, 'standard', 1, { campaignRound: stage + 1 });
+    check(grid.rows === dimensions[0] && grid.columns === dimensions[1] && track.board.length === grid.rows * grid.columns, 'Rastrear bola mantém grade completa em cada fase');
+  }
   const legacy = game.createRound('timing', 9); delete legacy.totalElapsed;
   check(game.validRound(legacy), 'Save sem novos campos continua válido');
   for (const bad of [{ ...legacy, mode: 'not-a-game' }, { ...legacy, challenge: { finishing: Infinity } }, { ...legacy, challenge: { speed: -1 } }, { ...legacy, challenge: { campaignRound: 0 } }, { ...legacy, awaitingReveal: 'yes' }, { ...legacy, draws: 3 }, { ...legacy, totalElapsed: -1 }]) check(!game.validRound(bad), 'Save contextual inválido é rejeitado');

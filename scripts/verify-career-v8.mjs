@@ -61,7 +61,7 @@ try{
    const result=games.roundResult({...round,done:true,won:true},'id','test');check(result.won===true&&!('score' in result),'binary minigame result');
  }
  let code=games.createRound('code',44);for(let i=0;i<3;i++){code=games.revealRound(code);code=games.tickRound(code,code.preview+1);for(const n of [...code.sequence])code=games.actRound(code,n)}check(code.done&&code.won,'three code phases');check(games.actRound(code,1)===code,'victory cannot restart a round');
- for(const mode of ['timing','goldZone']){const r=games.createRound(mode,42);const timed=games.tickRound(r,1000);check(games.actRound(timed,0).won,'timing hit');check(!games.actRound(r,0).won,'timing miss');}
+ for(const mode of ['timing','goldZone']){const r=games.createRound(mode,42);let elapsed=0;while(elapsed<10000&&Math.abs(games.markerAt({...r,elapsed})-games.targetCenter(r))>games.targetWidth(r)/2)elapsed+=5;const atTarget={...r,elapsed};check(games.actRound(atTarget,0).won,'timing hit');check(!games.actRound(r,0).won,'timing miss');}
  for(const mode of ['maze','pressureMap','ballTrack','cups','pairs','puzzle','ticTacToe']){
   let r=games.createRound(mode,42);r=games.tickRound(r,r.preview+1);
   if(mode==='maze')for(const cell of r.sequence.slice(1))r=games.actRound(r,cell);

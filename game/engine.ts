@@ -657,8 +657,9 @@ function simulatedCampaignMatch(state: CareerState, club: Club, competitionId: s
   const rival = effectiveClub(state, opponent);
   const stagePenalty = phase.includes("Semifinal") ? .04 : phase.includes("Quartas") ? .02 : 0;
   const edge = (current.strength + ovr * .12 + form * .05 - rival.strength - 12) / 34;
-  // Chegar à final é raro para clube fraco e possível, sem ser automático, para clube forte.
-  const advances = random() < Math.max(.10, Math.min(.66, .29 + edge * .32 - stagePenalty));
+  // A temporada é simulada de uma vez: cada etapa anterior deve dar espaço
+  // para campanhas decisivas frequentes, sem garantir o avanço do clube.
+  const advances = random() < Math.max(.52, Math.min(.93, .76 + edge * .14 - stagePenalty));
   const goals = advances ? 1 + Math.floor(random() * 3) : Math.floor(random() * 2);
   const opponentGoals = advances ? Math.floor(random() * Math.max(1, goals)) : goals + 1 + Math.floor(random() * 2);
   return { phase, opponentId: opponent.id, opponentName: opponent.name, playerGoals: goals, opponentGoals, result: advances ? "won" : "lost" };
@@ -756,6 +757,11 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
     const usedOpponents = new Set<string>();
     let status: SeasonCampaign["status"] = "active";
     let phase = "Inscrito";
+    // Um único sorteio determina a campanha estadual: 80% de chance de
+    // alcançar a final; o resultado da final continua sendo jogado.
+    const stateFinal = category === "state" ? random() < .8 : undefined;
+    const stateExit = stateFinal === false ? Math.floor(random() * 2) : -1;
+    let stateRound = 0;
     for (const currentPhase of campaignPhases(category)) {
       phase = currentPhase;
       if (currentPhase === "Final") {
@@ -766,7 +772,12 @@ function buildCampaigns(state: CareerState, club: Club, ovr: number, form: numbe
         finals.push({ competitionId: competition.id, competitionName: competition.name, opponentClubId: opponent.id, opponentClubName: opponent.name, stakes: "cup", phase: "title", scope: "club", campaignId: id, campaignMatchIndex: matches.length - 1, decisionId: `${id}:final` });
         break;
       }
-      const match = simulatedCampaignMatch(state, club, competition.id, currentPhase, ovr, form, random, usedOpponents);
+      let match = simulatedCampaignMatch(state, club, competition.id, currentPhase, ovr, form, random, usedOpponents);
+      if (category === "state") {
+        const advances = stateRound++ !== stateExit;
+        const scored = advances ? 2 : 0;
+        match = { ...match, result: advances ? "won" : "lost", playerGoals: scored, opponentGoals: advances ? 0 : 1 };
+      }
       matches.push(match);
       if (match.opponentId) usedOpponents.add(match.opponentId);
       if (match.result === "lost") { status = "eliminated"; break; }
