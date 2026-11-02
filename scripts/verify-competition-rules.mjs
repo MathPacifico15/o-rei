@@ -115,6 +115,12 @@ try {
     const campaign=simulateSeason(sample).result.campaigns?.find(item=>item.competitionId===id);
     assert(campaign, `Vaga europeia ${id} não gerou campanha`);
   }
+  const liverpool=clubs.find(item=>item.name==='Liverpool');
+  const europeanSupercup=makeState(liverpool); europeanSupercup.season=2027;
+  europeanSupercup.competitionWinners={ucl:[{clubId:liverpool.id,season:2026}]};
+  const superFinal=simulateSeason(europeanSupercup).result.finals?.find(item=>item.competitionId==='uefa-super');
+  assert(superFinal && superFinal.opponentClubId!==liverpool.id, 'Liverpool não pode enfrentar a si mesmo na Supercopa europeia');
+  for(const name of ['PSV Eindhoven','Colo Colo']) { const club=clubs.find(item=>item.name===name); assert(club && protectedFromRelegation(club), `${name}: campeão continental não protegido`); }
   const goias = clubs.find((club) => club.name === "Goiás");
   assert(goias, "Goiás não encontrado");
   const goiasSeason = simulateSeason(makeState(goias));
