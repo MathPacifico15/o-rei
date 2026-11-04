@@ -1,0 +1,36 @@
+/* Motion follows the decision: anticipation, input, then a clear outcome. */
+@keyframes rei-arena-enter { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes rei-stage-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rei-result-win { 0% { opacity: 0; transform: scale(.88); filter: brightness(1.8); } 65% { transform: scale(1.035); } 100% { opacity: 1; transform: scale(1); filter: brightness(1); } }
+@keyframes rei-result-loss { 0% { opacity: 0; transform: translateX(-8px); } 35% { transform: translateX(6px); } 70% { transform: translateX(-3px); } 100% { opacity: 1; transform: translateX(0); } }
+@keyframes rei-feedback { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rei-target-breathe { 50% { box-shadow: 0 0 18px #42e97577, inset 0 0 14px #42e97555; } }
+@keyframes rei-button-glint { from { transform: translateX(-160%) skewX(-22deg); } to { transform: translateX(560%) skewX(-22deg); } }
+
+.arena-overlay { animation: rei-feedback .22s ease-out both; }
+.arena-overlay .arena, .arena-inline .arena { animation: rei-arena-enter .38s cubic-bezier(.2,.8,.2,1) both; }
+.arena-phase-playing .arena-play, .arena-phase-playing .arena-toolbar, .arena-phase-tutorial > p, .arena-phase-paused .arena-paused { animation: rei-stage-enter .3s ease-out both; }
+.arena-phase-result .arena-result { animation: rei-stage-enter .32s ease-out both; }
+.arena-phase-result .arena-won > strong { animation: rei-result-win .62s cubic-bezier(.17,.85,.25,1) both; text-shadow: 0 0 28px #4af37c88; }
+.arena-phase-result .arena-lost > strong { animation: rei-result-loss .45s ease-out both; }
+.arena-live-feedback { animation: rei-feedback .24s ease-out both; min-height: 1.5em; }
+.arena-track i, .arena-pass-window { animation: rei-target-breathe 1.5s ease-in-out infinite; }
+.arena-track b, .arena-pass-runner { will-change: left; }
+.arena-grid button, .arena-shot-options button, .arena-monty-choices button { transition: transform .16s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.arena button:not(:disabled):hover { transform: translateY(-2px); border-color: #71e891; box-shadow: 0 5px 18px #0005; }
+.arena button:not(:disabled):active { transform: translateY(1px) scale(.975); transition-duration: .06s; }
+.arena button:focus-visible { outline: 2px solid #e7c775; outline-offset: 3px; }
+.arena .button-primary { position: relative; overflow: hidden; }
+.arena .button-primary::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 23%; background: linear-gradient(90deg, transparent, #ffffff66, transparent); transform: translateX(-160%) skewX(-22deg); pointer-events: none; }
+.arena .button-primary:not(:disabled):hover::after { animation: rei-button-glint .65s ease-out both; }
+.arena-grid button.lit { box-shadow: 0 0 0 2px #7af69b, 0 0 22px #45e67b77; }
+.arena-pass-score i.scored { animation: rei-result-win .42s ease-out both; }
+.arena-pass-score i.missed { animation: rei-result-loss .36s ease-out both; }
+.arena-monty-choices button.revealed { animation: rei-result-loss .36s ease-out both; }
+.arena-code { animation: rei-stage-enter .28s ease-out both; }
+.arena-cups button { transition-property: left, transform, border-color, box-shadow; transition-timing-function: cubic-bezier(.42,0,.22,1); }
+
+@media (prefers-reduced-motion: reduce) {
+ .arena-overlay, .arena-overlay .arena, .arena-inline .arena, .arena-phase-playing .arena-play, .arena-phase-playing .arena-toolbar, .arena-phase-tutorial > p, .arena-phase-paused .arena-paused, .arena-phase-result .arena-result, .arena-phase-result .arena-won > strong, .arena-phase-result .arena-lost > strong, .arena-live-feedback, .arena-track i, .arena-pass-window, .arena-pass-score i.scored, .arena-pass-score i.missed, .arena-monty-choices button.revealed, .arena-code, .arena .button-primary::after { animation: none !important; }
+ .arena button, .arena-grid button, .arena-shot-options button, .arena-monty-choices button, .arena-cups button { transition-duration: 0ms !important; }
+}

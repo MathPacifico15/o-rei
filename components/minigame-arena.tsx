@@ -4,6 +4,7 @@ import {actRound,ballTrackGrid,ballTrackIndexAt,createRound,cupPositions,cupSwap
 import {difficultyLabel} from '@/game/minigame-context';
 import './minigame-arena.css';
 import './minigame-features.css';
+import './minigame-motion.css';
 
 const icons=['⚽','👟','🏆','⭐','🧤','🎯','🟨','🥅'];
 type Phase='tutorial'|'playing'|'paused'|'result';
@@ -141,7 +142,7 @@ export function MiniGameArena({game,seed:providedSeed,context='treino',difficult
  const tutorial=tutorials[game.mode]??game.tutorial;
 
  return <div className={isTraining?'arena-overlay':'arena-inline'} role={isTraining?'dialog':'region'} aria-modal={isTraining?true:undefined} aria-label={game.name}>
-  <section className="arena">
+  <section className={`arena arena-phase-${phase} ${round.errors > 0 ? 'arena-has-errors' : ''}`}>
    <header><small>{isTraining?'CENTRO DE TREINAMENTO':'DECISÃO DA CARREIRA'}</small><h2>{game.name}</h2>{onClose&&<button onClick={onClose}>Voltar ×</button>}</header>
    {phase==='tutorial'?<>
     <p>{game.description}</p><p>{tutorial}</p>
@@ -183,7 +184,7 @@ export function MiniGameArena({game,seed:providedSeed,context='treino',difficult
      {game.mode==='pressureMap'&&<div className="arena-grid arena-pressure cols4">{Array.from({length:16},(_,i)=>{const scoreCell=round.done&&round.won&&i===round.sequence.at(-1),active=(!ready&&round.sequence[previewIndex]===i)||round.input.includes(i);return <button key={i} className={`${active?'lit':''} ${scoreCell?'score':''}`} onClick={()=>choose(i)} disabled={!ready||phase!=='playing'} aria-label={scoreCell?`Casa ${i+1}: placar da partida`:`Casa ${i+1}`}>{scoreCell?'✓':''}</button>})}</div>}
      {game.mode==='ballTrack'&&<div className="arena-grid arena-track-players" style={{gridTemplateColumns:`repeat(${trackGrid.columns},minmax(0,1fr))`}}>{Array.from({length:round.board.length},(_,i)=>button(i,!ready&&round.sequence[previewIndex]===i?'⚽':'●',!ready&&round.sequence[previewIndex]===i))}</div>}
     </div>}
-    <p role="status">{round.feedback} {round.errors>0?`Erros: ${round.errors}/${mistakeLimit(round)}`:''}</p>
+    <p className="arena-live-feedback" role="status" key={`${round.feedback}:${round.errors}:${round.round}:${round.matched.length}`}>{round.feedback} {round.errors>0?`Erros: ${round.errors}/${mistakeLimit(round)}`:''}</p>
    </>}
   </section>
  </div>;

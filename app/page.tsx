@@ -11,6 +11,7 @@ import { CareerShop } from "@/components/career-shop";
 import "./minigames.css";
 import "./final-tweaks.css";
 import "./rea-maggio.css";
+import "./motion.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { applyCard, applyFinalConsequence, applySeasonEvolution, baseAttributes, chooseUpgradeCards, clubCompetesIn, clubs, competitions, computeOvr, countries, createMarketWindow, prepareMarketWindow, difficultyForFinal, generationalAttributes, legacy, miniGameForFinal, miniGameForSeed, minigames, mulberry32, positionAttributeKeys, resolveWorldMatch, shouldRetire, simulateSeason, supabaseCareer, worldMatchDifficulty, type CareerEvent, type CareerState, type Club, type EvolutionFocus, type MiniGameDefinition, type MiniGameId, type Player, type Position, type SeasonEvolution, type SeasonResult, type UpgradeCard } from "@/game";
