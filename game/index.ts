@@ -5,6 +5,7 @@ export * from "./countries";
 export * from "./engine";
 export * from "./importer";
 export * from "./persistence";
+export * from "./salary";
 export * from "./minigames";
 export * from "./minigame-context";
 export * from "./world-tournaments";

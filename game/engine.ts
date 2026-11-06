@@ -1,4 +1,5 @@
 import { rememberClubMilestones } from "./career-history";
+import { salaryOffer, cappedSalary } from "./salary";
 import { selectCareerEvents } from "./career-events";
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
@@ -1027,11 +1028,6 @@ function simulateFullNationalTeam(player: Player, season: number, ovr: number, r
   const opponent = opponents[Math.floor(random() * Math.max(1, opponents.length))] ?? countries[0];
   return { competitionId, competition: competition ?? "Eliminatórias", category, phase: reachedFinal ? "Final" : playableWorldCup ? "Fase de grupos" : competition ? (random()>.5 ? "Mata-mata" : "Fase de grupos") : "Eliminatórias", games, goals, assists, qualified:true, title: undefined, reachedFinal, opponentName: opponent.name, opponentId: `national-${opponent.code}` };
 }
-function proposalSalary(club: Club, ovr: number, random: () => number) {
-  const ability = Math.max(0, Math.min(40, ovr - 55));
-  const monthly = (15_000 + club.budget * 850 + ability * ability * 480) * (.9 + random() * .2) * (club.leagueId === "sau-pro" ? 1.35 : 1);
-  return Math.max(10_000, Math.round(monthly / 1000) * 1000);
-}
 function proposalRole(ovr: number, club: Club): ContractOffer["role"] {
   return ovr>=club.strength+7?"estrela":ovr>=club.strength?"titular":ovr>=club.strength-6?"rotacao":"promessa";
 }
@@ -1057,8 +1053,6 @@ export function createMarketWindow(state: CareerState, random: () => number, pre
   }
   const eliteLeagues:Record<string,string[]>={"eng-pl":["liverpool","manchester city","manchester united","arsenal","chelsea"],"esp-ll":["barcelona","real madrid"],"ger-bl":["bayern münchen","bayern munich"],"fra-l1":["paris saint-germain"],"ita-sa":["juventus","inter","milan"]};
   const isElite=(c:Club)=>Boolean(eliteLeagues[state.leagueAssignments[c.id]??c.leagueId]?.includes(c.name.toLowerCase()));
-  const agent=state.shop?.ownedPermanent.includes("empresario")?1.15:1;
-  const academy=state.shop?.ownedPermanent.includes("academia")?1.2:1;
   while(offers.length<desired && remaining.length){
     const preferredAvailable=preferHit&&!offers.some(o=>clubs.find(c=>c.id===o.clubId)?.country===preferredCountry);
     const eliteAvailable=ovr>=85&&!offers.some(o=>{const c=clubs.find(x=>x.id===o.clubId);return c&&isElite(c)})&&remaining.some(isElite);
@@ -1076,12 +1070,12 @@ export function createMarketWindow(state: CareerState, random: () => number, pre
     const selected=forced[chosen], index=remaining.findIndex(c=>c.id===selected.id);
     const club=remaining.splice(index,1)[0], role=proposalRole(ovr,club);
     countryCounts.set(club.country,(countryCounts.get(club.country)??0)+1);
-    offers.push({clubId:club.id,monthlySalary:Math.round(proposalSalary(club,ovr,random)*agent*academy/100)*100,seasons:kind==="loan"?1:2+Math.floor(random()*4),role,expectedMinutes:expectedMinutes(role),idolatryChange:kind==="loan"?0:current.rivals.includes(club.id)?-18:-Math.max(2,Math.round((player.clubIdolatry[current.id]??0)/16)),kind});
+    offers.push({clubId:club.id,monthlySalary:salaryOffer(state,club,player,ovr,role,random),seasons:kind==="loan"?1:2+Math.floor(random()*4),role,expectedMinutes:expectedMinutes(role),idolatryChange:kind==="loan"?0:current.rivals.includes(club.id)?-18:-Math.max(2,Math.round((player.clubIdolatry[current.id]??0)/16)),kind});
   }
   const declining=ovr<(state.highestOvr??ovr)-2||player.age>=33;
   const renewalFactor=declining?.85+random()*.15:1.1+random()*.15;
   const renewalRole=proposalRole(ovr,current);
-  return {season:state.season,offers,renewal:{clubId:current.id,monthlySalary:Math.max(100,Math.round(state.contract.monthlySalary*renewalFactor/100)*100),seasons:3,role:renewalRole,expectedMinutes:expectedMinutes(renewalRole),idolatryChange:3},kind,preferredCountry,phase:"offers"};
+  return {season:state.season,offers,renewal:{clubId:current.id,monthlySalary:cappedSalary(state,current,state.contract.monthlySalary*renewalFactor),seasons:3,role:renewalRole,expectedMinutes:expectedMinutes(renewalRole),idolatryChange:3},kind,preferredCountry,phase:"offers"};
 }
 export function prepareMarketWindow(state: CareerState, kind: "transfer" | "loan" = "transfer"): MarketWindow {
   const seed=state.seed+state.season*311+(kind==="loan"?73:0)+(state.exitRequests??0)*1429;
@@ -1093,9 +1087,9 @@ function createGenerationalMarketWindow(state: CareerState, random: () => number
   const ovr = computeOvr(state.player);
   const offers = clubs.filter((club) => club.country === "Brasil" && club.id !== current.id)
     .sort((a,b) => b.reputation + b.strength - (a.reputation + a.strength)).slice(0, 5)
-    .map((club) => { const role = proposalRole(ovr + 3, club); return { clubId:club.id, monthlySalary:proposalSalary(club,ovr + 3,random), seasons:3+Math.floor(random()*2), role, expectedMinutes:expectedMinutes(role), idolatryChange:-Math.max(2,Math.round((state.player.clubIdolatry[current.id]??0)/16)) }; });
+    .map((club) => { const role = proposalRole(ovr + 3, club); return { clubId:club.id, monthlySalary:salaryOffer(state,club,state.player,ovr + 3,role,random), seasons:3+Math.floor(random()*2), role, expectedMinutes:expectedMinutes(role), idolatryChange:-Math.max(2,Math.round((state.player.clubIdolatry[current.id]??0)/16)) }; });
   const role=proposalRole(ovr,current);
-  return { season:state.season, offers, renewal:{clubId:current.id,monthlySalary:Math.max(100,Math.round(state.contract.monthlySalary*1.2/100)*100),seasons:3,role,expectedMinutes:expectedMinutes(role),idolatryChange:4} };
+  return { season:state.season, offers, renewal:{clubId:current.id,monthlySalary:cappedSalary(state,current,state.contract.monthlySalary*1.2),seasons:3,role,expectedMinutes:expectedMinutes(role),idolatryChange:4} };
 }
 export function applyFinalConsequence(state: CareerState, final: CupFinal, won: boolean): CareerState {
   const pending = state.pendingDivisionSettlement;

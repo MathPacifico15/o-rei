@@ -5,7 +5,7 @@ export const shopProducts:ShopProduct[] = [
  {id:'fisio',name:'Fisioterapeuta pessoal',icon:'🛡',description:'Reduz o risco de lesão em 35%.',price:620000,category:'Equipe'},
  {id:'psicologo',name:'Psicólogo esportivo',icon:'🧠',description:'Trabalho contínuo: +6 de forma por temporada. Não altera resultados dos minijogos.',price:480000,category:'Equipe'},
  {id:'preparador',name:'Preparador físico',icon:'🏋',description:'+4 de preparo efetivo nas simulações, sem ultrapassar limites dos atributos.',price:700000,category:'Equipe'},
- {id:'empresario',name:'Representante dedicado',icon:'🤝',description:'As novas ofertas salariais recebem um acréscimo de 15%.',price:550000,category:'Equipe'},
+ {id:'empresario',name:'Representante dedicado',icon:'🤝',description:'As novas ofertas salariais podem aumentar até 15%, respeitando o limite do clube.',price:550000,category:'Equipe'},
  {id:'chuteiras',name:'Equipamento profissional',icon:'👟',description:'Bônus de 8% na produção de gols ou jogos sem sofrer gols por uma temporada.',price:35000,category:'Temporada',duration:1},
  {id:'ferias',name:'Recuperação programada',icon:'🌴',description:'+5 de forma na próxima preparação.',price:28000,category:'Temporada',duration:1},
  {id:'suplementacao',name:'Suporte nutricional',icon:'🥤',description:'+2 de preparo efetivo por duas temporadas.',price:32000,category:'Temporada',duration:2},
@@ -17,8 +17,8 @@ export const shopProducts:ShopProduct[] = [
  {id:'mansao',name:'Residência com campo',icon:'🏟',description:'+3 de preparo efetivo e +2 de fama na aquisição.',price:900000,category:'Patrimônio'},
  {id:'ilha',name:'Refúgio particular',icon:'🏝',description:'+4 de fama na aquisição.',price:1400000,category:'Patrimônio'},
  {id:'bairro',name:'Campo do bairro',icon:'⚽',description:'+5 de idolatria na aquisição e +1 por temporada no clube atual.',price:750000,category:'Patrimônio'},
- {id:'academia',name:'Centro de formação',icon:'🏫',description:'+15 de fama na aquisição e valorização de 20% nas propostas.',price:1800000,category:'Patrimônio'},
-].map(item => ({ ...item, price: item.price * (item.category === 'Patrimônio' ? 20 : item.category === 'Equipe' ? 8 : 3) })) as ShopProduct[];
+ {id:'academia',name:'Centro de formação',icon:'🏫',description:'+15 de fama na aquisição e até 20% nas propostas, respeitando o limite do clube.',price:1800000,category:'Patrimônio'},
+].map(item => ({ ...item, price: item.price * 2 * (item.category === 'Patrimônio' ? 20 : item.category === 'Equipe' ? 8 : 3) })) as ShopProduct[];
 export function purchaseProduct(state:CareerState,id:ShopItemId):CareerState {
  const item=shopProducts.find(x=>x.id===id);if(!item)throw Error('Produto inexistente.');
  if(state.shop.ownedPermanent.includes(id)||state.shop.activeSeasonal.includes(id))throw Error('Este benefício já está ativo.');
