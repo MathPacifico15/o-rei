@@ -1,0 +1,98 @@
+/* Motion only follows navigation, an action, or a change in game state. */
+@keyframes rei-screen-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rei-backdrop-enter {
+  from { background-color: transparent; }
+  to { background-color: var(--rei-overlay); }
+}
+@keyframes rei-modal-enter {
+  from { opacity: 0; transform: translateY(10px) scale(.975); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rei-result-emphasis {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rei-selection-flash {
+  from { box-shadow: inset 0 0 0 1px rgba(39, 219, 80, .7), 0 0 0 3px rgba(39, 219, 80, .16); }
+  to { box-shadow: inset 0 0 0 1px rgba(39, 219, 80, .28), var(--rei-shadow-low); }
+}
+
+/* Only screens with no live game clock get a whole-screen entrance. */
+html:root body :is(.start-content, .form-wrap, .evolution-wrap, .decision-card, .market-wrap, .celebration-card) {
+  animation: rei-screen-enter var(--rei-motion-screen) var(--rei-ease-out) both;
+}
+html:root body .career-overlay,
+html:root body .arena-overlay {
+  animation: rei-backdrop-enter var(--rei-motion-modal) var(--rei-ease-out) both;
+}
+html:root body .career-overlay .shop-wrap,
+html:root body .arena-overlay .arena {
+  animation: rei-modal-enter var(--rei-motion-modal) var(--rei-ease-out) both;
+}
+html:root body :is(.arena-result, .celebration-card h1, .celebration-card h2) {
+  animation: rei-result-emphasis var(--rei-motion-reveal) var(--rei-ease-out) both;
+}
+html:root body .celebration-card h2 { animation-delay: 55ms; }
+
+/* Existing card deal is capped at four items; long lists are immediately usable. */
+html:root body :is(.card-grid, .training-catalog) > * {
+  animation-duration: var(--rei-motion-card);
+  animation-timing-function: var(--rei-ease-out);
+  animation-delay: 0ms;
+}
+html:root body :is(.card-grid, .training-catalog) > :nth-child(2) { animation-delay: 45ms; }
+html:root body :is(.card-grid, .training-catalog) > :nth-child(3) { animation-delay: 90ms; }
+html:root body :is(.card-grid, .training-catalog) > :nth-child(4) { animation-delay: 135ms; }
+html:root body :is(.card-grid, .training-catalog) > :nth-child(n+5) { animation: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  html:root body :is(.button, .play-button, .save-chip, .back-button, .market-action, .shop-close, .athlete-actions button, .save-tools button, .inline-event button):not(:disabled):hover {
+    transform: scale(1.018);
+    filter: brightness(1.08);
+    box-shadow: var(--rei-shadow-mid);
+  }
+  html:root body :is(.training-card, .position-choice, .club-choice, .career-overlay .training-game):not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: inset 0 1px var(--rei-highlight), var(--rei-shadow-mid);
+  }
+  /* Gameplay pieces move according to the game engine; hover must not replace that transform. */
+  html:root body .arena-cups button:not(:disabled):hover { transform: translateX(-50%); }
+}
+
+html:root body :is(.button, .play-button, .save-chip, .back-button, .market-action, .shop-close, .athlete-actions button, .save-tools button, .inline-event button):not(:disabled):active {
+  transform: scale(.975);
+  transition-duration: var(--rei-motion-instant);
+}
+html:root body :is(.training-card, .position-choice, .club-choice, .career-overlay .training-game):not(:disabled):active {
+  transform: translateY(1px) scale(.985);
+  transition-duration: var(--rei-motion-instant);
+}
+html:root body :is(.position-choice, .club-choice).selected,
+html:root body .play-style-choice button[aria-pressed="true"] {
+  animation: rei-selection-flash 240ms var(--rei-ease-out) both;
+}
+html:root body :is(.training-card, .position-choice, .club-choice, .career-overlay .training-game) {
+  transition-duration: var(--rei-motion-card);
+  transition-timing-function: var(--rei-ease-out);
+}
+
+@media (hover: none) {
+  html:root body :is(.play-button, .training-card, .training-game, .position-choice, .club-choice, .athlete-actions button, .inline-event button):hover {
+    transform: none;
+    filter: none;
+  }
+  html:root body .arena button:not(.button-primary):not(:disabled):hover { transform: none; }
+  html:root body .arena-cups button:not(:disabled):hover { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body :is(.start-content, .form-wrap, .evolution-wrap, .decision-card, .market-wrap, .celebration-card,
+    .career-overlay, .arena-overlay, .career-overlay .shop-wrap, .arena-overlay .arena, .arena-result,
+    .celebration-card h1, .celebration-card h2, .card-grid > *, .training-catalog > *,
+    .position-choice.selected, .club-choice.selected, .play-style-choice button[aria-pressed="true"]) {
+    animation: none !important;
+  }
+  html:root body :is(button, [role="button"]) { transition-duration: 0ms !important; }
+}

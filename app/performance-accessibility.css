@@ -1,0 +1,49 @@
+/* Final mobile and accessibility constraints for the presentation layers. */
+html:root body .career-overlay { backdrop-filter: none; }
+html:root body .app-shell,
+html:root body .career-overlay,
+html:root body .arena-overlay { min-width: 0; }
+html:root body :is(.start-briefing, .dashboard-grid, .form-grid, .card-grid, .training-catalog, .shop-grid) > * { min-width: 0; }
+html:root body :is(.training-game, .shop-item, .offer, .inline-event, .season-panel) { overflow-wrap: anywhere; }
+html:root body .arena { max-height: min(95dvh, 95vh); overscroll-behavior: contain; }
+html:root body .career-overlay { overscroll-behavior: contain; }
+html:root body .celebration-rays { animation: none; }
+
+/* Controls that were visually compressed on mobile retain a practical hit area. */
+html:root body :is(.save-tools button, .save-tools label, .arena-toolbar button, .country-options button,
+  .market-action, .card-redraw-tools button, .training-close, .shop-close, .text-action) {
+  min-height: 44px;
+}
+html:root body .arena-grid button { touch-action: manipulation; }
+html:root body :is(.save-tools button, .save-tools label, .training-game, .training-card, .position-choice, .club-choice) { touch-action: manipulation; }
+html:root body .arena-pass-pitch,
+html:root body .arena-shot-goal { contain: paint; }
+
+/* Focus and selection remain visible without requiring animation or hover. */
+html:root body :is(.position-choice, .club-choice).selected,
+html:root body .play-style-choice button[aria-pressed="true"] { border-color: var(--rei-accent); }
+html:root body :is(.arena-grid button.lit, .arena-monty-choices button.selected) { border-color: var(--rei-accent); }
+html:root body .arena-ttt button.mark-x.lit { border-color: #79c6ff; }
+html:root body .arena-ttt button.mark-o.lit { border-color: #ff9299; }
+
+@media (max-width: 760px) {
+  html:root body .save-tools :is(button, label) { min-height: 44px; }
+  html:root body .season-stats .stat-tile span,
+  html:root body .attribute-chips span { font-size: 8px; line-height: 1.25; }
+  html:root body .arena-toolbar button { min-height: 44px; }
+  html:root body .career-overlay .shop-wrap { max-height: none; }
+}
+@media (max-width: 420px) {
+  html:root body .feature-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html:root body .feature-row span { overflow-wrap: normal; }
+  html:root body .arena-shot-options { gap: 6px; }
+  html:root body .arena-shot-options button { padding-inline: 3px; }
+  html:root body .arena-monty-choices { gap: 6px; }
+  html:root body .arena-monty-choices button { padding-inline: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body *,
+  html:root body *::before,
+  html:root body *::after { scroll-behavior: auto !important; }
+  html:root body .celebration-rays { animation: none !important; }
+}

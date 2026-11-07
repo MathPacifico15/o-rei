@@ -14,8 +14,7 @@
 .arena-phase-result .arena-won > strong { animation: rei-result-win .62s cubic-bezier(.17,.85,.25,1) both; text-shadow: 0 0 28px #4af37c88; }
 .arena-phase-result .arena-lost > strong { animation: rei-result-loss .45s ease-out both; }
 .arena-live-feedback { animation: rei-feedback .24s ease-out both; min-height: 1.5em; }
-.arena-track i, .arena-pass-window { animation: rei-target-breathe 1.5s ease-in-out infinite; }
-.arena-track b, .arena-pass-runner { will-change: left; }
+.arena-track i, .arena-pass-window { box-shadow: inset 0 0 0 1px #7bef9b, 0 0 10px #42e97544; }
 .arena-grid button, .arena-shot-options button, .arena-monty-choices button { transition: transform .16s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .arena button:not(:disabled):hover { transform: translateY(-2px); border-color: #71e891; box-shadow: 0 5px 18px #0005; }
 .arena button:not(:disabled):active { transform: translateY(1px) scale(.975); transition-duration: .06s; }
