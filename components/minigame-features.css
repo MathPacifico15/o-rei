@@ -54,8 +54,8 @@ html:root body .arena-pass-pitch > small { position: absolute; left: 0; right: 0
 html:root body .arena-keeper-moving { transition: left 180ms cubic-bezier(.22,.8,.32,1), transform 180ms ease; transform: translateX(-50%) skewX(-7deg); }
 html:root body .arena-ttt button.mark-x { color:#64b7ff; }
 html:root body .arena-ttt button.mark-o { color:#ff737b; }
-html:root body .arena-ttt button.mark-x.lit { color:#e3f5ff; background:#125699; border-color:#79c6ff; box-shadow:0 0 18px #56aeffbb; animation:rei-winning-line .62s ease-in-out infinite alternate; }
-html:root body .arena-ttt button.mark-o.lit { color:#fff0f0; background:#a32835; border-color:#ff9299; box-shadow:0 0 18px #ff5665bb; animation:rei-winning-line .62s ease-in-out infinite alternate; }
+html:root body .arena-ttt button.mark-x.lit { color:#e3f5ff; background:#125699; border-color:#79c6ff; box-shadow:0 0 0 2px #56aeff88; }
+html:root body .arena-ttt button.mark-o.lit { color:#fff0f0; background:#a32835; border-color:#ff9299; box-shadow:0 0 0 2px #ff566588; }
 html:root body .pairs-chances { display:flex; justify-content:center; gap:9px; margin:12px auto; }
 html:root body .pairs-chances span { display:block; width:15px; height:15px; border-radius:50%; background:#40d978; box-shadow:0 0 8px #40d97888; }
 html:root body .pairs-chances span.used { background:#e34b55; box-shadow:0 0 8px #e34b5588; }

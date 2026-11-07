@@ -1,0 +1,157 @@
+/* Presentation-only treatments for all thirteen existing game modes. */
+html:root body .arena {
+  --arena-line: var(--rei-border-soft);
+  --arena-field: #0a1718;
+  --arena-active: var(--rei-accent);
+  padding: clamp(18px, 3vw, 28px);
+}
+html:root body .arena header { margin-bottom: var(--rei-space-4); }
+html:root body .arena header h2 { max-width: 18ch; line-height: 1.06; text-wrap: balance; }
+html:root body .arena header small { letter-spacing: .13em; }
+html:root body .arena-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rei-space-2);
+  margin-block: var(--rei-space-4);
+  padding: var(--rei-space-3);
+  border: 1px solid var(--arena-line);
+  border-left: 3px solid var(--rei-accent);
+  background: var(--rei-surface-secondary);
+}
+html:root body .arena-toolbar > span {
+  flex: 1 1 175px;
+  color: var(--rei-text-primary);
+  font-size: 10px;
+  line-height: 1.35;
+  letter-spacing: .06em;
+}
+html:root body .arena-toolbar > b {
+  min-width: 48px;
+  margin-left: 0;
+  color: var(--rei-prestige);
+  text-align: right;
+  font-size: 27px;
+  font-variant-numeric: tabular-nums;
+}
+html:root body .arena-toolbar button { min-height: 38px; }
+html:root body .arena-toolbar button[aria-pressed="true"] {
+  border-color: var(--rei-accent);
+  color: var(--rei-accent);
+  background: #102719;
+}
+html:root body .arena-live-feedback {
+  margin-block: var(--rei-space-4) 0;
+  padding: var(--rei-space-3) var(--rei-space-4);
+  border-left: 2px solid var(--rei-border-strong);
+  background: var(--rei-surface-secondary);
+  color: var(--rei-text-secondary);
+  line-height: 1.5;
+}
+html:root body .arena-has-errors .arena-live-feedback { border-left-color: #db7c82; }
+html:root body .arena-phase-paused .arena-toolbar { border-left-color: var(--rei-prestige); }
+html:root body .arena-paused {
+  min-height: 220px;
+  padding: var(--rei-space-6) var(--rei-space-4);
+  border: 1px solid var(--arena-line);
+  background: var(--rei-surface-secondary);
+}
+html:root body .arena-paused h3 { margin-bottom: var(--rei-space-2); }
+html:root body .arena-paused button { min-width: 150px; }
+html:root body .arena-result {
+  margin-block: var(--rei-space-5);
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid var(--arena-line);
+  border-top: 3px solid var(--rei-accent);
+  background: linear-gradient(155deg, rgba(39, 219, 80, .07), var(--rei-surface-secondary) 55%);
+}
+html:root body .arena-result.arena-lost {
+  border-top-color: #d8797e;
+  background: linear-gradient(155deg, rgba(216, 121, 126, .08), var(--rei-surface-secondary) 55%);
+}
+html:root body .arena-result > strong {
+  margin-block: var(--rei-space-3);
+  font-size: clamp(29px, 5vw, 39px);
+  line-height: 1.05;
+}
+html:root body .arena-result p:first-of-type { color: var(--rei-text-primary); font-size: 14px; }
+html:root body .arena-result p:nth-of-type(2) { color: var(--rei-text-subtle); font-size: 11px; font-variant-numeric: tabular-nums; }
+html:root body .arena-result > button:not(.button-primary) { margin-right: var(--rei-space-2); }
+
+/* Shared controls keep their hit areas; only presentation changes. */
+html:root body .arena-grid button { min-width: 0; border-color: var(--rei-border-strong); }
+html:root body .arena-grid button:disabled,
+html:root body .arena-cups button:disabled,
+html:root body .arena-monty-choices button:disabled { opacity: 1; filter: none; }
+html:root body .arena-grid button:focus-visible { outline: var(--rei-focus-ring); outline-offset: 2px; }
+html:root body .arena-grid button:not(:disabled):active { filter: brightness(1.2); }
+
+/* Timing and Gold Zone: emphasize the existing target without changing its size. */
+html:root body :is(.arena-mode-timing, .arena-mode-goldZone) .arena-track {
+  border-color: var(--rei-border-strong);
+  background: var(--arena-field);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, .32);
+}
+html:root body .arena-mode-timing .arena-track i { box-shadow: inset 0 0 0 1px #ffaca7, 0 0 12px rgba(205, 80, 75, .22); }
+html:root body .arena-mode-goldZone .arena-track i { background: var(--rei-prestige); box-shadow: inset 0 0 0 1px #fff0bd, 0 0 12px rgba(217, 183, 106, .22); }
+html:root body :is(.arena-mode-timing, .arena-mode-goldZone) .arena-track b { box-shadow: 0 0 0 1px #0a1718, 0 0 9px rgba(255, 255, 255, .7); }
+
+/* Shot and Through Pass: retain the moving keeper, runner, and target geometry. */
+html:root body .arena-shot-goal,
+html:root body .arena-pass-pitch { box-shadow: inset 0 1px var(--rei-highlight), var(--rei-shadow-low); }
+html:root body .arena-shot-options button { min-height: 88px; background: var(--rei-surface-secondary); }
+html:root body .arena-shot-options button b { font-size: 17px; }
+html:root body .arena-pass-score { padding: var(--rei-space-3); border: 1px solid var(--arena-line); background: var(--rei-surface-secondary); }
+html:root body .arena-pass-score strong { font-size: 29px; font-variant-numeric: tabular-nums; }
+html:root body .arena-pass-score i.current { border-color: var(--rei-prestige); color: var(--rei-prestige); box-shadow: 0 0 0 2px rgba(217, 183, 106, .15); }
+html:root body .arena-pass-score i.scored { background: #17472a; }
+
+/* Code, Cups, Pairs, Puzzle, and Maze: make their existing board states legible. */
+html:root body .arena-mode-code .arena-code {
+  padding: var(--rei-space-3);
+  border: 1px solid var(--arena-line);
+  background: var(--arena-field);
+  color: var(--rei-prestige);
+  font-variant-numeric: tabular-nums;
+}
+html:root body .arena-mode-code .arena-grid { max-width: 330px; }
+html:root body .arena-mode-code .arena-grid button { font-variant-numeric: tabular-nums; }
+html:root body .arena-cups { border-bottom: 1px solid var(--arena-line); }
+html:root body .arena-cup-shape { box-shadow: inset 7px 0 rgba(255, 255, 255, .1), inset -8px 0 rgba(28, 8, 16, .5), 0 8px #41141b, 0 16px 18px rgba(0, 0, 0, .35); }
+html:root body .arena-pairs { gap: var(--rei-space-2); }
+html:root body .arena-pairs button { border-color: var(--rei-border-strong); }
+html:root body .arena-pairs button.lit { border-color: var(--rei-prestige); box-shadow: inset 0 1px rgba(255, 255, 255, .2), 0 0 0 2px rgba(217, 183, 106, .2); }
+html:root body .pairs-chances span.available { background: var(--rei-accent); }
+html:root body .arena-puzzle { border-color: var(--rei-border-strong); box-shadow: var(--rei-shadow-low); }
+html:root body .arena-puzzle button { font-variant-numeric: tabular-nums; }
+html:root body .arena-puzzle button.lit { border-style: dashed; }
+html:root body .arena-maze { box-shadow: var(--rei-shadow-low); }
+html:root body .arena-maze button.lit { border-color: #b8f5c9; box-shadow: inset 0 0 0 1px #b8f5c9; }
+
+/* Tic Tac Toe and Pressure Map: distinguish played, active, and winning cells. */
+html:root body .arena-ttt button { font-size: clamp(24px, 5vw, 32px); }
+html:root body .arena-ttt button.mark-x { background: #142b3b; border-color: #436b88; }
+html:root body .arena-ttt button.mark-o { background: #351d25; border-color: #87505a; }
+html:root body .arena-ttt button.lit { outline: 2px solid currentColor; outline-offset: -4px; }
+html:root body .arena-pressure button.lit { outline-width: 3px; box-shadow: 0 0 0 2px #0b1114, 0 0 14px rgba(255, 255, 255, .34); }
+html:root body .arena-pressure button.score { border-color: #b7f8c6; }
+
+/* Ball Track and Monty Hall: keep the existing pieces and revealed states. */
+html:root body .arena-track-players button { border: 1px solid var(--arena-line); }
+html:root body .arena-track-players button.lit { border-color: var(--rei-prestige); background: rgba(217, 183, 106, .12); }
+html:root body .arena-monty-choices button { min-height: 118px; background: var(--rei-surface-secondary); }
+html:root body .arena-monty-choices button.selected { border-color: var(--rei-accent); box-shadow: inset 0 0 0 1px var(--rei-accent), var(--rei-shadow-low); }
+html:root body .arena-monty-choices button.revealed { background: #27171b; border-color: #a26870; }
+html:root body .arena-monty-choices button.revealed small { color: #f1aab0; }
+
+@media (max-width: 540px) {
+  html:root body .arena-toolbar { gap: var(--rei-space-2); }
+  html:root body .arena-toolbar > span { flex-basis: calc(100% - 60px); }
+  html:root body .arena-toolbar button { flex: 1 1 auto; }
+  html:root body .arena-shot-options button { min-height: 78px; }
+  html:root body .arena-monty-choices button { min-height: 104px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body .arena-live-feedback,
+  html:root body .arena-result { animation: none !important; }
+}

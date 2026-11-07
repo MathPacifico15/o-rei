@@ -1,0 +1,194 @@
+/* O Rei visual layer. Existing layout and game timing stay in their source files. */
+html:root {
+  --rei-bg: #050706;
+  --rei-surface: #0d1217;
+  --rei-surface-secondary: #121a20;
+  --rei-surface-elevated: #182229;
+  --rei-text-primary: #edf1f0;
+  --rei-text-secondary: #b3bec3;
+  --rei-text-subtle: #91a0a8;
+  --rei-accent: #27db50;
+  --rei-accent-hover: #4be16a;
+  --rei-prestige: #d9b76a;
+  --rei-border-soft: rgba(177, 205, 199, .16);
+  --rei-border-strong: rgba(177, 205, 199, .3);
+  --rei-highlight: rgba(255, 255, 255, .055);
+  --rei-shadow-low: 0 3px 10px rgba(0, 0, 0, .18);
+  --rei-shadow-mid: 0 8px 24px rgba(0, 0, 0, .25);
+  --rei-shadow-high: 0 18px 42px rgba(0, 0, 0, .34);
+  --rei-layer-menu: 10;
+  --rei-layer-modal: 200;
+  --rei-layer-game: 250;
+  --rei-radius-control: 3px;
+  --rei-radius-surface: 4px;
+  --rei-space-1: 4px;
+  --rei-space-2: 8px;
+  --rei-space-3: 12px;
+  --rei-space-4: 16px;
+  --rei-space-5: 24px;
+  --rei-space-6: 32px;
+  --rei-motion-instant: 100ms;
+  --rei-motion-fast: 150ms;
+  --rei-motion-standard: 200ms;
+  --rei-motion-card: 260ms;
+  --rei-motion-screen: 320ms;
+  --rei-motion-modal: 280ms;
+  --rei-motion-reveal: 500ms;
+  --rei-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --rei-ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --rei-focus-ring: 3px solid #84f5a0;
+  --rei-panel: var(--rei-surface);
+  --rei-panel-raised: var(--rei-surface-elevated);
+  --rei-stroke: var(--rei-border-soft);
+  --rei-text: var(--rei-text-primary);
+  --rei-muted: var(--rei-text-secondary);
+  --rei-green: var(--rei-accent);
+  --rei-focus: #84f5a0;
+}
+
+/* Ambient light is static so it cannot compete with gameplay. */
+html:root body,
+html:root body .app-shell {
+  background-color: var(--rei-bg);
+  background-image: radial-gradient(ellipse 70% 38% at 50% -12%, rgba(39, 219, 80, .065), transparent 75%);
+  color: var(--rei-text-primary);
+}
+html:root body .topbar,
+html:root body .save-tools {
+  border-color: var(--rei-border-soft);
+}
+html:root body .app-shell h1,
+html:root body .app-shell h2,
+html:root body .app-shell h3 {
+  line-height: 1.12;
+  text-wrap: balance;
+}
+html:root body .app-shell p,
+html:root body .career-overlay p,
+html:root body .arena p { line-height: 1.6; }
+
+/* Surfaces have distinct levels without moving content or changing card actions. */
+html:root body .start-career,
+html:root body .athlete-panel,
+html:root body .season-panel,
+html:root body .trajectory-panel,
+html:root body .career-overlay .shop-wrap,
+html:root body .arena,
+html:root body .arena-inline .arena,
+html:root body .evolution-wrap,
+html:root body .decision-card,
+html:root body .market-wrap {
+  border-color: var(--rei-border-soft);
+  border-radius: var(--rei-radius-surface);
+  background-color: var(--rei-surface);
+  background-image: linear-gradient(155deg, var(--rei-highlight), transparent 42%);
+  box-shadow: var(--rei-shadow-mid);
+}
+html:root body .start-career,
+html:root body .athlete-panel,
+html:root body .arena,
+html:root body .arena-inline .arena { border-top-color: var(--rei-accent); }
+html:root body .career-overlay .shop-wrap,
+html:root body .arena,
+html:root body .arena-inline .arena { box-shadow: var(--rei-shadow-high); }
+html:root body .stat-tile,
+html:root body .attribute-chips > div,
+html:root body .finance-strip > div,
+html:root body .club-season,
+html:root body .loyalty,
+html:root body .shop-item,
+html:root body .offer,
+html:root body .inline-event {
+  border-color: var(--rei-border-soft);
+  border-radius: var(--rei-radius-control);
+  box-shadow: inset 0 1px var(--rei-highlight);
+}
+html:root body .stat-tile span,
+html:root body .attribute-chips span,
+html:root body .finance-strip span { color: var(--rei-text-subtle); }
+html:root body .stat-tile b,
+html:root body .finance-strip b { font-variant-numeric: tabular-nums; }
+
+/* A consistent response for existing interactive elements. */
+html:root body :is(button, [role="button"], summary, input, select, textarea):focus-visible {
+  outline: var(--rei-focus-ring);
+  outline-offset: 3px;
+}
+html:root body :is(button, [role="button"]) {
+  cursor: pointer;
+  transition: background-color var(--rei-motion-standard) var(--rei-ease-out),
+    border-color var(--rei-motion-standard) var(--rei-ease-out),
+    color var(--rei-motion-standard) var(--rei-ease-out),
+    box-shadow var(--rei-motion-standard) var(--rei-ease-out),
+    filter var(--rei-motion-standard) var(--rei-ease-out),
+    transform var(--rei-motion-standard) var(--rei-ease-out);
+}
+html:root body :is(button, [role="button"]):disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  filter: saturate(.6);
+  box-shadow: none;
+  transform: none;
+}
+html:root body :is(button, [role="button"]):not(:disabled):active {
+  transform: translateY(1px) scale(.99);
+  transition-duration: var(--rei-motion-fast);
+}
+html:root body :is(button, [role="button"])[aria-busy="true"] {
+  cursor: progress;
+  opacity: .75;
+}
+html:root body :is(.button-primary, .play-button, .arena .button-primary):not(:disabled) {
+  background-color: var(--rei-accent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .25), var(--rei-shadow-low);
+}
+html:root body :is(.button-primary, .play-button, .arena .button-primary):not(:disabled):hover {
+  background-color: var(--rei-accent-hover);
+  filter: brightness(1.04);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .3), var(--rei-shadow-mid);
+}
+html:root body :is(.button-ghost, .save-tools button, .save-tools label, .athlete-actions button, .market-action, .shop-close):not(:disabled):hover {
+  border-color: var(--rei-border-strong);
+  background-color: var(--rei-surface-elevated);
+  color: var(--rei-text-primary);
+}
+html:root body :is(.field input, .field select, .country-trigger):focus-visible {
+  border-color: var(--rei-accent);
+  background-color: var(--rei-surface-secondary);
+}
+
+/* Choice cards communicate hover and selection with the existing brand color. */
+html:root body :is(.training-card, .position-choice, .club-choice, .career-overlay .training-game) {
+  border-color: var(--rei-border-soft);
+  border-radius: var(--rei-radius-control);
+  box-shadow: inset 0 1px var(--rei-highlight), var(--rei-shadow-low);
+}
+html:root body :is(.training-card, .position-choice, .club-choice, .career-overlay .training-game):not(:disabled):hover {
+  border-color: rgba(78, 217, 113, .55);
+  background-color: var(--rei-surface-secondary);
+  box-shadow: inset 0 1px var(--rei-highlight), var(--rei-shadow-mid);
+}
+html:root body :is(.position-choice, .club-choice).selected {
+  border-color: var(--rei-accent);
+  background-color: #102719;
+  box-shadow: inset 0 0 0 1px rgba(39, 219, 80, .28), var(--rei-shadow-low);
+}
+html:root body .training-card .rarity,
+html:root body .eyebrow { letter-spacing: .09em; }
+html:root body .shop-item:hover { border-color: var(--rei-border-strong); }
+html:root body .shop-item button:not(:disabled):hover { border-color: var(--rei-accent); }
+
+@media (max-width: 760px) {
+  html:root body .start-content { padding-inline: clamp(16px, 4vw, 28px); }
+  html:root body .dashboard-shell { padding-inline: clamp(8px, 2.5vw, 18px); }
+  html:root body .season-panel { margin-inline: 0; }
+}
+@media (max-width: 420px) {
+  html:root body .start-heading h1 { font-size: clamp(48px, 15vw, 74px); }
+  html:root body .start-career,
+  html:root body .season-panel { padding-inline: var(--rei-space-4); }
+  html:root body .training-catalog { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body :is(button, [role="button"]) { transition-duration: 0ms !important; }
+}

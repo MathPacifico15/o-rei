@@ -1,0 +1,151 @@
+/* Home, existing practice catalog, and navigation rhythm. */
+html:root body .start-content {
+  padding-block: clamp(32px, 5vw, 64px) clamp(28px, 4vw, 48px);
+}
+html:root body .start-heading { margin-bottom: clamp(24px, 3vw, 38px); }
+html:root body .start-heading .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rei-space-2);
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+html:root body .start-heading .eyebrow::before {
+  content: "";
+  width: 17px;
+  height: 2px;
+  background: var(--rei-accent);
+}
+html:root body .start-heading h1 {
+  margin-block: 16px 20px;
+  font-size: clamp(56px, 6.4vw, 86px);
+  line-height: .96;
+}
+html:root body .start-heading h1 > span {
+  max-width: 620px;
+  margin-top: 13px;
+  color: var(--rei-text-primary);
+  font-size: clamp(23px, 3vw, 33px);
+  line-height: 1.13;
+}
+html:root body .start-heading > p { max-width: 560px; font-size: 14px; }
+html:root body .start-briefing { align-items: stretch; gap: clamp(16px, 2vw, 24px); }
+html:root body .start-career { padding: clamp(20px, 2.3vw, 30px); }
+html:root body .start-career h2 { margin-top: 25px; font-size: clamp(30px, 3vw, 38px); }
+html:root body .start-career > p { max-width: 550px; }
+html:root body .start-actions { gap: var(--rei-space-3); margin-block: 28px; }
+html:root body .start-actions .button-primary {
+  min-height: 54px;
+  font-size: 13px;
+  letter-spacing: .06em;
+}
+html:root body .start-actions .button-primary span {
+  display: inline-block;
+  margin-left: var(--rei-space-2);
+  transition: transform var(--rei-motion-fast) var(--rei-ease-out);
+}
+html:root body .start-actions .button-ghost {
+  min-height: 54px;
+  border-color: var(--rei-border-strong);
+}
+html:root body .feature-row { gap: var(--rei-space-4); }
+html:root body .feature-row span { line-height: 1.45; }
+html:root body .feature-row b { margin-bottom: 7px; font-size: 26px; }
+html:root body .start-playbook { padding-top: var(--rei-space-5); }
+html:root body .start-playbook li { padding-block: 20px; }
+html:root body .start-playbook strong { font-size: 13px; }
+html:root body .start-playbook p { font-size: 11px; }
+
+/* Navigation controls remain in their original places. */
+html:root body .topbar { border-bottom: 1px solid var(--rei-border-soft); }
+html:root body .topbar :is(.save-chip, .back-button) {
+  min-height: 40px;
+  border-radius: var(--rei-radius-control);
+  transition: background-color var(--rei-motion-fast) var(--rei-ease-out),
+    border-color var(--rei-motion-fast) var(--rei-ease-out),
+    color var(--rei-motion-fast) var(--rei-ease-out),
+    transform var(--rei-motion-fast) var(--rei-ease-out);
+}
+html:root body .topbar .back-button { color: var(--rei-text-secondary); }
+html:root body .save-tools {
+  gap: var(--rei-space-2);
+  padding-block: var(--rei-space-3);
+}
+html:root body .save-tools :is(button, label) { border-radius: var(--rei-radius-control); }
+html:root body .save-tools label:focus-within { outline: var(--rei-focus-ring); outline-offset: 3px; }
+
+/* The numbered marks are the existing game identifiers; only World games use gold. */
+html:root body .training-catalog { align-items: stretch; gap: var(--rei-space-3); }
+html:root body .career-overlay .training-game {
+  grid-template-columns: 44px minmax(0, 1fr) 20px;
+  min-height: 138px;
+  gap: var(--rei-space-4);
+  padding: clamp(16px, 2vw, 21px);
+  border-left: 3px solid var(--rei-accent);
+  background: linear-gradient(145deg, var(--rei-surface-elevated), var(--rei-surface));
+}
+html:root body .training-game > span:nth-child(2) { min-width: 0; }
+html:root body .training-number {
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--rei-border-strong);
+  color: var(--rei-accent);
+  background: rgba(39, 219, 80, .07);
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+html:root body .training-game small { color: var(--rei-text-subtle); letter-spacing: .1em; }
+html:root body .training-game b {
+  margin-block: 7px;
+  font-size: clamp(19px, 2vw, 23px);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+html:root body .training-game p { max-width: 44ch; line-height: 1.5; }
+html:root body .training-arrow {
+  align-self: start;
+  transition: transform var(--rei-motion-fast) var(--rei-ease-out);
+}
+html:root body .career-overlay .training-game-world { border-left-color: var(--rei-prestige); }
+html:root body .training-game-world .training-number {
+  color: var(--rei-prestige);
+  background: rgba(217, 183, 106, .08);
+}
+html:root body .training-game-world .training-arrow { color: var(--rei-prestige); }
+html:root body .field-note { line-height: 1.55; }
+html:root body .country-options .field-note {
+  margin: var(--rei-space-3);
+  padding: var(--rei-space-4);
+  border: 1px solid var(--rei-border-soft);
+  background: var(--rei-surface-secondary);
+  color: var(--rei-text-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html:root body .start-actions .button-primary:hover span { transform: translateX(4px); }
+  html:root body .career-overlay .training-game:hover .training-arrow { transform: translate(2px, -2px); }
+  html:root body .topbar :is(.save-chip, .back-button):hover { border-color: var(--rei-border-strong); color: var(--rei-text-primary); }
+}
+@media (max-width: 760px) {
+  html:root body .start-content { padding-block: 30px 28px; }
+  html:root body .start-heading h1 { font-size: clamp(52px, 11vw, 70px); }
+  html:root body .start-playbook li { padding-block: 16px; }
+  html:root body .training-catalog { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  html:root body .start-heading h1 { font-size: clamp(48px, 13vw, 58px); }
+  html:root body .start-career { padding: var(--rei-space-4); }
+  html:root body .start-actions { flex-direction: column; }
+  html:root body .start-actions .button-primary,
+  html:root body .start-actions .button-ghost { flex: auto; width: 100%; }
+  html:root body .feature-row { gap: var(--rei-space-2); }
+  html:root body .career-overlay .training-game { grid-template-columns: 38px minmax(0, 1fr) 16px; gap: var(--rei-space-3); min-height: 126px; }
+  html:root body .training-number { width: 36px; height: 36px; font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body .start-actions .button-primary span,
+  html:root body .training-arrow { transition-duration: 0ms; }
+}

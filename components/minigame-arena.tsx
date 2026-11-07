@@ -5,6 +5,7 @@ import {difficultyLabel} from '@/game/minigame-context';
 import './minigame-arena.css';
 import './minigame-features.css';
 import './minigame-motion.css';
+import './minigame-polish.css';
 
 const icons=['⚽','👟','🏆','⭐','🧤','🎯','🟨','🥅'];
 type Phase='tutorial'|'playing'|'paused'|'result';
@@ -142,7 +143,7 @@ export function MiniGameArena({game,seed:providedSeed,context='treino',difficult
  const tutorial=tutorials[game.mode]??game.tutorial;
 
  return <div className={isTraining?'arena-overlay':'arena-inline'} role={isTraining?'dialog':'region'} aria-modal={isTraining?true:undefined} aria-label={game.name}>
-  <section className={`arena arena-phase-${phase} ${round.errors > 0 ? 'arena-has-errors' : ''}`}>
+  <section className={`arena arena-mode-${game.mode} arena-phase-${phase} ${round.errors > 0 ? 'arena-has-errors' : ''}`}>
    <header><small>{isTraining?'CENTRO DE TREINAMENTO':'DECISÃO DA CARREIRA'}</small><h2>{game.name}</h2>{onClose&&<button onClick={onClose}>Voltar ×</button>}</header>
    {phase==='tutorial'?<>
     <p>{game.description}</p><p>{tutorial}</p>

@@ -1,0 +1,135 @@
+/* Small cross-screen details; game-specific icon art and text stay intact. */
+html:root body .country-menu {
+  z-index: var(--rei-layer-menu);
+  border-color: var(--rei-border-strong);
+  border-radius: var(--rei-radius-surface);
+  background: var(--rei-surface-elevated);
+  box-shadow: var(--rei-shadow-high);
+}
+html:root body .career-overlay {
+  z-index: var(--rei-layer-modal);
+  backdrop-filter: blur(3px);
+}
+html:root body .arena-overlay { z-index: var(--rei-layer-game); }
+html:root body :is(.country-options, .club-picker, .league-scroll, .shop-wrap, .arena) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rei-border-strong) transparent;
+}
+html:root body :is(.country-options, .club-picker, .league-scroll, .shop-wrap, .arena):focus-visible {
+  outline: var(--rei-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Keep mixed existing symbols in a common visual frame, without replacing meaning. */
+html:root body :is(.training-arrow, .athlete-store span, .start-actions .button-primary span, .save-chip, .back-button) {
+  line-height: 1;
+  vertical-align: middle;
+}
+html:root body .shop-item > span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  min-height: 32px;
+  color: var(--rei-prestige);
+  font-size: 20px;
+  line-height: 1;
+}
+html:root body .shop-item { gap: var(--rei-space-3); padding: var(--rei-space-3); }
+html:root body .shop-item > div { min-width: 0; }
+html:root body .shop-item b { font-size: 12px; line-height: 1.25; }
+html:root body .shop-item p { color: var(--rei-text-secondary); font-size: 10px; line-height: 1.5; }
+html:root body .shop-item small { font-size: 8px; line-height: 1.35; }
+html:root body .shop-item button {
+  min-height: 40px;
+  padding: 7px 10px;
+  border-radius: var(--rei-radius-control);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+html:root body .shop-item button:disabled {
+  opacity: .58;
+  color: var(--rei-text-secondary);
+  border-color: var(--rei-border-soft);
+  background: var(--rei-surface-secondary);
+}
+html:root body .shop-grid { gap: var(--rei-space-2); }
+html:root body .shop-section { margin-top: var(--rei-space-5); }
+html:root body .shop-section h3 { margin-bottom: var(--rei-space-2); }
+
+html:root body :is(.training-card, .play-style-choice button, .offer, .inline-event, .shop-item) {
+  transition: border-color var(--rei-motion-standard) var(--rei-ease-out),
+    background-color var(--rei-motion-standard) var(--rei-ease-out),
+    box-shadow var(--rei-motion-standard) var(--rei-ease-out);
+}
+html:root body .play-style-choice button {
+  border-radius: var(--rei-radius-control);
+  box-shadow: inset 0 1px var(--rei-highlight);
+}
+html:root body .play-style-choice button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px rgba(39, 219, 80, .3), var(--rei-shadow-low);
+}
+html:root body .training-card i { font-style: normal; }
+html:root body .offer.current { box-shadow: inset 0 1px var(--rei-highlight); }
+html:root body .market-action,
+html:root body .card-redraw-tools button,
+html:root body .shop-close {
+  min-height: 44px;
+  border-radius: var(--rei-radius-control);
+}
+html:root body .card-redraw-tools button:disabled { opacity: .55; }
+html:root body .form-shell .start-actions button::after {
+  content: "";
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-left: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -2px;
+  visibility: hidden;
+}
+html:root body .form-shell .start-actions button[aria-busy="true"] { opacity: .8; cursor: progress; }
+html:root body .form-shell .start-actions button[aria-busy="true"]::after {
+  visibility: visible;
+  animation: rei-loading-turn .7s linear infinite;
+}
+@keyframes rei-loading-turn { to { transform: rotate(360deg); } }
+html:root body .country-options button { min-height: 42px; }
+html:root body .country-options button:active { background: #183426; }
+html:root body .country-trigger b {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  min-height: 20px;
+  color: var(--rei-prestige);
+}
+
+/* Existing confirmations and empty copy get a stable, readable container. */
+html:root body .toast {
+  padding: var(--rei-space-3) var(--rei-space-4);
+  border-radius: var(--rei-radius-control);
+  box-shadow: var(--rei-shadow-mid);
+  line-height: 1.5;
+  text-align: left;
+}
+html:root body .toast span { display: inline-block; line-height: 1; vertical-align: middle; }
+html:root body .empty-copy,
+html:root body .field-note { color: var(--rei-text-secondary); }
+html:root body .league-details summary,
+html:root body .career-overlay details summary { cursor: pointer; min-height: 40px; padding-block: 10px; }
+html:root body .league-details summary:hover,
+html:root body .career-overlay details summary:hover { color: var(--rei-text-primary); }
+
+@media (max-width: 520px) {
+  html:root body .shop-grid { grid-template-columns: minmax(0, 1fr); }
+  html:root body .shop-item { grid-template-columns: 32px minmax(0, 1fr); }
+  html:root body .shop-item button { grid-column: 2; justify-self: start; }
+  html:root body .toast { max-width: calc(100% - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body .form-shell .start-actions button[aria-busy="true"]::after { animation: none; }
+  html:root body :is(.training-card, .play-style-choice button, .offer, .inline-event, .shop-item) {
+    transition-duration: 0ms !important;
+  }
+}
