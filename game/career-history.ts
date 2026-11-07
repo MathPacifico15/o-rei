@@ -1,5 +1,6 @@
-import type {CareerState,SeasonResult} from './types';
-import { cappedSalary, findSalaryClub, salaryBounds } from './salary';
+import type {CareerState,SeasonResult,ContractOffer} from './types';
+import { cappedSalary, effectiveSalaryBounds, findSalaryClub } from './salary';
+import { computeOvr } from './overall';
 export interface CareerStint {clubId:string;start:number;end:number;games:number;goals:number;assists:number;cleanSheets:number;titles:string[]}
 export function rememberClubMilestones(state:CareerState):CareerState{
  const milestones={...state.clubMilestones};
@@ -12,15 +13,19 @@ export function careerStints(history:SeasonResult[]):CareerStint[]{
  return result;
 }
 export function groupedTitles(titles:string[]){return Object.entries(titles.reduce<Record<string,number>>((r,t)=>({...r,[t]:(r[t]??0)+1}),{}));}
+export function acceptRenewal(state:CareerState,offer:ContractOffer):CareerState {
+ if(offer.clubId!==state.player.clubId)return state;
+ return {...state,...(state.evolutionRulesVersion===2&&state.initialClubId===offer.clubId?{renewalCount:(state.renewalCount??0)+1}:{}),contract:{clubId:offer.clubId,monthlySalary:offer.monthlySalary,seasonsRemaining:offer.seasons,role:offer.role,expectedMinutes:offer.expectedMinutes},player:{...state.player,salary:offer.monthlySalary},marketWindow:undefined};
+}
 export function negotiateOffer(state:CareerState,clubId:string,random:()=>number,priority:'salary'|'role'|'duration'='salary'):{state:CareerState;message:string}{
  const key=`${state.season}:${state.marketWindow?.kind??'transfer'}:${clubId}`;
  const offer=state.marketWindow?.offers.find(o=>o.clubId===clubId);if(!offer||state.negotiatedOffers?.includes(key)||state.negotiatedOffers?.includes(`${state.season}:${clubId}`))return {state,message:'Esta oferta não permite outra negociação.'};
  const club=findSalaryClub(clubId);
- if(priority==='salary' && (!club || offer.monthlySalary>=salaryBounds(state,club).maximum)) return {state,message:'Esta proposta já atingiu o limite salarial do clube. Você ainda pode assiná-la.'};
+ if(priority==='salary' && (!club || offer.monthlySalary>=effectiveSalaryBounds(state,club,computeOvr(state.player)).maximum)) return {state,message:'Esta proposta já atingiu o limite salarial desta proposta. Você ainda pode assiná-la.'};
  const roll=random(), accepted=roll<.55, withdrawn=roll>=.85;
  const roles=['promessa','rotacao','titular','estrela'] as const;
  const role=roles[Math.min(roles.length-1,roles.indexOf(offer.role)+1)];
- const changed=priority==='salary'&&club?{...offer,monthlySalary:Math.max(offer.monthlySalary,cappedSalary(state,club,offer.monthlySalary*1.12))}:priority==='duration'?{...offer,seasons:Math.min(5,offer.seasons+1)}:{...offer,role,expectedMinutes:role==='estrela'?86:role==='titular'?72:role==='rotacao'?48:28};
+ const changed=priority==='salary'&&club?{...offer,monthlySalary:Math.max(offer.monthlySalary,cappedSalary(state,club,offer.monthlySalary*1.12,computeOvr(state.player)))}:priority==='duration'?{...offer,seasons:Math.min(5,offer.seasons+1)}:{...offer,role,expectedMinutes:role==='estrela'?86:role==='titular'?72:role==='rotacao'?48:28};
  const offers=withdrawn?state.marketWindow!.offers.filter(o=>o.clubId!==clubId):state.marketWindow!.offers.map(o=>o.clubId===clubId&&accepted?changed:o);
  return {state:{...state,negotiatedOffers:[...(state.negotiatedOffers??[]),key],marketWindow:{...state.marketWindow!,offers}},message:accepted?'Contraproposta aceita. Confira os novos termos antes de assinar.':withdrawn?'O clube retirou a proposta. As outras ofertas continuam disponíveis.':'O clube recusou a contraproposta, mas manteve a oferta original.'};
 }

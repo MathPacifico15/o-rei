@@ -57,7 +57,7 @@ try{
   if(await page.locator('.celebration-close').count()){await page.locator('.celebration-close').click();continue;}
   if(!boughtPsychologist){
    const balance=await page.evaluate(()=>JSON.parse(localStorage.getItem('o-rei-career'))?.career?.balance??0);
-   if(balance>=3840000){await page.getByRole('button',{name:'Abrir loja',exact:true}).click();await page.locator('.shop-item').filter({hasText:'Psicólogo esportivo'}).getByRole('button').click();await page.getByRole('button',{name:'Fechar ×',exact:true}).click();boughtPsychologist=true;continue;}
+   if(balance>=7680000){await page.getByRole('button',{name:'Abrir loja',exact:true}).click();await page.locator('.shop-item').filter({hasText:'Psicólogo esportivo'}).getByRole('button').click();await page.getByRole('button',{name:'Fechar ×',exact:true}).click();boughtPsychologist=true;continue;}
   }
   const event=page.locator('.inline-event:not(.season-summary):not(.market-inline) button');
   if(await event.count()){
@@ -75,6 +75,11 @@ try{
  }
  assert.ok(finished,'Career must reach retirement');assert.equal(errors.length,0,errors.join('\n'));
  const save=await page.evaluate(()=>JSON.parse(localStorage.getItem('o-rei-career')));
+ assert.equal(save.career.evolutionRulesVersion,2,'new career uses the new OVR rules');
+ const veteranSeasons=save.career.history.filter(season=>season.evolution?.age>=32);
+ assert.ok(veteranSeasons.length>0,'career includes veteran seasons');
+ assert.ok(veteranSeasons.every(season=>season.evolution.ovrAfter<=season.evolution.ovrBefore),'veteran OVR never rises across a season');
+ assert.ok(save.career.history.some(season=>season.evolution?.cardGains),'card evolution recorded in history');
  assert.equal(save.career.player.games,save.career.history.reduce((n,s)=>n+s.games,0));
  assert.equal(save.career.balance,save.career.financialLedger.reduce((n,e)=>n+e.amount,0),'balance matches audit ledger including finals');
  await page.screenshot({path:`${outputDir}/retirement-desktop.png`,fullPage:true});

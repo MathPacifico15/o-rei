@@ -9,6 +9,9 @@ const offerSchema=z.object({clubId:z.string(),monthlySalary:finite.nonnegative()
 const marketSchema=z.object({season:finite,offers:z.array(offerSchema),renewal:offerSchema,phase:z.enum(['preference','offers']).optional(),kind:z.enum(['transfer','loan']).optional(),preferredCountry:z.string().optional()}).passthrough();
 const careerSchema=z.object({
  seed:finite,season:finite,balance:finite,history:z.array(seasonSchema),
+ renewalCount:z.number().int().min(0).optional(),
+ evolutionRulesVersion:z.literal(2).optional(),initialClubId:z.string().optional(),
+ cardEvolution:z.object({season:finite,gains:z.record(z.string(),finite),losses:z.record(z.string(),finite),ovrBefore:finite}).optional(),
  playStyle:z.enum(['skill','luck','mixed']).optional(),
  miniGameHistory:z.array(z.object({season:finite,decisionId:z.string(),gameId:z.string()})).optional(),
  cardRedraws:z.object({used:z.number().int().min(0).max(3),lastSeason:finite,nonce:z.number().int().min(0)}).optional(),

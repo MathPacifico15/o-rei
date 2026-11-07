@@ -1,5 +1,7 @@
+import { computeOvr, weights } from "./overall";
+export { computeOvr } from "./overall";
 import { rememberClubMilestones } from "./career-history";
-import { salaryOffer, cappedSalary } from "./salary";
+import { salaryOffer, renewalSalary } from "./salary";
 import { selectCareerEvents } from "./career-events";
 import { clubs, competitions } from "./catalog";
 import { countries } from "./countries";
@@ -13,11 +15,7 @@ export const positionAttributeKeys: Record<Position, AttributeKey[]> = {
   ATA: ["finalizacao", "cabecada", "velocidade", "forca", "lideranca", "fisico"],
 };
 
-const weights: Record<Position, Partial<Record<AttributeKey, number>>> = {
-  GOL: { reflexo: .27, elasticidade: .18, posicionamento: .18, saida: .17, lideranca: .08, fisico: .12 },
-  MEI: { velocidade: .14, passe: .26, finalizacao: .14, drible: .2, lideranca: .1, fisico: .16 },
-  ATA: { finalizacao: .28, cabecada: .17, velocidade: .18, forca: .16, lideranca: .07, fisico: .14 },
-};
+
 
 export const upgradeCards: UpgradeCard[] = [
   { id: "gol-reflexo", rarity: "raro", name: "Reflexo Rápido", changes: { reflexo: 2, elasticidade: 1 }, eligible: ["GOL"] },
@@ -253,9 +251,7 @@ export function randomCareerStart(seed: number): RandomCareerStart {
   return { seed: normalizedSeed, position, club: { ...club }, league: { ...league }, nationality, preferredFoot, heightCm: randomHeight(random, position), shirtNumber: position === "MEI" ? 10 : position === "ATA" ? 9 : randomInteger(random, 1, 99) };
 }
 
-export function computeOvr(player: Pick<Player, "position" | "attributes">) {
-  return Math.round(Object.entries(weights[player.position]).reduce((total, [key, weight]) => total + player.attributes[key as AttributeKey] * (weight ?? 0), 0));
-}
+
 
 export function mulberry32(seed: number) {
   let value = seed >>> 0;
@@ -303,6 +299,51 @@ export function applyCard(player: Player, card: UpgradeCard): Player {
   const attributes = { ...player.attributes };
   Object.entries(card.changes).forEach(([key, value]) => { attributes[key as AttributeKey] = clamp(attributes[key as AttributeKey] + (value ?? 0)); });
   return { ...player, attributes };
+}
+
+/** Apply the real card gains and the age-related loss in one persistent action. */
+export function applyCareerCard(state:CareerState,card:UpgradeCard):CareerState {
+  if(state.evolutionRulesVersion!==2)return {...state,player:applyCard(state.player,card)};
+  if(state.cardEvolution?.season===state.season)return state;
+  if(!card.eligible.includes(state.player.position))return state;
+  const before=state.player, after=applyCard(before,card), gains:Partial<Attributes>={}, losses:Partial<Attributes>={};
+  for(const key of Object.keys(after.attributes) as AttributeKey[]) {
+    const delta=after.attributes[key]-before.attributes[key];if(delta)gains[key]=delta;
+  }
+  if(before.age>=32) {
+    const keys=positionAttributeKeys[before.position];
+    const baseLoss=before.age>=37?4:before.age>=35?3:2;
+    const targetLoss=Math.max(1,baseLoss-(before.attributes.fisico>=85?1:0));
+    const maximum=computeOvr(before);
+    let removed=0,index=0;
+    while((removed<targetLoss||computeOvr(after)>maximum)&&index<keys.length*100) {
+      const key=keys[index++%keys.length];
+      if(after.attributes[key]>1){after.attributes[key]--;losses[key]=(losses[key]??0)-1;removed++;}
+    }
+  }
+  return {...state,player:after,cardEvolution:{season:state.season,gains,losses,ovrBefore:computeOvr(before)}};
+}
+
+/** Titles are read from the completed previous season, after its finals. */
+export function applyCareerSeasonEvolution(state:CareerState,player:Player,season:number,seed:number,performance?:{games:number;rating:number}) {
+  const attributes={...player.attributes}, gains:Partial<Attributes>={}, prior=state.history.at(-1);
+  const titles=[...new Set([...(prior?.titles??[]),...(prior?.title?[prior.title]:[])])];
+  const titlePoints=Math.min(3,titles.reduce((sum,title)=>{
+    const competition=competitions.find(c=>c.name===title);
+    return sum+(competition?.kind==='international'||competition?.id==='cwc'?2:competition?.kind==='continental'?1:competition?.kind==='state'?.25:.5);
+  },0));
+  const random=mulberry32(seed), rating=performance?.rating??prior?.rating??6.5, games=performance?.games??prior?.games??0;
+  let points=player.age>=31?0:Math.min(16,Math.max(0,Math.floor(Math.max(0,rating-6)*2+Math.min(2,games/20)+titlePoints*3+(state.mode==='generational'?1:0)+random())));
+  // Quicker development below elite level, while keeping the top end demanding.
+  const currentOvr=computeOvr(player);
+  if(currentOvr<80)points=Math.min(16,Math.round(points*1.45));
+  else if(currentOvr<85)points=Math.min(16,Math.round(points*1.2));
+  if(currentOvr>=90)points=Math.min(points,12);
+  else if(currentOvr>=85)points=Math.min(points,14);
+  const initial=points, keys=positionAttributeKeys[player.position];
+  while(points-->0){const eligible=keys.filter(k=>attributes[k]<99);if(!eligible.length)break;const key=eligible[Math.floor(random()*eligible.length)];attributes[key]++;gains[key]=(gains[key]??0)+1;}
+  const card=state.cardEvolution?.season===season?state.cardEvolution:undefined;
+  return {player:{...player,attributes},evolution:{season,age:player.age,points:initial,mode:state.mode==='generational'?'generational' as const:'normal' as const,available:[] as EvolutionFocus[],gains,cardGains:card?.gains,ageLosses:card?.losses,titlePoints:player.age>=31?0:titlePoints,ovrBefore:card?.ovrBefore??computeOvr(player),ovrAfter:computeOvr({...player,attributes})}};
 }
 
 const events: CareerEvent[] = [
@@ -1075,7 +1116,7 @@ export function createMarketWindow(state: CareerState, random: () => number, pre
   const declining=ovr<(state.highestOvr??ovr)-2||player.age>=33;
   const renewalFactor=declining?.85+random()*.15:1.1+random()*.15;
   const renewalRole=proposalRole(ovr,current);
-  return {season:state.season,offers,renewal:{clubId:current.id,monthlySalary:cappedSalary(state,current,state.contract.monthlySalary*renewalFactor),seasons:3,role:renewalRole,expectedMinutes:expectedMinutes(renewalRole),idolatryChange:3},kind,preferredCountry,phase:"offers"};
+  return {season:state.season,offers,renewal:{clubId:current.id,monthlySalary:renewalSalary(state,current,renewalFactor),seasons:3,role:renewalRole,expectedMinutes:expectedMinutes(renewalRole),idolatryChange:3},kind,preferredCountry,phase:"offers"};
 }
 export function prepareMarketWindow(state: CareerState, kind: "transfer" | "loan" = "transfer"): MarketWindow {
   const seed=state.seed+state.season*311+(kind==="loan"?73:0)+(state.exitRequests??0)*1429;
@@ -1087,9 +1128,9 @@ function createGenerationalMarketWindow(state: CareerState, random: () => number
   const ovr = computeOvr(state.player);
   const offers = clubs.filter((club) => club.country === "Brasil" && club.id !== current.id)
     .sort((a,b) => b.reputation + b.strength - (a.reputation + a.strength)).slice(0, 5)
-    .map((club) => { const role = proposalRole(ovr + 3, club); return { clubId:club.id, monthlySalary:salaryOffer(state,club,state.player,ovr + 3,role,random), seasons:3+Math.floor(random()*2), role, expectedMinutes:expectedMinutes(role), idolatryChange:-Math.max(2,Math.round((state.player.clubIdolatry[current.id]??0)/16)) }; });
+    .map((club) => { const role = proposalRole(ovr + 3, club); return { clubId:club.id, monthlySalary:salaryOffer(state,club,state.player,ovr,role,random), seasons:3+Math.floor(random()*2), role, expectedMinutes:expectedMinutes(role), idolatryChange:-Math.max(2,Math.round((state.player.clubIdolatry[current.id]??0)/16)) }; });
   const role=proposalRole(ovr,current);
-  return { season:state.season, offers, renewal:{clubId:current.id,monthlySalary:cappedSalary(state,current,state.contract.monthlySalary*1.2),seasons:3,role,expectedMinutes:expectedMinutes(role),idolatryChange:4} };
+  return { season:state.season, offers, renewal:{clubId:current.id,monthlySalary:renewalSalary(state,current,1.2),seasons:3,role,expectedMinutes:expectedMinutes(role),idolatryChange:4} };
 }
 export function applyFinalConsequence(state: CareerState, final: CupFinal, won: boolean): CareerState {
   const pending = state.pendingDivisionSettlement;
@@ -1110,6 +1151,9 @@ export function applyFinalConsequence(state: CareerState, final: CupFinal, won: 
     leagueAssignments: { ...state.leagueAssignments, [state.player.clubId]: targetLeague }, clubStrengthAdjustments: applyMovementDynamics(state, movements) };
 }
 export function simulateSeason(state: CareerState): { state: CareerState; result: SeasonResult } {
+  if(state.evolutionRulesVersion===2 && state.player.age>=32 && state.cardEvolution?.season!==state.season) {
+    state=applyCareerCard(state,{id:'age-only',name:'Idade',rarity:'raro',changes:{},eligible:[state.player.position]});
+  }
   const random = mulberry32(state.seed + state.season * 7919);
   let player = { ...state.player, attributes: { ...state.player.attributes }, clubIdolatry: { ...state.player.clubIdolatry }, titles:[...state.player.titles], awards:[...state.player.awards] };
   state = rememberClubMilestones(state);
@@ -1238,7 +1282,9 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
   const marketWindow=(generationalBreakthrough || opensMarket) && !loan ? prepareMarketWindow(marketState) : undefined;
   const nationalTeam={games:(state.nationalTeam?.games??0)+(national?.games??0),goals:(state.nationalTeam?.goals??0)+(national?.goals??0),assists:(state.nationalTeam?.assists??0)+(national?.assists??0),titles:[...(state.nationalTeam?.titles??[])]};
   const rating=Number((5.4 + player.form / 100 * 2.3 + Math.min(1.5,(goals+assists)/Math.max(1,games)*2)).toFixed(1));
-  const automaticEvolution = applyAutomaticSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193);
+  const automaticEvolution = state.evolutionRulesVersion===2
+    ? applyCareerSeasonEvolution(state,{ ...player, age: seasonStartAge },state.season,state.seed+state.season*193,{games,rating})
+    : applyAutomaticSeasonEvolution({ ...player, age: seasonStartAge }, state.mode, state.season, state.seed + state.season * 193);
   player = { ...automaticEvolution.player, age: seasonStartAge + 1 };
   const evolution = automaticEvolution.evolution;
   // Todas as decisões legitimamente alcançadas entram no calendário.
@@ -1268,7 +1314,7 @@ export function simulateSeason(state: CareerState): { state: CareerState; result
     clubHonors[player.clubId] = [...(clubHonors[player.clubId] ?? []), leagueTitle];
   }
   const clubStrengthAdjustments = applyMovementDynamics(state, automaticMovements);
-  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],financialLedger:[...(state.financialLedger??[]),{season:state.season,label:"Salários e premiações",amount:monthlySalary*12+prize}],currentCompetition:competitions.find((entry)=>entry.id===(settledAssignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:settledAssignments,leagueTables:{...state.leagueTables,...allTables},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:(state.shop.activeSeasonal??[]).filter(id=>id==="imprensa"||(state.shop.expires?.[id]??0)>state.season+1),expires:state.shop.expires,freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveAllClubDynamics(state,allTables,random),clubStrengthAdjustments,pendingDivisionSettlement,pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:undefined},result};
+  return {state:{...state,season:state.season+1,player,clubHistory,history:[...state.history,result],financialLedger:[...(state.financialLedger??[]),{season:state.season,label:"Salários e premiações",amount:monthlySalary*12+prize}],currentCompetition:competitions.find((entry)=>entry.id===(settledAssignments[player.clubId]??leagueId))?.name??league?.name??state.currentCompetition,balance,contract:nextContract,loan,leagueAssignments:settledAssignments,leagueTables:{...state.leagueTables,...allTables},shop:{ownedPermanent:[...(state.shop?.ownedPermanent??[])],activeSeasonal:(state.shop.activeSeasonal??[]).filter(id=>id==="imprensa"||(state.shop.expires?.[id]??0)>state.season+1),expires:state.shop.expires,freeUses:[]},nationalTeam,originCountry:state.originCountry ?? club.country,highestOvr:state.evolutionRulesVersion===2?Math.max(highestOvr,computeOvr(player)):highestOvr,marketWindow,recentEventIds:[...(state.recentEventIds??[]),...seasonEvents.map((event)=>event.id)].slice(-10),clubDynamics:evolveAllClubDynamics(state,allTables,random),clubStrengthAdjustments,pendingDivisionSettlement,pendingTransfer:undefined,campaignQualifications,competitionWinners,clubHonors,pendingEvolution:undefined},result};
 }
 export function legacy(player: Player) {
   const ovr = computeOvr(player);
@@ -1298,3 +1344,4 @@ export function shouldRetire(player: Player, _seed: number) {
 }
 
 export function baseAttributes(): Attributes { return { reflexo: 55, elasticidade: 55, posicionamento: 56, saida: 53, lideranca: 50, fisico: 56, velocidade: 58, passe: 56, finalizacao: 55, drible: 56, cabecada: 54, forca: 56 }; }
+

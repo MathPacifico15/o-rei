@@ -1,3 +1,4 @@
+import { computeOvr } from "./overall";
 import { clubs, competitions } from './catalog';
 import type { CareerState, Club, ContractRole, Player } from './types';
 
@@ -49,11 +50,28 @@ export function salaryBounds(state: Pick<CareerState,'leagueAssignments'|'clubDy
   return {minimum,maximum,leagueCap};
 }
 
-export function cappedSalary(state:Pick<CareerState,'leagueAssignments'|'clubDynamics'>|undefined,club:Club,amount:number) {
-  const {minimum,maximum}=salaryBounds(state,club);
+/** Maximum monthly salary by current OVR; Saudi clubs have their own higher band. */
+export function playerSalaryCap(ovr:number,club:Club) {
+  const normal=ovr<=69?100_000:ovr<=79?250_000:ovr<=85?600_000:ovr<=89?1_000_000:ovr<=94?2_000_000:5_000_000;
+  return club.country==='Arábia Saudita'?Math.min(5_000_000,normal*2):normal;
+}
+export function effectiveSalaryBounds(state:Pick<CareerState,'leagueAssignments'|'clubDynamics'>|undefined,club:Club,ovr:number) {
+  const bounds=salaryBounds(state,club);
+  const maximum=Math.min(bounds.maximum,playerSalaryCap(ovr,club));
+  return {...bounds,minimum:Math.min(bounds.minimum,maximum),maximum};
+}
+export function cappedSalary(state:Pick<CareerState,'leagueAssignments'|'clubDynamics'>|undefined,club:Club,amount:number,ovr?:number) {
+  const {minimum,maximum}=ovr===undefined?salaryBounds(state,club):effectiveSalaryBounds(state,club,ovr);
   return Math.min(maximum,Math.max(minimum,roundThousand(amount)));
 }
 export function initialSalary(club:Club) { return salaryBounds(undefined,club).minimum; }
+
+/** First two renewals at the starting club attempt to double pay within both ceilings. */
+export function renewalSalary(state:CareerState,club:Club,standardFactor:number) {
+  const ovr=computeOvr(state.player);
+  if (state.evolutionRulesVersion===2 && state.initialClubId===club.id && (state.renewalCount??0)<2) return Math.min(effectiveSalaryBounds(state,club,ovr).maximum,state.contract.monthlySalary*2);
+  return cappedSalary(state,club,state.contract.monthlySalary*standardFactor,ovr);
+}
 
 export function salaryOffer(state:CareerState,club:Club,player:Player,ovr:number,role:ContractRole,random:()=>number) {
   const {minimum,maximum}=salaryBounds(state,club);
@@ -61,8 +79,12 @@ export function salaryOffer(state:CareerState,club:Club,player:Player,ovr:number
   const age=player.age<21?.90:player.age>34?.88:1;
   const performance=Math.max(.9,Math.min(1.1,(state.history.at(-1)?.rating??7)/7));
   const roleFactor=role==='estrela'?1:role==='titular'?.88:role==='rotacao'?.74:.60;
-  const variation=.92+random()*.16;
+  const variation=.85+Math.max(0,Math.min(1,random()))*.15;
   const bonuses=(state.shop?.ownedPermanent.includes('empresario')?1.15:1)*(state.shop?.ownedPermanent.includes('academia')?1.2:1);
-  return cappedSalary(state,club,(minimum+(maximum-minimum)*ability*roleFactor*age*performance)*variation*bonuses);
+  const saudiPremium=club.country==='Arábia Saudita'?1.5:1;
+  // Apply variation after the ceiling so multiple strong clubs do not all offer the same maximum.
+  const base=(minimum+(maximum-minimum)*ability*roleFactor*age*performance)*bonuses*saudiPremium;
+  const available=Math.min(base,effectiveSalaryBounds(state,club,ovr).maximum);
+  return cappedSalary(state,club,available*variation,ovr);
 }
 export function findSalaryClub(id:string) { return clubs.find(club=>club.id===id); }

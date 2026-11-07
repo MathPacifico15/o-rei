@@ -235,6 +235,11 @@ export interface SeasonEvolution {
   focus?: EvolutionFocus;
   gains?: Partial<Attributes>;
   bonusSignature?: boolean;
+  cardGains?: Partial<Attributes>;
+  ageLosses?: Partial<Attributes>;
+  titlePoints?: number;
+  ovrBefore?: number;
+  ovrAfter?: number;
 }
 
 export type CampaignStatus = "scheduled" | "active" | "eliminated" | "final" | "champion";
@@ -319,6 +324,11 @@ export interface SeasonResult {
 }
 
 export interface CareerState {
+  evolutionRulesVersion?: 2;
+  initialClubId?: string;
+  cardEvolution?: { season:number; gains:Partial<Attributes>; losses:Partial<Attributes>; ovrBefore:number };
+  /** Number of contract renewals accepted during this career. */
+  renewalCount?: number;
   /** Finals outside world campaigns follow this permanent career identity. */
   playStyle?: import('./decision-selection').PlayStyle;
   miniGameHistory?: Array<{ season: number; decisionId: string; gameId: import('./minigames').MiniGameId }>;
